@@ -17,6 +17,7 @@ import EditProduct from "../pages/seller/EditProduct";
 import MyOrders from "../pages/MyOrders";
 import SellerOrders from "../pages/seller/SellerOrders";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminUser from "../pages/admin/AdminUser";
 import AdminRoute from "../components/AdminRoute";
 
 export default function AppRoutes() {
@@ -101,6 +102,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminDashboard />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users/:id"
+        element={
+          <AdminRoute>
+            <AdminUser />
           </AdminRoute>
         }
       />

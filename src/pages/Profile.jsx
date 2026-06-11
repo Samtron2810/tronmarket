@@ -23,18 +23,19 @@ export default function Profile() {
             <div className="text-sm text-secondary">Name</div>
             <div className="font-medium">{user.name}</div>
           </div>
-
+          {/* centerized line */}
+          <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
           <div>
             <div className="text-sm text-secondary">Email</div>
             <div className="font-medium">{user.email}</div>
           </div>
-
+          <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
           <div>
             <div className="text-sm text-secondary">Role</div>
             <div className="font-medium">{user.role || "customer"}</div>
           </div>
         </div>
-
+        <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
         <div className="flex justify-center">
           <button
             onClick={async () => {

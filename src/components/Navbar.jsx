@@ -132,12 +132,26 @@ export default function Navbar() {
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search products…"
                   style={{ backgroundColor: "#EBF2FF", color: "#1A1A1A" }}
-                  className="w-44 lg:w-60 pl-8 pr-3 py-2 rounded-lg text-sm placeholder-blue-300 focus:outline-none focus:ring-2 transition-all duration-200"
+                  className="w-44 lg:w-60 pl-8 pr-10 py-2 rounded-lg text-sm placeholder-blue-300 focus:outline-none focus:ring-2 transition-all duration-200"
                   onFocus={(e) =>
                     (e.target.style.boxShadow = "0 0 0 2px #2B80FF")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 />
+                {search.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch("");
+                      navigate("/");
+                      setOpen(false);
+                    }}
+                    className="absolute right-9 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-600 hover:bg-white/30"
+                    aria-label="Clear search"
+                  >
+                    <FaTimes className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
               <button
                 type="submit"
@@ -355,8 +369,22 @@ export default function Navbar() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search products…"
                 style={{ backgroundColor: "#EBF2FF", color: "#1A1A1A" }}
-                className="w-full pl-8 pr-3 py-2.5 rounded-xl text-sm placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="w-full pl-8 pr-10 py-2.5 rounded-xl text-sm placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               />
+              {search.trim() && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    navigate("/");
+                    setOpen(false);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-600 hover:bg-white/30"
+                  aria-label="Clear search"
+                >
+                  <FaTimes className="w-4 h-4" />
+                </button>
+              )}
             </div>
             <button
               type="submit"

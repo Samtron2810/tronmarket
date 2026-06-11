@@ -6,7 +6,7 @@ export default function ConfirmModal({
   description,
   onConfirm,
   onClose,
-  confirmLabel = "Delete",
+  confirmLabel = "Confirm",
   cancelLabel = "Cancel",
 }) {
   if (!open) return null;

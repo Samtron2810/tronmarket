@@ -33,6 +33,11 @@ export default function ProductCard({ product }) {
 
   const handleAdd = async (e) => {
     e.stopPropagation();
+    if (product.stock <= 0) {
+      toast.error("Product is out of stock");
+      return;
+    }
+
     try {
       await addToCart({ productId: product._id, quantity: 1 });
       if (typeof fetchCart === "function") fetchCart();
@@ -52,6 +57,12 @@ export default function ProductCard({ product }) {
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
+
+          {product.stock <= 0 && (
+            <div className="absolute right-2 top-2 rounded-md bg-red-600 text-white text-[10px] font-semibold px-2 py-0.5">
+              Out of stock
+            </div>
+          )}
 
           {images.length > 1 && (
             <>
@@ -113,8 +124,13 @@ export default function ProductCard({ product }) {
           <div className="flex gap-1.5">
             <button
               onClick={handleAdd}
-              className="flex items-center justify-center gap-1 flex-1 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95 transition-all duration-150"
-              title="Add to cart"
+              disabled={product.stock <= 0}
+              className={`flex items-center justify-center gap-1 flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+                product.stock <= 0
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
+                  : "bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95"
+              }`}
+              title={product.stock <= 0 ? "Out of stock" : "Add to cart"}
             >
               <FaShoppingCart className="w-2.5 h-2.5" />
               <span>Cart</span>

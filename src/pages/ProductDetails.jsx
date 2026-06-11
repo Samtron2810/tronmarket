@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { addToCart } from "../services/cartService";
 import { CartContext } from "../context/CartContext";
@@ -19,6 +19,8 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [imgIndex, setImgIndex] = useState(0);
   const { fetchCart } = useContext(CartContext);
+
+  const navigate = useNavigate();
 
   const fallbackImage = "https://loremflickr.com/g/320/240/product";
 
@@ -86,13 +88,13 @@ export default function ProductDetails() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Back */}
-      <Link
-        to="/"
+      <button
+        onClick={() => navigate(-1)}
         className="inline-flex items-center gap-1.5 text-sm font-semibold mb-6 text-blue-600 hover:opacity-70 transition-opacity"
       >
         <FaArrowLeft className="w-3 h-3" />
         Back to catalog
-      </Link>
+      </button>
 
       {/* ── Card ── */}
       <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden lg:grid lg:grid-cols-2">

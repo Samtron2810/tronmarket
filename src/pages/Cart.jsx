@@ -51,7 +51,8 @@ export default function Cart() {
 
   const total = cart.items.reduce((acc, item) => {
     // exclude out-of-stock items from total
-    if (!item.product || !item.product.stock || item.product.stock <= 0) return acc;
+    if (!item.product || !item.product.stock || item.product.stock <= 0)
+      return acc;
     return acc + (item.product.price || 0) * item.quantity;
   }, 0);
 
@@ -208,12 +209,19 @@ export default function Cart() {
                       >
                         ₦{item.product.price.toLocaleString()}
                       </p>
-                      <p className="text-xs mt-0.5" style={{ color: "#555555" }}>
-                        Subtotal: ₦{(item.product.price * item.quantity).toLocaleString()}
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: "#555555" }}
+                      >
+                        Subtotal: ₦
+                        {(item.product.price * item.quantity).toLocaleString()}
                       </p>
                     </>
                   ) : (
-                    <p className="text-xs mt-0.5 font-semibold" style={{ color: "#d97706" }}>
+                    <p
+                      className="text-xs mt-0.5 font-semibold"
+                      style={{ color: "#d97706" }}
+                    >
                       Out of stock
                     </p>
                   )}
@@ -225,7 +233,9 @@ export default function Cart() {
                     type="number"
                     value={item.quantity}
                     min="1"
-                    onChange={(e) => updateQty(item.product._id, e.target.value)}
+                    onChange={(e) =>
+                      updateQty(item.product._id, e.target.value)
+                    }
                     disabled={!item.product.stock || item.product.stock <= 0}
                     style={{
                       width: "64px",

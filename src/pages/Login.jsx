@@ -15,6 +15,8 @@ const Login = () => {
     password: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [msgOpen, setMsgOpen] = useState(false);
   const [msg, setMsg] = useState("");
@@ -87,13 +89,24 @@ const Login = () => {
           <label className="block">
             <input
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={form.password}
               onChange={handleChange}
               className="input-field w-full"
               placeholder="Password"
               required
             />
+            <div className="mt-2 flex items-center gap-2 text-sm">
+              <input
+                id="show-password"
+                type="checkbox"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+              />
+              <label htmlFor="show-password" className="select-none">
+                Show password
+              </label>
+            </div>
           </label>
 
           <div className="flex justify-between items-center">
