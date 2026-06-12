@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { Link } from "react-router-dom";
+import {
+  FiArrowLeft,
+  FiPlus,
+  FiPackage,
+  FiImage,
+  FiEdit2,
+  FiTrash2,
+} from "react-icons/fi";
 import ConfirmModal from "../../components/ConfirmModal";
 import MessageModal from "../../components/MessageModal";
 import { toast } from "react-toastify";
@@ -57,6 +65,17 @@ export default function SellerDashboard() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      {/* return home button */}
+      <div className="mb-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+          style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+        >
+          <FiArrowLeft className="w-4 h-4" /> Back to Home
+        </Link>
+      </div>
+
       {/* ── Header ── */}
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl px-6 py-5 mb-8"
@@ -94,19 +113,7 @@ export default function SellerDashboard() {
             (e.currentTarget.style.backgroundColor = "#2B80FF")
           }
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              d="M12 4v16m8-8H4"
-            />
-          </svg>
+          <FiPlus className="w-4 h-4" />
           Add Product
         </Link>
       </div>
@@ -130,20 +137,10 @@ export default function SellerDashboard() {
           className="rounded-2xl border p-12 text-center"
           style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
         >
-          <svg
+          <FiPackage
             className="w-10 h-10 mx-auto mb-3"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
             style={{ color: "#FFAA4D" }}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z"
-            />
-          </svg>
+          />
           <p className="font-semibold text-base" style={{ color: "#1A1A1A" }}>
             No products yet
           </p>
@@ -155,19 +152,7 @@ export default function SellerDashboard() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition active:scale-95"
             style={{ backgroundColor: "#2B80FF", color: "#fff" }}
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+            <FiPlus className="w-4 h-4" />
             Add your first product
           </Link>
         </div>

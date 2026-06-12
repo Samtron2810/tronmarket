@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { FiArrowLeft, FiUpload, FiPlus } from "react-icons/fi";
+import { FaSpinner } from "react-icons/fa";
 import api from "../../services/api";
 import uploadService from "../../services/uploadService";
 import { useNavigate, Link } from "react-router-dom";
@@ -164,19 +166,7 @@ export default function AddProduct() {
             (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.30)")
           }
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
+          <FiArrowLeft className="w-4 h-4" />
           Back to Dashboard
         </Link>
       </div>
@@ -313,20 +303,7 @@ export default function AddProduct() {
                   (e.currentTarget.style.backgroundColor = "#EBF2FF")
                 }
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  style={{ color: "#2B80FF" }}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
-                  />
-                </svg>
+                <FiUpload className="w-6 h-6" style={{ color: "#2B80FF" }} />
                 <span
                   className="text-sm font-semibold"
                   style={{ color: "#2B80FF" }}
@@ -417,42 +394,12 @@ export default function AddProduct() {
               >
                 {loading ? (
                   <>
-                    <svg
-                      className="w-4 h-4 animate-spin"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                      />
-                    </svg>
+                    <FaSpinner className="w-4 h-4 animate-spin" />
                     Creating…
                   </>
                 ) : (
                   <>
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
+                    <FiPlus className="w-4 h-4" />
                     Create Product
                   </>
                 )}

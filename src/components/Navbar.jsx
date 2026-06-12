@@ -105,15 +105,6 @@ export default function Navbar() {
             >
               Market
             </span>
-            <span
-              style={{
-                backgroundColor: "rgba(255,255,255,0.35)",
-                color: "#1A1A1A",
-              }}
-              className="hidden sm:inline-flex text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-0.5"
-            >
-              v2
-            </span>
           </Link>
 
           {/* ── Desktop nav ── */}
@@ -305,19 +296,7 @@ export default function Navbar() {
                 (e.currentTarget.style.backgroundColor = "transparent")
               }
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 7h13"
-                />
-              </svg>
+              <FaShoppingCart className="w-5 h-5" />
               {count > 0 && (
                 <span
                   style={{ backgroundColor: "#FF8C00", color: "#fff" }}

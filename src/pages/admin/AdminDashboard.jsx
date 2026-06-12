@@ -67,8 +67,18 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#FF8C00] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
+        {/* return back to home button */}
+        <div className="mb-6">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+            style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+          >
+            ← Back to Home
+          </Link>
+        </div>
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Admin Dashboard</h1>

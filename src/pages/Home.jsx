@@ -1,6 +1,13 @@
 import { useEffect, useState, useContext } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import {
+  FiSmartphone,
+  FiMonitor,
+  FiShoppingBag,
+  FiHome,
+  FiZap,
+} from "react-icons/fi";
 import ProductCard from "../components/ProductCard";
 import { AuthContext } from "../context/AuthContext";
 import Skeleton from "../components/Skeleton";
@@ -8,81 +15,11 @@ import Skeleton from "../components/Skeleton";
 const categories = ["phones", "laptops", "fashion", "home", "electronics"];
 
 const catIcons = {
-  phones: (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-      />
-    </svg>
-  ),
-  laptops: (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-      />
-    </svg>
-  ),
-  fashion: (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M7 7l10 10M7 17L17 7"
-      />
-    </svg>
-  ),
-  home: (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V10"
-      />
-    </svg>
-  ),
-  electronics: (
-    <svg
-      className="w-4 h-4"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M13 10V3L4 14h7v7l9-11h-7z"
-      />
-    </svg>
-  ),
+  phones: <FiSmartphone className="w-4 h-4" />,
+  laptops: <FiMonitor className="w-4 h-4" />,
+  fashion: <FiShoppingBag className="w-4 h-4" />,
+  home: <FiHome className="w-4 h-4" />,
+  electronics: <FiZap className="w-4 h-4" />,
 };
 
 export default function Home() {
@@ -132,10 +69,10 @@ export default function Home() {
   }, [search, category]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
       {/* ── Hero ── */}
       <div
-        className="relative mb-10 rounded-2xl overflow-hidden px-8 py-12 sm:px-12 sm:py-16"
+        className="relative mb-2 rounded-2xl overflow-hidden px-8 py-8 sm:px-12 sm:py-8"
         style={{ backgroundColor: "#FF8C00" }}
       >
         {/* Subtle decorative circle */}
@@ -171,6 +108,8 @@ export default function Home() {
             Explore a diverse catalog of high-quality goods curated from
             verified sellers. Enjoy secure authentication and quick shipping.
           </p>
+
+          {/* if user is a seller or admin, show dashboard link */}
           {user?.role === "seller" && (
             <div className="mt-6">
               <Link
@@ -179,6 +118,17 @@ export default function Home() {
                 style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
               >
                 Go to Seller Dashboard
+              </Link>
+            </div>
+          )}
+          {user?.role === "admin" && (
+            <div className="mt-6">
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+              >
+                Go to Admin Dashboard
               </Link>
             </div>
           )}
