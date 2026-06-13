@@ -94,17 +94,15 @@ export default function ProductCard({ product }) {
         </div>
 
         {/* ── Content ── */}
-        <div className="flex flex-1 flex-col p-2.5 gap-1.5">
+        <div className="flex flex-1 flex-col p-2 gap-1">
           {/* Category + Name + Description */}
           <div className="flex-1 min-w-0">
+            <h3 className="mt-0.5 text-md font-bold text-gray-900 line-clamp-1 leading-snug">
+              {product.name}
+            </h3>
             <span className="text-blue-500 text-xs font-bold uppercase tracking-wider">
               {product.category || "General"}
             </span>
-
-            <h3 className="mt-0.5 text-xs font-bold text-gray-900 line-clamp-1 leading-snug">
-              {product.name}
-            </h3>
-
             <p className="mt-0.5 text-xs text-gray-500 line-clamp-2 leading-relaxed">
               {product.description || "No description available."}
             </p>
