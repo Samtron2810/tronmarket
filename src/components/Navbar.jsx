@@ -217,11 +217,11 @@ export default function Navbar() {
                 {user?.role === "seller" && (
                   <Link
                     to="/seller/orders"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+                    className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-medium transition-all duration-150"
                     style={{ color: "#222222" }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.backgroundColor =
-                        "rgba(255,255,255,0.25)")
+                        "rgba(255,255,255,0.5)")
                     }
                     onMouseLeave={(e) =>
                       (e.currentTarget.style.backgroundColor = "transparent")

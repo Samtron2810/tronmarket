@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { updateCartItem, removeCartItem } from "../services/cartService";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
+import { FaStore } from "react-icons/fa";
 
 export default function Cart() {
   const { cart, fetchCart } = useContext(CartContext);
@@ -87,19 +88,21 @@ export default function Cart() {
           )}
         </div>
 
-        <svg
-          className="w-8 h-8 opacity-40"
-          fill="none"
-          stroke="#1A1A1A"
-          viewBox="0 0 24 24"
+        {/* customer orders */}
+        <Link
+          to="/my-orders"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-blue-600 text-sm font-medium transition-all duration-150"
+          style={{ color: "#222222" }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.5)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = "transparent")
+          }
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.8}
-            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 7h13"
-          />
-        </svg>
+          <FaStore className="w-3.5 h-3.5" />
+          <span>View my Orders</span>
+        </Link>
       </div>
 
       {/* ── Empty state ── */}
