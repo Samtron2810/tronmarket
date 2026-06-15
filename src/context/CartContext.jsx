@@ -11,7 +11,12 @@ export default function CartProvider({ children }) {
       const res = await getCart();
       setCart(res.data);
     } catch (err) {
-      console.log("fetchCart error", err);
+      // If not authenticated (401), set empty cart to avoid infinite loading
+      if (err.response?.status === 401) {
+        setCart({ items: [] });
+      } else {
+        console.log("fetchCart error", err);
+      }
     }
   };
 

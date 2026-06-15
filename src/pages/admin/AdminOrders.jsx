@@ -56,9 +56,34 @@ export default function AdminOrders() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FF8C00] flex items-center justify-center">
-        <div className="text-[#1A1A1A] font-semibold animate-pulse">
-          Loading…
+      <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <div className="animate-pulse h-4 w-24 bg-gray-200 rounded mb-6" />
+          <div className="animate-pulse h-7 w-48 bg-gray-200 rounded-lg mb-6" />
+          <div className="space-y-4">
+            {[1, 2].map((n) => (
+              <div
+                key={n}
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+              >
+                <div className="bg-[#FFAA4D]/60 px-5 py-3">
+                  <div className="h-4 w-32 bg-white/40 rounded" />
+                </div>
+                <div className="p-5 space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className="w-14 h-14 rounded-lg bg-gray-200 animate-pulse shrink-0" />
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4" />
+                        <div className="h-3 bg-gray-200 rounded w-1/4" />
+                      </div>
+                      <div className="h-5 w-16 bg-gray-200 rounded" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

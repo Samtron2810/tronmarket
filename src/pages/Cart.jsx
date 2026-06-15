@@ -10,23 +10,26 @@ export default function Cart() {
   if (!cart) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <div className="flex items-center gap-3" style={{ color: "#555555" }}>
-          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-            />
-          </svg>
-          <span className="text-sm font-medium">Loading your cart…</span>
+        {/* Header skeleton */}
+        <div className="animate-pulse rounded-2xl px-6 py-5 mb-8 bg-[#FFAA4D]/60">
+          <div className="h-5 w-24 bg-white/40 rounded-full mb-2" />
+          <div className="h-7 w-32 bg-white/40 rounded-lg" />
+        </div>
+        {/* Items skeleton */}
+        <div className="space-y-3">
+          {[1, 2, 3].map((n) => (
+            <div
+              key={n}
+              className="animate-pulse flex items-center gap-4 rounded-2xl border border-gray-200 px-5 py-4 bg-white"
+            >
+              <div className="w-16 h-16 rounded-xl bg-gray-200 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-200 rounded w-3/4" />
+                <div className="h-3 bg-gray-200 rounded w-1/4" />
+              </div>
+              <div className="h-8 w-16 bg-gray-200 rounded-lg shrink-0" />
+            </div>
+          ))}
         </div>
       </div>
     );

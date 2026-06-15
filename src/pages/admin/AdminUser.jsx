@@ -164,9 +164,26 @@ export default function AdminUser() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#FF8C00] flex items-center justify-center">
-        <div className="text-[#1A1A1A] font-semibold animate-pulse">
-          Loading…
+      <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto space-y-6">
+          <div className="bg-[#FFAA4D]/60 rounded-xl px-5 py-4 animate-pulse">
+            <div className="h-4 w-24 bg-white/40 rounded mb-2" />
+            <div className="h-6 w-36 bg-white/40 rounded" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+              <div className="h-5 w-20 bg-gray-200 animate-pulse rounded" />
+              <div className="h-10 bg-gray-200 animate-pulse rounded-lg" />
+              <div className="h-10 bg-gray-200 animate-pulse rounded-lg" />
+              <div className="h-10 bg-gray-200 animate-pulse rounded-lg" />
+              <div className="h-10 w-28 bg-gray-200 animate-pulse rounded-lg" />
+            </div>
+            <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+              <div className="h-5 w-20 bg-gray-200 animate-pulse rounded" />
+              <div className="h-16 bg-gray-200 animate-pulse rounded-lg" />
+              <div className="h-16 bg-gray-200 animate-pulse rounded-lg" />
+            </div>
+          </div>
         </div>
       </div>
     );
