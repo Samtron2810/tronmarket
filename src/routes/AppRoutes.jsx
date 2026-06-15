@@ -18,6 +18,7 @@ import MyOrders from "../pages/MyOrders";
 import SellerOrders from "../pages/seller/SellerOrders";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminUser from "../pages/admin/AdminUser";
+import AdminOrders from "../pages/admin/AdminOrders";
 import AdminRoute from "../components/AdminRoute";
 
 export default function AppRoutes() {
@@ -110,6 +111,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminUser />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/users/:id/orders"
+        element={
+          <AdminRoute>
+            <AdminOrders />
           </AdminRoute>
         }
       />

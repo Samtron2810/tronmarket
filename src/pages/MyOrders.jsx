@@ -10,6 +10,7 @@ import {
   FiLoader,
   FiXCircle,
 } from "react-icons/fi";
+import api from "../services/api";
 import { getMyOrders, cancelMyOrder } from "../services/orderService";
 import ConfirmModal from "../components/ConfirmModal"; // 1. Import your custom modal
 
@@ -69,8 +70,7 @@ export default function MyOrders() {
       setCancelModalOpen(false); // Close modal immediately
       setCancellingId(orderToCancel); // Start button loader
 
-      const token = localStorage.getItem("token");
-      await cancelMyOrder(orderToCancel, token);
+      await cancelMyOrder(orderToCancel);
 
       setOrders((prevOrders) =>
         prevOrders.map((ord) =>
@@ -95,14 +95,7 @@ export default function MyOrders() {
 
     try {
       setDeliverModalOpen(false);
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `/api/orders/${orderToDeliver}/deliver`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      await api.put(`/orders/${orderToDeliver}/deliver`, {});
 
       // Update local UI state immediately
       setOrders((prev) =>

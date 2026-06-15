@@ -13,7 +13,7 @@ import {
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 
-/* ─── Design tokens (matching your color identity) ────────────────────────
+/* ─── Design tokens (matching my color combo) ────────────────────────
   Background header : #FFAA4D  (Sandy Orange  — separates nav from page)
   Destructive action: #FF2E3B  (Crimson Red   — logout / delete)
   Primary CTA       : #2B80FF  (Royal Blue    — login, search button)

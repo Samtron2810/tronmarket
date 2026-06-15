@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { toast } from "react-toastify";
+import ConfirmModal from "../../components/ConfirmModal";
 
 const statusColors = {
   pending: "bg-[#FFAA4D]/20 text-[#FF8C00]",
@@ -11,6 +13,12 @@ const statusColors = {
 
 export default function SellerOrders() {
   const [orders, setOrders] = useState([]);
+
+  // Modal states
+  const [shipModalOpen, setShipModalOpen] = useState(false);
+  const [orderToShip, setOrderToShip] = useState(null);
+  const [deliverModalOpen, setDeliverModalOpen] = useState(false);
+  const [orderToDeliver, setOrderToDeliver] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -25,26 +33,44 @@ export default function SellerOrders() {
     fetchOrders();
   }, []);
 
-  const handleSellerDeliveryClaim = async (orderId) => {
+  const handleMarkShipped = async () => {
+    const orderId = orderToShip;
+    if (!orderId) return;
     try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `/api/orders/${orderId}/seller-delivery-claim`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
+      await api.put(`/orders/${orderId}/status`, {
+        status: "shipped",
+        note: "Order has been shipped by seller",
+      });
+      setOrders((prev) =>
+        prev.map((ord) =>
+          ord._id === orderId ? { ...ord, status: "shipped" } : ord,
+        ),
       );
+      toast.success("Order marked as shipped");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update status");
+    } finally {
+      setShipModalOpen(false);
+      setOrderToShip(null);
+    }
+  };
 
-      // Update your seller orders state array variable
+  const handleSellerDeliveryClaim = async () => {
+    const orderId = orderToDeliver;
+    if (!orderId) return;
+    try {
+      await api.put(`/orders/${orderId}/seller-delivery-claim`, {});
       setOrders((prev) =>
         prev.map((ord) =>
           ord._id === orderId ? { ...ord, status: "delivered" } : ord,
         ),
       );
-      alert("Delivery claim submitted to Admin for review.");
+      toast.success("Delivery claim submitted to Admin for review.");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to submit claim");
+      toast.error(err.response?.data?.message || "Failed to submit claim");
+    } finally {
+      setDeliverModalOpen(false);
+      setOrderToDeliver(null);
     }
   };
 
@@ -134,22 +160,28 @@ export default function SellerOrders() {
                     {order.status}
                   </span>
                 </div>
-                {/* ---------------------------------------------------------------- */}
+                {/* i added this myself */}
                 <div className="text-right gap-2 mt-2">
-                  {/* If order is processing, show mark shipped button */}
+                  {/* If order is paid, show mark shipped button */}
                   {order.status === "paid" && (
                     <button
-                      onClick={() => handleMarkShipped(order._id)}
+                      onClick={() => {
+                        setOrderToShip(order._id);
+                        setShipModalOpen(true);
+                      }}
                       className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer font-semibold hover:bg-indigo-700 transition-colors shadow-sm "
                     >
                       Mark Shipped
                     </button>
                   )}
 
-                  {/* NEW: If order is shipped but customer goes quiet, seller hits this backup option */}
+                  {/* If order is shipped but customer goes quiet, seller hits this backup option */}
                   {order.status === "shipped" && (
                     <button
-                      onClick={() => handleSellerDeliveryClaim(order._id)}
+                      onClick={() => {
+                        setOrderToDeliver(order._id);
+                        setDeliverModalOpen(true);
+                      }}
                       className="bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer font-semibold hover:bg-amber-700 transition-colors shadow-sm"
                     >
                       Mark as Delivered (Claim)
@@ -161,6 +193,34 @@ export default function SellerOrders() {
           </div>
         )}
       </div>
+
+      {/* Ship Confirmation Modal */}
+      <ConfirmModal
+        open={shipModalOpen}
+        title="Mark Order as Shipped"
+        description="Are you sure you want to mark this order as shipped? This will notify the customer that their items are on the way."
+        confirmLabel="Mark as Shipped"
+        cancelLabel="Cancel"
+        onConfirm={handleMarkShipped}
+        onClose={() => {
+          setShipModalOpen(false);
+          setOrderToShip(null);
+        }}
+      />
+
+      {/* Delivery Claim Confirmation Modal */}
+      <ConfirmModal
+        open={deliverModalOpen}
+        title="Claim Delivery"
+        description="Are you sure you want to claim delivery for this order? This will be reviewed by an admin. Only use this if the customer is not confirming receipt."
+        confirmLabel="Claim Delivery"
+        cancelLabel="Cancel"
+        onConfirm={handleSellerDeliveryClaim}
+        onClose={() => {
+          setDeliverModalOpen(false);
+          setOrderToDeliver(null);
+        }}
+      />
     </div>
   );
 }

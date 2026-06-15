@@ -263,12 +263,25 @@ export default function AdminUser() {
               )}
               {orders.map((o) => (
                 <div key={o._id} className="bg-[#EBF2FF] rounded-lg px-3 py-2">
-                  <div className="text-xs font-mono text-[#555555] truncate">
-                    {o._id}
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs font-mono text-[#555555] truncate">
+                      #{o._id.slice(-8).toUpperCase()}
+                    </span>
+                    <span className="text-xs text-[#555555] mt-1">
+                      {o.createdAt
+                        ? new Date(o.createdAt).toLocaleDateString("en-NG", {
+                            dateStyle: "medium",
+                          })
+                        : ""}
+                    </span>
+                  </div>
+
+                  <div className="text-xs text-[#1A1A1A] font-medium mt-1 truncate">
+                    {o.orderItems?.map((item) => item.name).join(", ") || "N/A"}
                   </div>
                   <div className="flex items-center justify-between mt-1">
                     <span className="text-sm font-semibold text-[#1A1A1A]">
-                      ₦{o.total}
+                      ₦{Number(o.totalPrice).toLocaleString()}
                     </span>
                     <span className="text-xs bg-white border border-gray-200 text-[#555555] px-2 py-0.5 rounded-full capitalize">
                       {o.status}
@@ -277,6 +290,14 @@ export default function AdminUser() {
                 </div>
               ))}
             </div>
+            {orders.length > 0 && (
+              <Link
+                to={`/admin/users/${id}/orders`}
+                className="mt-3 inline-block w-full text-center px-3 py-2 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                View All Orders →
+              </Link>
+            )}
           </div>
         </div>
 
