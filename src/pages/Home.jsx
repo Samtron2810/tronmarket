@@ -5,6 +5,7 @@ import {
   FiSmartphone,
   FiMonitor,
   FiShoppingBag,
+  FiShoppingCart,
   FiHome,
   FiZap,
 } from "react-icons/fi";
@@ -129,6 +130,19 @@ export default function Home() {
                 style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
               >
                 Go to Admin Dashboard
+              </Link>
+            </div>
+          )}
+          {/* if user is a customer, show cart link */}
+          {user?.role === "customer" && (
+            <div className="mt-6">
+              <Link
+                to="/cart"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+              >
+                <FiShoppingCart className="w-4 h-4" />
+                <span>View my Cart</span>
               </Link>
             </div>
           )}

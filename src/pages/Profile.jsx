@@ -1,6 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { FaHome } from "react-icons/fa";
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
@@ -16,6 +17,13 @@ export default function Profile() {
 
   return (
     <div className="page-container p-6">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:opacity-80 transition-opacity mb-4 group"
+      >
+        <FaHome className="transform group-hover:-translate-x-1 transition-transform" />
+        Back to Home
+      </Link>
       <div className="max-w-xl card p-6 text-center mx-auto">
         <h2 className="text-2xl font-bold mb-4">Your Profile</h2>
         <div className="space-y-2 mb-6">

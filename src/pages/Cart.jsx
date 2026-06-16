@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { updateCartItem, removeCartItem } from "../services/cartService";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
-import { FaStore } from "react-icons/fa";
+import { FaStore, FaArrowLeft } from "react-icons/fa";
 
 export default function Cart() {
   const { cart, fetchCart } = useContext(CartContext);
@@ -62,6 +62,13 @@ export default function Cart() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:opacity-80 transition-opacity mb-4 group"
+      >
+        <FaArrowLeft className="transform group-hover:-translate-x-1 transition-transform" />
+        Back to Home
+      </Link>
       {/* ── Header ── */}
       <div
         className="flex items-center justify-between rounded-2xl px-6 py-5 mb-8"
