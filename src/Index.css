@@ -88,3 +88,41 @@ body {
 .page-container {
   padding: 2.5rem;
 }
+
+/* Print styles for downloadable/printable receipt */
+@media print {
+  body {
+    background: white !important;
+    color: #1a1a1a !important;
+  }
+  
+  /* Hide everything on the page */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Show only the receipt area and its descendants */
+  #receipt-print-area,
+  #receipt-print-area * {
+    visibility: visible;
+  }
+  
+  /* Reposition receipt to top left of page when printing */
+  #receipt-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Hide specific utility classes (like buttons, icon containers) inside receipt-print-area when printing */
+  .no-print {
+    display: none !important;
+    visibility: hidden !important;
+  }
+}

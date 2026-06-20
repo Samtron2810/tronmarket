@@ -49,7 +49,9 @@ export default function Checkout() {
   const handlePaymentSuccess = (updatedOrder) => {
     setOrder(updatedOrder);
     fetchCart();
-    navigate("/order-success", { state: { orderId: updatedOrder._id } });
+    navigate("/order-success", {
+      state: { orderId: updatedOrder._id, order: updatedOrder },
+    });
   };
 
   const handlePaymentError = (message) => {
