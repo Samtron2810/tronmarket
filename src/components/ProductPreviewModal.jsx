@@ -9,10 +9,12 @@ import {
 import { Link } from "react-router-dom";
 import { addToCart } from "../services/cartService";
 import { AuthContext } from "../context/AuthContext";
+import { CartContext } from "../context/CartContext";
 import { toast } from "react-toastify";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
   const { setWelcomeModalOpen } = useContext(AuthContext);
+  const { fetchCart } = useContext(CartContext);
   const fallback = "https://loremflickr.com/g/640/480/product";
   const images =
     product?.images && product.images.length > 0
@@ -29,6 +31,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const handleAdd = async () => {
     try {
       await addToCart({ productId: product._id, quantity: qty });
+      if (typeof fetchCart === "function") fetchCart();
       toast.success("Added to cart");
       onClose();
     } catch (err) {
