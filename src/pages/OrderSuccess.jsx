@@ -9,6 +9,7 @@ import {
   FiArrowLeft,
 } from "react-icons/fi";
 import { getOrderById } from "../services/orderService";
+import { thumbUrl } from "../utils/cloudinaryUrl";
 
 export default function OrderSuccess() {
   const { state } = useLocation();
@@ -261,9 +262,13 @@ export default function OrderSuccess() {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={item.image || "https://via.placeholder.com/150"}
+                        src={
+                          thumbUrl(item.image) ||
+                          "https://via.placeholder.com/150"
+                        }
                         alt={item.name}
                         className="w-12 h-12 object-cover rounded-lg border border-gray-200 bg-gray-50 shrink-0"
+                        loading="lazy"
                       />
                       <div className="min-w-0">
                         <h4 className="font-bold text-sm text-[#1A1A1A] truncate max-w-50 sm:max-w-70">

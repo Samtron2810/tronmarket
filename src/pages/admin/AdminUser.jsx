@@ -4,6 +4,7 @@ import api from "../../services/api";
 import uploadService from "../../services/uploadService";
 import { toast } from "react-toastify";
 import ConfirmModal from "../../components/ConfirmModal";
+import { thumbUrl } from "../../utils/cloudinaryUrl";
 
 const categories = ["phones", "laptops", "fashion", "home", "electronics"];
 
@@ -450,9 +451,10 @@ export default function AdminUser() {
                   className="border border-gray-200 rounded-xl overflow-hidden"
                 >
                   <img
-                    src={p.image}
+                    src={thumbUrl(p.image)}
                     alt={p.name}
-                    className="h-28 w-full object-cover"
+                    className="w-full h-32 object-cover"
+                    loading="lazy"
                   />
                   <div className="p-3">
                     <div className="text-sm font-semibold text-[#1A1A1A] truncate">

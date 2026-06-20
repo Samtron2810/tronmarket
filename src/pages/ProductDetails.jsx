@@ -11,6 +11,7 @@ import {
   FaChevronRight,
   FaArrowLeft,
 } from "react-icons/fa";
+import { thumbUrl, largeUrl } from "../utils/cloudinaryUrl";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -126,9 +127,10 @@ export default function ProductDetails() {
         {/* ── Image pane ── */}
         <div className="relative flex items-center justify-center h-64 sm:h-80 lg:h-full bg-blue-50">
           <img
-            src={images[imgIndex]}
+            src={largeUrl(images[imgIndex])}
             alt={product.name}
             className="w-full h-full object-contain p-6"
+            loading="lazy"
           />
 
           {images.length > 1 && (

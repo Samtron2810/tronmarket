@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import ConfirmModal from "../../components/ConfirmModal";
+import { thumbUrl } from "../../utils/cloudinaryUrl";
 
 const statusColors = {
   pending: "bg-amber-100 text-amber-800 border border-amber-200",
@@ -152,9 +153,13 @@ export default function AdminOrders() {
                       className="flex items-center gap-3 bg-[#EBF2FF] rounded-lg p-3"
                     >
                       <img
-                        src={item.image || "https://via.placeholder.com/150"}
+                        src={
+                          thumbUrl(item.image) ||
+                          "https://via.placeholder.com/150"
+                        }
                         alt={item.name}
-                        className="w-14 h-14 object-cover rounded-lg bg-gray-50 border border-gray-200 shrink-0"
+                        className="w-12 h-12 object-cover rounded-lg bg-gray-50 border border-gray-200 shrink-0"
+                        loading="lazy"
                       />
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm text-[#1A1A1A] truncate">

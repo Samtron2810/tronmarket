@@ -3,6 +3,7 @@ import { updateCartItem, removeCartItem } from "../services/cartService";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaStore, FaArrowLeft } from "react-icons/fa";
+import { thumbUrl } from "../utils/cloudinaryUrl";
 
 export default function Cart() {
   const { cart, fetchCart } = useContext(CartContext);
@@ -182,9 +183,10 @@ export default function Cart() {
                 >
                   {item.product.image ? (
                     <img
-                      src={item.product.image}
+                      src={thumbUrl(item.product.image)}
                       alt={item.product.name}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

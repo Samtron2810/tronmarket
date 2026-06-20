@@ -10,6 +10,7 @@ import { Link } from "react-router-dom";
 import { addToCart } from "../services/cartService";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
+import { mediumUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
@@ -119,9 +120,10 @@ export default function ProductPreviewModal({ open, product, onClose }) {
           {/* Image pane */}
           <div className="relative sm:w-5/12 w-full bg-blue-50 flex items-center justify-center min-h-56">
             <img
-              src={images[index]}
+              src={mediumUrl(images[index])}
               alt={product.name}
               className="max-w-full max-h-64 object-contain p-4"
+              loading="lazy"
             />
 
             {images.length > 1 && (

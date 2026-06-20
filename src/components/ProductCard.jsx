@@ -9,6 +9,7 @@ import {
 import ProductPreviewModal from "./ProductPreviewModal";
 import { addToCart } from "../services/cartService";
 import { CartContext } from "../context/CartContext";
+import { thumbUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
 
 export default function ProductCard({ product }) {
@@ -59,9 +60,10 @@ export default function ProductCard({ product }) {
         {/* ── Image ── */}
         <div className="relative w-full h-24 overflow-hidden bg-blue-50">
           <img
-            src={images[index]}
+            src={thumbUrl(images[index])}
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
 
           {product.stock <= 0 && (

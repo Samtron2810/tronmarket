@@ -13,6 +13,7 @@ import {
 import api from "../services/api";
 import { getMyOrders, cancelMyOrder } from "../services/orderService";
 import ConfirmModal from "../components/ConfirmModal"; // 1. Import your custom modal
+import { thumbUrl } from "../utils/cloudinaryUrl";
 
 const statusColors = {
   pending: "bg-amber-100 text-amber-800 border border-amber-200",
@@ -265,11 +266,12 @@ export default function MyOrders() {
                             <div className="flex items-center gap-3">
                               <img
                                 src={
-                                  item.image ||
+                                  thumbUrl(item.image) ||
                                   "https://via.placeholder.com/150"
                                 }
                                 alt={item.name}
                                 className="w-12 h-12 object-cover rounded-lg bg-gray-50 border border-gray-200 shrink-0"
+                                loading="lazy"
                               />
                               <div>
                                 <h4 className="font-bold text-[#1A1A1A] line-clamp-1">

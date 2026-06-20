@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import ConfirmModal from "../../components/ConfirmModal";
 import { Link } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
+import { thumbUrl } from "../../utils/cloudinaryUrl";
 
 const statusColors = {
   pending: "bg-[#FFAA4D]/20 text-[#FF8C00]",
@@ -140,9 +141,10 @@ export default function SellerOrders() {
                       className="flex items-center gap-3 bg-[#EBF2FF] rounded-lg p-2"
                     >
                       <img
-                        src={it.image}
+                        src={thumbUrl(it.image)}
                         alt={it.name}
-                        className="w-12 h-12 object-cover rounded-lg"
+                        className="w-12 h-12 object-cover rounded-lg bg-gray-50 border border-gray-200 shrink-0"
+                        loading="lazy"
                       />
                       <div className="flex-1">
                         <div className="font-semibold text-sm text-[#1A1A1A]">

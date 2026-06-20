@@ -13,6 +13,7 @@ import {
 import ConfirmModal from "../../components/ConfirmModal";
 import MessageModal from "../../components/MessageModal";
 import { toast } from "react-toastify";
+import { thumbUrl } from "../../utils/cloudinaryUrl";
 
 export default function SellerDashboard() {
   const [products, setProducts] = useState([]);
@@ -195,9 +196,10 @@ export default function SellerDashboard() {
               >
                 {p.image ? (
                   <img
-                    src={p.image}
+                    src={thumbUrl(p.image)}
                     alt={p.name}
-                    className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                    className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 ) : (
                   <div className="h-full flex items-center justify-center">
