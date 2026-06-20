@@ -5,6 +5,7 @@ import {
   FiArrowLeft,
   FiPlus,
   FiPackage,
+  FiShoppingBag,
   FiImage,
   FiEdit2,
   FiTrash2,
@@ -78,7 +79,7 @@ export default function SellerDashboard() {
 
       {/* ── Header ── */}
       <div
-        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl px-6 py-5 mb-8"
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl px-6 py-3 mb-8"
         style={{ backgroundColor: "#FFAA4D" }}
       >
         <div>
@@ -101,21 +102,30 @@ export default function SellerDashboard() {
             {products.length} product{products.length === 1 ? "" : "s"} listed
           </p>
         </div>
-
-        <Link
-          to="/seller/add"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm self-start sm:self-auto"
-          style={{ backgroundColor: "#2B80FF", color: "#fff" }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#1a6de0")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "#2B80FF")
-          }
-        >
-          <FiPlus className="w-4 h-4" />
-          Add Product
-        </Link>
+        <div className="grid gap-2">
+          <Link
+            to="/seller/add"
+            className="inline-flex items-center gap-2 px-2 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm self-start sm:self-auto"
+            style={{ backgroundColor: "#2B80FF", color: "#fff" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#1a6de0")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "#2B80FF")
+            }
+          >
+            <FiPlus className="w-4 h-4" />
+            Add New Product
+          </Link>
+          {/* view your orders */}
+          <Link
+            to="/seller/orders"
+            className="inline-flex items-center gap-2 px-2 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm self-start sm:self-auto border-2 border-white text-blue-600 hover:bg-blue-50 hover:border-blue-600"
+          >
+            <FiShoppingBag className="w-4 h-4" />
+            View Your Orders
+          </Link>
+        </div>
       </div>
 
       {/* ── Loading skeletons ── */}

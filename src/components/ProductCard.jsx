@@ -1,4 +1,5 @@
 import { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 import {
   FaEye,
   FaShoppingCart,
@@ -20,6 +21,7 @@ export default function ProductCard({ product }) {
 
   const [index, setIndex] = useState(0);
   const { fetchCart } = useContext(CartContext);
+  const { setWelcomeModalOpen } = useContext(AuthContext);
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const next = (e) => {
@@ -43,7 +45,11 @@ export default function ProductCard({ product }) {
       if (typeof fetchCart === "function") fetchCart();
       toast.success("Added to cart");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to add to cart");
+      if (err.response?.status === 401) {
+        setWelcomeModalOpen(true);
+      } else {
+        toast.error(err.response?.data?.message || "Failed to add to cart");
+      }
     }
   };
 

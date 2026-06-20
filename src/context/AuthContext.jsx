@@ -13,6 +13,7 @@ export const AuthContext = createContext();
 export default function AuthProvider({ children }) {
   const [token, setTokenState] = useState(() => getToken());
   const [user, setUserState] = useState(() => getUser());
+  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
 
   const login = (t, u = null) => {
     setToken(t);
@@ -53,7 +54,16 @@ export default function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ token, user, login, handleLogout }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        login,
+        handleLogout,
+        welcomeModalOpen,
+        setWelcomeModalOpen,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

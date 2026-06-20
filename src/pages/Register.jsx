@@ -41,7 +41,7 @@ const Register = () => {
       <div className="w-full max-w-md card p-8">
         <h1 className="text-2xl font-bold mb-2">Create account</h1>
         <p className="text-sm text-secondary mb-6">
-          Join TronMarket and start selling
+          Join TronMarket and start shopping
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">

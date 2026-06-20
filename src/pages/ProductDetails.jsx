@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { addToCart } from "../services/cartService";
 import { CartContext } from "../context/CartContext";
+import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
 import {
   FaShoppingCart,
@@ -19,6 +20,7 @@ export default function ProductDetails() {
   const [quantity, setQuantity] = useState(1);
   const [imgIndex, setImgIndex] = useState(0);
   const { fetchCart } = useContext(CartContext);
+  const { setWelcomeModalOpen } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -46,7 +48,11 @@ export default function ProductDetails() {
       if (typeof fetchCart === "function") fetchCart();
       toast.success("Added to cart");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error adding to cart");
+      if (err.response?.status === 401) {
+        setWelcomeModalOpen(true);
+      } else {
+        toast.error(err.response?.data?.message || "Error adding to cart");
+      }
     }
   };
 

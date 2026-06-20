@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { toast } from "react-toastify";
 import ConfirmModal from "../../components/ConfirmModal";
+import { Link } from "react-router-dom";
+import { FiArrowLeft } from "react-icons/fi";
 
 const statusColors = {
   pending: "bg-[#FFAA4D]/20 text-[#FF8C00]",
@@ -76,6 +78,16 @@ export default function SellerOrders() {
 
   return (
     <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+      {/* return home button */}
+      <div className="mb-6">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+          style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+        >
+          <FiArrowLeft className="w-4 h-4" /> Back to Home
+        </Link>
+      </div>
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Seller Orders</h1>

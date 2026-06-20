@@ -1,3 +1,4 @@
+import logo from "../assets/logo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
 import {
@@ -93,15 +94,20 @@ export default function Navbar() {
             onClick={() => setOpen(false)}
             className="flex items-center shrink-0 group"
           >
+            <img
+              src={logo}
+              alt="TronMarket"
+              className="h-7 sm:h-8 w-auto mr-2 object-contain"
+            />
             <span
               style={{ color: "#1A1A1A" }}
-              className="text-xl font-extrabold tracking-tight transition-opacity group-hover:opacity-80"
+              className="text-lg sm:text-xl font-extrabold tracking-tight transition-opacity group-hover:opacity-80"
             >
               Tron
             </span>
             <span
               style={{ color: "#0066FF" }}
-              className="text-xl font-extrabold tracking-tight transition-opacity group-hover:opacity-80"
+              className="text-lg sm:text-xl font-extrabold tracking-tight transition-opacity group-hover:opacity-80"
             >
               Market
             </span>

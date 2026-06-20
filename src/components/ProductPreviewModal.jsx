@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -8,9 +8,11 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { addToCart } from "../services/cartService";
+import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
+  const { setWelcomeModalOpen } = useContext(AuthContext);
   const fallback = "https://loremflickr.com/g/640/480/product";
   const images =
     product?.images && product.images.length > 0
@@ -30,7 +32,11 @@ export default function ProductPreviewModal({ open, product, onClose }) {
       toast.success("Added to cart");
       onClose();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to add to cart");
+      if (err.response?.status === 401) {
+        setWelcomeModalOpen(true);
+      } else {
+        toast.error(err.response?.data?.message || "Failed to add to cart");
+      }
     }
   };
   <div className="flex items-center gap-2">
