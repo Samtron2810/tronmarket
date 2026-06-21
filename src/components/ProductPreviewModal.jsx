@@ -4,10 +4,8 @@ import {
   FaChevronRight,
   FaTimes,
   FaShoppingCart,
-  FaTag,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { addToCart } from "../services/cartService";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import { mediumUrl } from "../utils/cloudinaryUrl";
@@ -15,7 +13,7 @@ import { toast } from "react-toastify";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
   const { setWelcomeModalOpen } = useContext(AuthContext);
-  const { fetchCart } = useContext(CartContext);
+  const { addToCartLocal } = useContext(CartContext);
   const fallback = "https://loremflickr.com/g/640/480/product";
   const images =
     product?.images && product.images.length > 0
@@ -30,60 +28,18 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
 
   const handleAdd = async () => {
+    // Optimistic: toast immediately, update local cart instantly
+    toast.success("Added to cart");
+    onClose();
     try {
-      await addToCart({ productId: product._id, quantity: qty });
-      if (typeof fetchCart === "function") fetchCart();
-      toast.success("Added to cart");
-      onClose();
+      await addToCartLocal(product._id, qty, product);
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);
-      } else {
-        toast.error(err.response?.data?.message || "Failed to add to cart");
       }
+      // Error toast is handled inside addToCartLocal for non-401 errors
     }
   };
-  <div className="flex items-center gap-2">
-    <div className="flex items-center gap-2">
-      <button
-        onClick={() => setQty((q) => Math.max(1, q - 1))}
-        className="px-3 py-1 rounded border"
-      >
-        -
-      </button>
-      <input
-        type="number"
-        min="1"
-        value={qty}
-        onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))}
-        className="w-16 text-center rounded border p-1"
-      />
-      <button
-        onClick={() => setQty((q) => q + 1)}
-        className="px-3 py-1 rounded border"
-      >
-        +
-      </button>
-    </div>
-
-    <div className="flex-1 flex gap-2">
-      <button
-        onClick={handleAdd}
-        disabled={
-          !product.stock ||
-          product.stock <= 0 ||
-          qty < 1 ||
-          qty > (product.stock || 0)
-        }
-        className="flex-1 px-4 py-2 rounded-xl bg-blue-600 text-white disabled:opacity-60"
-      >
-        Add to cart
-      </button>
-      <button onClick={onClose} className="px-4 py-2 rounded-xl border">
-        Close
-      </button>
-    </div>
-  </div>;
 
   const inStock = product.stock && product.stock > 0;
 
@@ -198,11 +154,41 @@ export default function ProductPreviewModal({ open, product, onClose }) {
               {inStock ? `In Stock (${product.stock})` : "Out of Stock"}
             </span>
 
+            {/* Quantity selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                Qty
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  className="px-2.5 py-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 text-sm font-semibold transition-all active:scale-95"
+                >
+                  -
+                </button>
+                <input
+                  type="number"
+                  min="1"
+                  value={qty}
+                  onChange={(e) =>
+                    setQty(Math.max(1, Number(e.target.value || 1)))
+                  }
+                  className="w-14 text-center rounded-lg border border-blue-100 bg-blue-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all px-2 py-1"
+                />
+                <button
+                  onClick={() => setQty((q) => q + 1)}
+                  className="px-2.5 py-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 text-sm font-semibold transition-all active:scale-95"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
             {/* Actions */}
             <div className="flex gap-2 pt-1">
               <button
                 onClick={handleAdd}
-                disabled={!inStock}
+                disabled={!inStock || qty < 1 || qty > (product.stock || 0)}
                 className="flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
               >
                 <FaShoppingCart className="w-3 h-3" />

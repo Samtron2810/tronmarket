@@ -1,7 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { addToCart } from "../services/cartService";
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 import { toast } from "react-toastify";
@@ -20,7 +19,7 @@ export default function ProductDetails() {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [imgIndex, setImgIndex] = useState(0);
-  const { fetchCart } = useContext(CartContext);
+  const { addToCartLocal } = useContext(CartContext);
   const { setWelcomeModalOpen } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -44,16 +43,15 @@ export default function ProductDetails() {
   }, [id]);
 
   const handleAddToCart = async () => {
+    // Optimistic: toast immediately, update local cart instantly
+    toast.success("Added to cart");
     try {
-      await addToCart({ productId: product._id, quantity });
-      if (typeof fetchCart === "function") fetchCart();
-      toast.success("Added to cart");
+      await addToCartLocal(product._id, quantity, product);
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);
-      } else {
-        toast.error(err.response?.data?.message || "Error adding to cart");
       }
+      // Error toast is handled inside addToCartLocal for non-401 errors
     }
   };
 

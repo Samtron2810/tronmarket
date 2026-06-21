@@ -7,7 +7,6 @@ import {
   FaChevronRight,
 } from "react-icons/fa";
 import ProductPreviewModal from "./ProductPreviewModal";
-import { addToCart } from "../services/cartService";
 import { CartContext } from "../context/CartContext";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
@@ -21,7 +20,7 @@ export default function ProductCard({ product }) {
       : [product.image || fallbackImage];
 
   const [index, setIndex] = useState(0);
-  const { fetchCart } = useContext(CartContext);
+  const { addToCartLocal } = useContext(CartContext);
   const { setWelcomeModalOpen } = useContext(AuthContext);
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -41,16 +40,15 @@ export default function ProductCard({ product }) {
       return;
     }
 
+    // Optimistic: toast immediately, update local cart instantly
+    toast.success("Added to cart");
     try {
-      await addToCart({ productId: product._id, quantity: 1 });
-      if (typeof fetchCart === "function") fetchCart();
-      toast.success("Added to cart");
+      await addToCartLocal(product._id, 1, product);
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);
-      } else {
-        toast.error(err.response?.data?.message || "Failed to add to cart");
       }
+      // Error toast is handled inside addToCartLocal for non-401 errors
     }
   };
 

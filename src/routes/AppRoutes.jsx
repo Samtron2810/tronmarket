@@ -6,6 +6,7 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import ProductDetails from "../pages/ProductDetails";
 import NotFound from "../pages/NotFound";
+import GuestRoute from "../components/GuestRoute";
 import Checkout from "../pages/Checkout";
 import OrderSuccess from "../pages/OrderSuccess";
 import ProtectedRoute from "../components/ProtectedRoute";
@@ -43,8 +44,22 @@ export default function AppRoutes() {
         }
       />
       <Route path="/order-success" element={<OrderSuccess />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <GuestRoute>
+            <Register />
+          </GuestRoute>
+        }
+      />
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route
         path="/profile"

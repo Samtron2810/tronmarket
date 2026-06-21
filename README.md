@@ -17,16 +17,8 @@ This is the frontend application for TronMarket, an e-commerce platform.
 - **ESLint** - Code linting and formatting
 
 AI PROMPT:
-pnpm add express-rate-limit redis zod
-User Login/register
-├─ Zod validates email/password
-├─ Rate limiter prevents brute force attacks
-└─ Redis stores session/token data
 
-Product Catalog
-├─ Redis caches product listings
-└─ Reduces database load
+ON PLAN MODE;
 
-Checkout
-├─ Zod validates shipping/payment data
-└─ Rate limiter protects checkout endpoint
+on the terminal, the redis connection suddenly shows "Redis connection error (caching disabled): Socket closed unexpectedly" moments after there is already a successful connection, and then connects again... it happens over and over.
+why is that happening?

@@ -1,12 +1,11 @@
 import { useContext } from "react";
-import { updateCartItem, removeCartItem } from "../services/cartService";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaStore, FaArrowLeft } from "react-icons/fa";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 
 export default function Cart() {
-  const { cart, fetchCart } = useContext(CartContext);
+  const { cart, updateQtyLocal, removeItemLocal } = useContext(CartContext);
 
   if (!cart) {
     return (
@@ -36,22 +35,12 @@ export default function Cart() {
     );
   }
 
-  const updateQty = async (productId, quantity) => {
-    try {
-      await updateCartItem(productId, { quantity: Number(quantity) });
-      fetchCart();
-    } catch (err) {
-      console.error(err);
-    }
+  const updateQty = (productId, quantity) => {
+    updateQtyLocal(productId, quantity);
   };
 
-  const removeItem = async (productId) => {
-    try {
-      await removeCartItem(productId);
-      fetchCart();
-    } catch (err) {
-      console.error(err);
-    }
+  const removeItem = (productId) => {
+    removeItemLocal(productId);
   };
 
   const total = cart.items.reduce((acc, item) => {
