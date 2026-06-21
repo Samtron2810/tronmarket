@@ -57,7 +57,7 @@ export default function ProductCard({ product }) {
   return (
     <>
       <div className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out w-full max-w-xs mx-auto">
-        {/* ── Image ── */}
+        {/*  Image  */}
         <div className="relative w-full h-24 overflow-hidden bg-blue-50">
           <img
             src={thumbUrl(images[index])}
@@ -101,7 +101,7 @@ export default function ProductCard({ product }) {
           )}
         </div>
 
-        {/* ── Content ── */}
+        {/*  Content  */}
         <div className="flex flex-1 flex-col p-2 gap-1">
           {/* Category + Name + Description */}
           <div className="flex-1 min-w-0">

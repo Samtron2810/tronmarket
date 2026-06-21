@@ -15,3 +15,18 @@ This is the frontend application for TronMarket, an e-commerce platform.
 - **React Paystack** - Payment gateway integration
 - **React Toastify** - Toast notification system
 - **ESLint** - Code linting and formatting
+
+AI PROMPT:
+pnpm add express-rate-limit redis zod
+User Login/register
+├─ Zod validates email/password
+├─ Rate limiter prevents brute force attacks
+└─ Redis stores session/token data
+
+Product Catalog
+├─ Redis caches product listings
+└─ Reduces database load
+
+Checkout
+├─ Zod validates shipping/payment data
+└─ Rate limiter protects checkout endpoint
