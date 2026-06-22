@@ -25,9 +25,21 @@ export default function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    // If token exists but user wasn't stored (e.g. page refresh),
-    // role is already in localStorage via setUser in login() — nothing to do.
-    // We no longer decode the JWT since role comes from the login response.
+    // On page refresh: token is in localStorage but React state needs hydrating.
+    // getUser() reads the full user object (including role) that login() stored.
+    // If it's missing (user logged in before role was stored), force a logout
+    // so they re-authenticate and get a fresh user object with role.
+    if (token && !user) {
+      const stored = getUser();
+      if (stored?.role) {
+        setUserState(stored);
+      } else {
+        // Stale session — no role info available, force clean re-login
+        doLogout();
+        setTokenState(null);
+        setUserState(null);
+      }
+    }
   }, [token]);
 
   const handleLogout = async () => {
