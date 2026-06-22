@@ -38,6 +38,7 @@ export default function Checkout() {
     try {
       const res = await createOrder({ shippingAddress: form });
       setOrder(res.data);
+      fetchCart(); // sync cart immediately — backend already cleared it
     } catch (err) {
       setMsg(err.response?.data?.message || "Error placing order");
       setMsgOpen(true);
@@ -172,6 +173,42 @@ export default function Checkout() {
                 <p className="text-xs text-[#555555] mb-0.5">Order ID</p>
                 <p className="text-sm font-mono text-[#1A1A1A]">{order._id}</p>
               </div>
+
+              {/* Order Items */}
+              {order.orderItems?.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-[#555555] uppercase tracking-wide">
+                    Items Ordered
+                  </p>
+                  <div className="divide-y divide-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+                    {order.orderItems.map((item, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 bg-[#EBF2FF] px-4 py-3"
+                      >
+                        <img
+                          src={item.image || "https://via.placeholder.com/150"}
+                          alt={item.name}
+                          className="w-12 h-12 object-cover rounded-lg border border-white/60 shrink-0"
+                          loading="lazy"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-[#1A1A1A] truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-[#555555] mt-0.5">
+                            Qty: {item.quantity} × ₦
+                            {Number(item.price).toLocaleString()}
+                          </p>
+                        </div>
+                        <p className="text-sm font-bold text-[#1A1A1A] shrink-0">
+                          ₦{(item.price * item.quantity).toLocaleString()}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Info text */}
               <p className="text-sm text-[#555555]">

@@ -1,11 +1,15 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { register as apiRegister } from "../services/authService";
+import {
+  register as apiRegister,
+  login as apiLogin,
+} from "../services/authService";
 import { AuthContext } from "../context/AuthContext";
 import MessageModal from "../components/MessageModal";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -20,16 +24,35 @@ const Register = () => {
     e.preventDefault();
     try {
       setLoading(true);
+
+      // Step 1: Register the account
       await apiRegister({
         name: form.name,
         email: form.email,
         password: form.password,
       });
 
-      // After successful registration, redirect to login page
-      navigate("/login", { replace: true });
+      // Step 2: Immediately log in so user lands on the right dashboard
+      const loginRes = await apiLogin({
+        email: form.email,
+        password: form.password,
+      });
+
+      const token = loginRes.data.token;
+      const user = {
+        _id: loginRes.data._id,
+        name: loginRes.data.name,
+        email: loginRes.data.email,
+        role: loginRes.data.role || "customer",
+      };
+
+      login(token, user);
+      navigate("/", { replace: true });
     } catch (err) {
-      setMsg(err.response?.data?.message || "Registration error");
+      // Show the first field-level error if available, otherwise the top-level message
+      const data = err.response?.data;
+      const fieldError = data?.errors?.[0]?.message;
+      setMsg(fieldError || data?.message || "Registration failed");
       setMsgOpen(true);
     } finally {
       setLoading(false);

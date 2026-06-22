@@ -25,20 +25,9 @@ export default function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    // if token exists but user wasn't stored, decode token to get role/id
-    if (token && !user) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        const derived = {
-          _id: payload.id || payload?.userId || null,
-          role: payload.role,
-        };
-        setUser(derived);
-        setUserState(derived);
-      } catch (err) {
-        // ignore
-      }
-    }
+    // If token exists but user wasn't stored (e.g. page refresh),
+    // role is already in localStorage via setUser in login() — nothing to do.
+    // We no longer decode the JWT since role comes from the login response.
   }, [token]);
 
   const handleLogout = async () => {

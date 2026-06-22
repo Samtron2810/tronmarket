@@ -8,9 +8,12 @@ import { thumbUrl } from "../../utils/cloudinaryUrl";
 
 const statusColors = {
   pending: "bg-[#FFAA4D]/20 text-[#FF8C00]",
+  paid: "bg-emerald-100 text-emerald-700",
   processing: "bg-[#EBF2FF] text-[#2B80FF]",
   shipped: "bg-[#EBF2FF] text-[#2B80FF]",
+  "delivery-claimed": "bg-orange-100 text-orange-700",
   delivered: "bg-green-100 text-green-700",
+  completed: "bg-teal-100 text-teal-700",
   cancelled: "bg-[#FF2E3B]/10 text-[#FF2E3B]",
 };
 
@@ -65,7 +68,7 @@ export default function SellerOrders() {
       await api.put(`/orders/${orderId}/seller-delivery-claim`, {});
       setOrders((prev) =>
         prev.map((ord) =>
-          ord._id === orderId ? { ...ord, status: "delivered" } : ord,
+          ord._id === orderId ? { ...ord, status: "delivery-claimed" } : ord,
         ),
       );
       toast.success("Delivery claim submitted to Admin for review.");

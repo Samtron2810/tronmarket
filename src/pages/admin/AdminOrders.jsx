@@ -10,7 +10,9 @@ const statusColors = {
   paid: "bg-emerald-100 text-emerald-800 border border-emerald-200",
   processing: "bg-blue-100 text-blue-800 border border-blue-200",
   shipped: "bg-indigo-100 text-indigo-800 border border-indigo-200",
+  "delivery-claimed": "bg-orange-100 text-orange-800 border border-orange-200",
   delivered: "bg-green-100 text-green-800 border border-green-200",
+  completed: "bg-teal-100 text-teal-800 border border-teal-200",
   cancelled: "bg-rose-100 text-rose-800 border border-rose-200",
 };
 
@@ -26,7 +28,9 @@ export default function AdminOrders() {
       try {
         setLoading(true);
         const res = await api.get(`/admin/users/${id}/orders`);
-        setOrders(res.data || []);
+        // Handle both paginated { orders: [] } and plain array responses
+        const data = res.data;
+        setOrders(Array.isArray(data) ? data : data.orders || []);
       } catch (err) {
         toast.error("Failed to load orders");
       } finally {
@@ -141,7 +145,9 @@ export default function AdminOrders() {
                       "bg-gray-100 text-gray-800 border-gray-200"
                     }`}
                   >
-                    {order.status}
+                    {order.status === "delivery-claimed"
+                      ? "Delivery Claimed"
+                      : order.status}
                   </span>
                 </div>
 
@@ -186,16 +192,16 @@ export default function AdminOrders() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* Shipping Info */}
                     {order.shippingAddress && (
                       <span className="text-xs text-[#555555] truncate max-w-50">
                         📍 {order.shippingAddress.address},{" "}
                         {order.shippingAddress.city}
                       </span>
                     )}
-                    {/* Admin Complete Button (for delivery claim) */}
-                    {(order.status === "shipped" ||
-                      order.status === "delivered") && (
+                    {/* Show "Mark Complete" for shipped, delivery-claimed, or delivered */}
+                    {["shipped", "delivery-claimed", "delivered"].includes(
+                      order.status,
+                    ) && (
                       <button
                         onClick={() => {
                           setOrderToComplete(order._id);
@@ -214,7 +220,6 @@ export default function AdminOrders() {
         )}
       </div>
 
-      {/* Complete Order Confirmation Modal */}
       <ConfirmModal
         open={completeModalOpen}
         title="Complete Order"
