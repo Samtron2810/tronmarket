@@ -27,6 +27,7 @@ export default function AdminUser() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: 0,
@@ -344,102 +345,136 @@ export default function AdminUser() {
             {/* Create Product Form (sellers only) */}
             {user?.role === "seller" && (
               <div className="bg-[#EBF2FF] rounded-xl p-4">
-                <h4 className="text-sm font-semibold text-[#1A1A1A] mb-3">
-                  Add New Product
-                </h4>
-                <form onSubmit={handleCreate} className="space-y-3">
-                  <div className="grid grid-cols-3 gap-2">
-                    <input
-                      placeholder="Product name"
-                      value={newProduct.name}
-                      onChange={(e) =>
-                        setNewProduct((n) => ({ ...n, name: e.target.value }))
-                      }
-                      className={`${inputCls} col-span-2`}
-                    />
-                    <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
-                      Price (₦)
+                <div
+                  onClick={() => setShowAddForm((prev) => !prev)}
+                  className="flex items-center justify-between cursor-pointer select-none rounded-lg border-2 border-dashed border-[#2B80FF]/40 bg-white px-4 py-3 hover:border-[#2B80FF] hover:bg-[#F7FAFF] transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2B80FF] text-white font-bold">
+                      +
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-semibold text-[#1A1A1A]">
+                        Add New Product
+                      </h4>
+
+                      {!showAddForm && (
+                        <p className="text-xs text-[#555555]">
+                          Click here to create a product
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <span
+                    className="text-[#2B80FF] font-bold text-lg transition-transform duration-200"
+                    style={{
+                      transform: showAddForm
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                    }}
+                  >
+                    ▼
+                  </span>
+                </div>
+                {showAddForm && (
+                  <form onSubmit={handleCreate} className="space-y-3 mt-3">
+                    <div className="grid grid-cols-3 gap-2">
                       <input
-                        placeholder="Price"
-                        type="number"
-                        value={newProduct.price}
+                        placeholder="Product name"
+                        value={newProduct.name}
+                        onChange={(e) =>
+                          setNewProduct((n) => ({ ...n, name: e.target.value }))
+                        }
+                        className={`${inputCls} col-span-2`}
+                      />
+                      <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
+                        Price (₦)
+                        <input
+                          placeholder="Price"
+                          type="number"
+                          min={0}
+                          value={newProduct.price}
+                          onChange={(e) =>
+                            setNewProduct((n) => ({
+                              ...n,
+                              price: Math.max(0, Number(e.target.value)),
+                            }))
+                          }
+                          className={inputCls}
+                        />
+                      </label>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <select
+                        value={newProduct.category}
                         onChange={(e) =>
                           setNewProduct((n) => ({
                             ...n,
-                            price: Number(e.target.value),
+                            category: e.target.value,
                           }))
                         }
                         className={inputCls}
-                      />
-                    </label>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <select
-                      value={newProduct.category}
+                      >
+                        <option value="">Category</option>
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
+                        No of available Stock:
+                        <input
+                          placeholder="Stock"
+                          type="number"
+                          min={0}
+                          value={newProduct.stock}
+                          onChange={(e) =>
+                            setNewProduct((n) => ({
+                              ...n,
+                              stock: Math.max(0, Number(e.target.value)),
+                            }))
+                          }
+                          className={inputCls}
+                        />
+                      </label>
+                      <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
+                        Product Images
+                        <input
+                          type="file"
+                          multiple
+                          onChange={(e) =>
+                            setNewProduct((n) => ({
+                              ...n,
+                              images: Array.from(e.target.files),
+                            }))
+                          }
+                          className="text-sm text-[#555555] file:mr-2 file:px-3 file:py-2.5 file:rounded-lg file:border-0 file:bg-[#2B80FF] file:text-white file:text-xs file:font-medium file:cursor-pointer"
+                        />
+                      </label>
+                    </div>
+                    <textarea
+                      placeholder="Description"
+                      value={newProduct.description}
                       onChange={(e) =>
                         setNewProduct((n) => ({
                           ...n,
-                          category: e.target.value,
+                          description: e.target.value,
                         }))
                       }
+                      rows={2}
                       className={inputCls}
+                    />
+                    <button
+                      disabled={creating}
+                      className="px-4 py-2 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                     >
-                      <option value="">Category</option>
-                      {categories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
-                      No of available Stock:
-                      <input
-                        placeholder="Stock"
-                        type="number"
-                        value={newProduct.stock}
-                        onChange={(e) =>
-                          setNewProduct((n) => ({
-                            ...n,
-                            stock: Number(e.target.value),
-                          }))
-                        }
-                        className={inputCls}
-                      />
-                    </label>
-                    <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
-                      Product Images
-                      <input
-                        type="file"
-                        multiple
-                        onChange={(e) =>
-                          setNewProduct((n) => ({
-                            ...n,
-                            images: Array.from(e.target.files),
-                          }))
-                        }
-                        className="text-sm text-[#555555] file:mr-2 file:px-3 file:py-2.5 file:rounded-lg file:border-0 file:bg-[#2B80FF] file:text-white file:text-xs file:font-medium file:cursor-pointer"
-                      />
-                    </label>
-                  </div>
-                  <textarea
-                    placeholder="Description"
-                    value={newProduct.description}
-                    onChange={(e) =>
-                      setNewProduct((n) => ({
-                        ...n,
-                        description: e.target.value,
-                      }))
-                    }
-                    rows={2}
-                    className={inputCls}
-                  />
-                  <button
-                    disabled={creating}
-                    className="px-4 py-2 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
-                  >
-                    {creating ? "Creating…" : "Create Product"}
-                  </button>
-                </form>
+                      {creating ? "Creating…" : "Create Product"}
+                    </button>
+                  </form>
+                )}
               </div>
             )}
 
@@ -578,11 +613,12 @@ export default function AdminUser() {
                 <input
                   placeholder="Price"
                   type="number"
+                  min={0}
                   value={editProduct.price}
                   onChange={(e) =>
                     setEditProduct((s) => ({
                       ...s,
-                      price: Number(e.target.value),
+                      price: Math.max(0, Number(e.target.value)),
                     }))
                   }
                   className={inputCls}
@@ -606,11 +642,12 @@ export default function AdminUser() {
                 <input
                   placeholder="Stock"
                   type="number"
+                  min={0}
                   value={editProduct.stock || 0}
                   onChange={(e) =>
                     setEditProduct((s) => ({
                       ...s,
-                      stock: Number(e.target.value),
+                      stock: Math.max(0, Number(e.target.value)),
                     }))
                   }
                   className={inputCls}
