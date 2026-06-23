@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaStore } from "react-icons/fa";
 
 export default function Profile() {
   const { user } = useContext(AuthContext);
@@ -44,13 +44,26 @@ export default function Profile() {
           </div>
         </div>
         <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
+        {/* apply for a seller role if the user is a customer */}
+        {user.role === "customer" && (
+          <div className="mb-6">
+            <Link
+              to="/apply-seller"
+              className="pointer-events-none px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
+            >
+              <span>Apply for Seller Role</span>{" "}
+              <FaStore className="inline-block ml-2" />
+            </Link>
+          </div>
+        )}
+        <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
         <div className="flex justify-center">
           <button
             onClick={async () => {
               await handleLogout();
               navigate("/", { replace: true });
             }}
-            className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold"
+            className="px-6 py-2 rounded-xl bg-red-500 text-white font-semibold cursor-pointer hover:bg-red-600 transition-colors"
           >
             Logout
           </button>

@@ -47,8 +47,11 @@ export default function SellerDashboard() {
   const deleteProduct = async (id) => {
     try {
       await api.delete(`/products/${id}`);
-      fetchMyProducts();
+      // Optimistically remove the product from UI immediately
+      setProducts((prev) => prev.filter((p) => p._id !== id));
       toast.success("Product deleted");
+      // Background refresh to sync with server
+      fetchMyProducts();
     } catch (err) {
       console.error("Failed to delete product", err);
       const msg = err.response?.data?.message || "Delete failed";

@@ -74,7 +74,11 @@ export default function AddProduct() {
     e.preventDefault();
     try {
       setLoading(true);
-      const payload = { ...form };
+      const payload = {
+        ...form,
+        price: Number(form.price),
+        stock: Number(form.stock),
+      };
       // If files are present, upload them first to get URLs
       if (files.length > 0) {
         const urls = await uploadService.uploadImages(files);
@@ -212,6 +216,7 @@ export default function AddProduct() {
                 <input
                   name="price"
                   type="number"
+                  min="0"
                   placeholder="0.00"
                   value={form.price}
                   onChange={handleChange}

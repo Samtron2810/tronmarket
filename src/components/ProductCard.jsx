@@ -56,7 +56,7 @@ export default function ProductCard({ product }) {
     <>
       <div className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out w-full max-w-xs mx-auto">
         {/*  Image  */}
-        <div className="relative w-full h-24 overflow-hidden bg-blue-50">
+        <div className="relative w-full aspect-3/2 overflow-hidden bg-blue-50">
           <img
             src={thumbUrl(images[index])}
             alt={product.name}
