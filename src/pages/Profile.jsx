@@ -49,14 +49,14 @@ export default function Profile() {
           <div className="mb-6">
             <Link
               to="/apply-seller"
-              className="pointer-events-none px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
+              className="pointer-events-none px-6 py-2  rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
             >
               <span>Apply for Seller Role</span>{" "}
               <FaStore className="inline-block ml-2" />
             </Link>
+            <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
           </div>
         )}
-        <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
         <div className="flex justify-center">
           <button
             onClick={async () => {

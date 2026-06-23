@@ -19,6 +19,7 @@ const statusColors = {
 
 export default function SellerOrders() {
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Modal states
   const [shipModalOpen, setShipModalOpen] = useState(false);
@@ -28,11 +29,14 @@ export default function SellerOrders() {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      setLoading(true);
       try {
         const res = await api.get("/orders/seller/orders");
         setOrders(res.data || []);
       } catch (err) {
         console.error("Failed to load seller orders", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -100,7 +104,39 @@ export default function SellerOrders() {
           </p>
         </div>
 
-        {orders.length === 0 ? (
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <div className="h-4 w-40 bg-gray-200 rounded mb-2" />
+                    <div className="h-3 w-32 bg-gray-200 rounded" />
+                  </div>
+                  <div className="h-4 w-24 bg-gray-200 rounded" />
+                </div>
+                <div className="h-3 w-56 bg-gray-200 rounded mb-3" />
+                <div className="space-y-2 mb-3">
+                  <div className="flex items-center gap-3 bg-gray-100 rounded-lg p-2">
+                    <div className="w-12 h-12 rounded-lg bg-gray-200 shrink-0" />
+                    <div className="flex-1">
+                      <div className="h-4 w-32 bg-gray-200 rounded mb-1" />
+                      <div className="h-3 w-24 bg-gray-200 rounded" />
+                    </div>
+                    <div className="h-4 w-20 bg-gray-200 rounded" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-12 bg-gray-200 rounded" />
+                  <div className="h-5 w-20 bg-gray-200 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : orders.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
             <p className="text-[#555555]">No orders found.</p>
           </div>
