@@ -92,7 +92,7 @@ export default function Navbar() {
           <Link
             to="/"
             onClick={() => setOpen(false)}
-            className="flex items-center shrink-0 group"
+            className="flex items-center shrink-0 group mr-4"
           >
             <img
               src={logo}
