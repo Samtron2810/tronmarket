@@ -112,7 +112,7 @@ export default function Home() {
           <button
             onClick={() => setBannerVisible(false)}
             aria-label="Close element"
-            className=" text-red-600 rounded-full cursor-pointer absolute -top-2 -right-2 hover:scale-120 transition-all duration-150"
+            className=" text-red-600 rounded-full cursor-pointer absolute top-0 right-0 hover:scale-120 transition-all duration-150"
           >
             <FaTimes size={15} />
           </button>
