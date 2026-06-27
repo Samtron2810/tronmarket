@@ -1,5 +1,5 @@
-import { useEffect, useState, useContext } from "react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useEffect, useState, useContext, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
 import api from "../services/api";
 import {
   FiSmartphone,
@@ -9,7 +9,6 @@ import {
   FiHome,
   FiZap,
 } from "react-icons/fi";
-import { FaTimes, FaBars } from "react-icons/fa";
 import ProductCard from "../components/ProductCard";
 import { AuthContext } from "../context/AuthContext";
 import Skeleton from "../components/Skeleton";
@@ -26,6 +25,7 @@ const catIcons = {
 
 export default function Home() {
   const { user } = useContext(AuthContext);
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -33,50 +33,55 @@ export default function Home() {
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const [bannerVisible, setBannerVisible] = useState(true);
+  // Filter state — managed locally, not via URL params (avoids full re-renders)
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const debounceRef = useRef(null);
 
-  const location = useLocation();
-  const navigate = useNavigate();
+  const handleSearchChange = (e) => {
+    const val = e.target.value;
+    setSearch(val);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(val);
+      setPage(1);
+    }, 500);
+  };
 
-  const query = new URLSearchParams(location.search);
-  const search = query.get("search") || "";
-  const category = query.get("category") || "";
-  const min = query.get("min") || "";
-  const max = query.get("max") || "";
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const params = { page, limit: 6 };
-        if (search) params.search = search;
-        if (category) params.category = category;
-        if (min) params.min = min;
-        if (max) params.max = max;
-
-        const res = await api.get("/products", { params });
-        setProducts(res.data.products || []);
-        setPages(res.data.pages || 1);
-        setTotal(res.data.total || 0);
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-        setError("Could not retrieve products at this time.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [search, category, min, max, page]);
-
-  useEffect(() => {
+  const handleCategoryChange = (cat) => {
+    setCategory(cat);
     setPage(1);
-  }, [search, category]);
+  };
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const params = { page, limit: 6 };
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (category) params.category = category;
+      const res = await api.get("/products", { params });
+      setProducts(res.data.products || []);
+      setPages(res.data.pages || 1);
+      setTotal(res.data.total || 0);
+    } catch (err) {
+      console.error("Failed to fetch products:", err);
+      setError("Could not retrieve products at this time.");
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedSearch, category, page]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
       {/* ── Hero ── */}
       <div
-        className="relative mb-2 rounded-2xl overflow-hidden z-20 px-8 py-4 sm:px-12 sm:py-4"
+        className="relative mb-2 rounded-2xl overflow-hidden px-8 py-8 sm:px-12 sm:py-8"
         style={{ backgroundColor: "#FF8C00" }}
       >
         {/* Subtle decorative circle */}
@@ -89,10 +94,7 @@ export default function Home() {
           style={{ backgroundColor: "#fff" }}
         />
 
-        <div
-          className={`relative z-10 max-w-2xl ${bannerVisible ? "" : "hidden"}`}
-        >
-          {" "}
+        <div className="relative z-10 max-w-2xl">
           <span
             className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{
@@ -102,13 +104,6 @@ export default function Home() {
           >
             Featured Platform
           </span>
-          <button
-            onClick={() => setBannerVisible(false)}
-            aria-label="Close element"
-            className=" text-red-600 rounded-full cursor-pointer absolute -top-2 -right-2 hover:scale-120 transition-all duration-150"
-          >
-            <FaTimes size={15} />
-          </button>
           <h1
             className="text-4xl sm:text-5xl font-extrabold tracking-tight"
             style={{ color: "#1A1A1A" }}
@@ -122,6 +117,7 @@ export default function Home() {
             Explore a diverse catalog of high-quality goods curated from
             verified sellers. Enjoy secure authentication and quick shipping.
           </p>
+
           {/* if user is a seller or admin, show dashboard link */}
           {user?.role === "seller" && (
             <div className="mt-6">
@@ -162,19 +158,26 @@ export default function Home() {
       </div>
 
       {/* ── Section header ── */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <h2
           className="text-2xl font-bold tracking-tight"
           style={{ color: "#1A1A1A" }}
         >
           Explore Products
         </h2>
-        {!loading && (
-          <span className="text-sm font-medium" style={{ color: "#555555" }}>
-            {products.length} item{products.length === 1 ? "" : "s"} &bull;{" "}
-            {total} total
-          </span>
-        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          {!loading && (
+            <span className="text-sm font-medium" style={{ color: "#555555" }}>
+              {total} product{total === 1 ? "" : "s"}
+            </span>
+          )}
+          <input
+            value={search}
+            onChange={handleSearchChange}
+            placeholder="Search products…"
+            className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF] w-52"
+          />
+        </div>
       </div>
 
       {/* ── Layout: sidebar + grid ── */}
@@ -191,11 +194,11 @@ export default function Home() {
             >
               Categories
             </p>
-            <div className="flex flex-wrap gap-1.5 sm:flex-col sm:gap-0 sm:space-y-1.5">
+            <div className="space-y-1.5">
               {/* All */}
               <button
-                onClick={() => navigate("/")}
-                className="sm:w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+                onClick={() => handleCategoryChange("")}
+                className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
                 style={
                   !category
                     ? { backgroundColor: "#FF8C00", color: "#fff" }
@@ -210,7 +213,19 @@ export default function Home() {
                     e.currentTarget.style.backgroundColor = "#f3f4f6";
                 }}
               >
-                <FaBars className="w-4 h-4" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                  />
+                </svg>
                 All
               </button>
 
@@ -219,10 +234,8 @@ export default function Home() {
                 return (
                   <button
                     key={cat}
-                    onClick={() =>
-                      navigate(`/?category=${encodeURIComponent(cat)}`)
-                    }
-                    className="sm:w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
+                    onClick={() => handleCategoryChange(cat)}
+                    className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
                     style={
                       isActive
                         ? { backgroundColor: "#FF8C00", color: "#fff" }
@@ -295,29 +308,24 @@ export default function Home() {
 
           {/* Pagination */}
           {!loading && !error && pages > 1 && (
-            <div className="flex gap-2 mt-8 justify-center flex-wrap">
-              {Array.from({ length: pages }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPage(i + 1)}
-                  className="w-9 h-9 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95"
-                  style={
-                    page === i + 1
-                      ? { backgroundColor: "#2B80FF", color: "#fff" }
-                      : { backgroundColor: "#f3f4f6", color: "#222222" }
-                  }
-                  onMouseEnter={(e) => {
-                    if (page !== i + 1)
-                      e.currentTarget.style.backgroundColor = "#EBF2FF";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (page !== i + 1)
-                      e.currentTarget.style.backgroundColor = "#f3f4f6";
-                  }}
-                >
-                  {i + 1}
-                </button>
-              ))}
+            <div className="flex items-center justify-center gap-3 mt-8">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+              >
+                ← Prev
+              </button>
+              <span className="text-sm font-medium text-[#555555]">
+                Page {page} of {pages}
+              </span>
+              <button
+                disabled={page >= pages}
+                onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+              >
+                Next →
+              </button>
             </div>
           )}
         </div>

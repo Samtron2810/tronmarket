@@ -156,6 +156,7 @@ export default function AdminDashboard() {
                         <td className="px-5 py-3 text-[#555555]">{u.email}</td>
                         <td className="px-5 py-3">
                           <select
+                            disabled
                             value={u.role}
                             onChange={(e) => {
                               setPendingRole(e.target.value);
