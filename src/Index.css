@@ -95,18 +95,18 @@ body {
     background: white !important;
     color: #1a1a1a !important;
   }
-  
+
   /* Hide everything on the page */
   body * {
     visibility: hidden;
   }
-  
+
   /* Show only the receipt area and its descendants */
   #receipt-print-area,
   #receipt-print-area * {
     visibility: visible;
   }
-  
+
   /* Reposition receipt to top left of page when printing */
   #receipt-print-area {
     position: absolute;
@@ -119,7 +119,7 @@ body {
     padding: 0 !important;
     margin: 0 !important;
   }
-  
+
   /* Hide specific utility classes (like buttons, icon containers) inside receipt-print-area when printing */
   .no-print {
     display: none !important;
