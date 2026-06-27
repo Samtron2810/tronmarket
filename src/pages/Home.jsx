@@ -9,6 +9,7 @@ import {
   FiHome,
   FiZap,
 } from "react-icons/fi";
+import { FaTimes, FaBars } from "react-icons/fa";
 import ProductCard from "../components/ProductCard";
 import { AuthContext } from "../context/AuthContext";
 import Skeleton from "../components/Skeleton";
@@ -32,6 +33,8 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
+
+  const [bannerVisible, setBannerVisible] = useState(true);
 
   // Filter state — managed locally, not via URL params (avoids full re-renders)
   const [search, setSearch] = useState("");
@@ -78,10 +81,10 @@ export default function Home() {
   }, [fetchProducts]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 py-2 sm:px-4 lg:px-4">
       {/* ── Hero ── */}
       <div
-        className="relative mb-2 rounded-2xl overflow-hidden px-8 py-8 sm:px-12 sm:py-8"
+        className="relative mb-2 rounded-2xl overflow-hidden px-8 py-1 sm:px-12 sm:py-1"
         style={{ backgroundColor: "#FF8C00" }}
       >
         {/* Subtle decorative circle */}
@@ -94,7 +97,9 @@ export default function Home() {
           style={{ backgroundColor: "#fff" }}
         />
 
-        <div className="relative z-10 max-w-2xl">
+        <div
+          className={`relative z-10 max-w-2xl ${bannerVisible ? "" : "hidden"}`}
+        >
           <span
             className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{
@@ -104,6 +109,13 @@ export default function Home() {
           >
             Featured Platform
           </span>
+          <button
+            onClick={() => setBannerVisible(false)}
+            aria-label="Close element"
+            className=" text-red-600 rounded-full cursor-pointer absolute -top-2 -right-2 hover:scale-120 transition-all duration-150"
+          >
+            <FaTimes size={15} />
+          </button>
           <h1
             className="text-4xl sm:text-5xl font-extrabold tracking-tight"
             style={{ color: "#1A1A1A" }}
@@ -194,11 +206,11 @@ export default function Home() {
             >
               Categories
             </p>
-            <div className="space-y-1.5">
+            <div className="flex flex-wrap gap-1.5 sm:flex-col sm:gap-0 sm:space-y-1.5">
               {/* All */}
               <button
                 onClick={() => handleCategoryChange("")}
-                className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+                className="sm:w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
                 style={
                   !category
                     ? { backgroundColor: "#FF8C00", color: "#fff" }
@@ -213,19 +225,7 @@ export default function Home() {
                     e.currentTarget.style.backgroundColor = "#f3f4f6";
                 }}
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
-                </svg>
+                <FaBars className="w-4 h-4" />
                 All
               </button>
 
@@ -235,7 +235,7 @@ export default function Home() {
                   <button
                     key={cat}
                     onClick={() => handleCategoryChange(cat)}
-                    className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
+                    className="sm:w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
                     style={
                       isActive
                         ? { backgroundColor: "#FF8C00", color: "#fff" }
