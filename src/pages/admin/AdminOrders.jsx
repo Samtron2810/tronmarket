@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../../services/api";
+import { completeOrder } from "../../services/orderService";
 import { toast } from "react-toastify";
 import ConfirmModal from "../../components/ConfirmModal";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
@@ -44,7 +45,7 @@ export default function AdminOrders() {
     const orderId = orderToComplete;
     if (!orderId) return;
     try {
-      await api.put(`/orders/${orderId}/complete`, {});
+      await completeOrder(orderId);
       setOrders((prev) =>
         prev.map((o) =>
           o._id === orderId ? { ...o, status: "completed" } : o,

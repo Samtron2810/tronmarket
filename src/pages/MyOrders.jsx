@@ -10,8 +10,11 @@ import {
   FiLoader,
   FiXCircle,
 } from "react-icons/fi";
-import api from "../services/api";
-import { getMyOrders, cancelMyOrder } from "../services/orderService";
+import {
+  getMyOrders,
+  cancelMyOrder,
+  confirmDelivery as confirmDeliveryService,
+} from "../services/orderService";
 import ConfirmModal from "../components/ConfirmModal"; // 1. Import your custom modal
 import { thumbUrl } from "../utils/cloudinaryUrl";
 
@@ -43,7 +46,9 @@ export default function MyOrders() {
     const fetchOrders = async () => {
       try {
         const res = await getMyOrders();
-        setOrders(res.data || []);
+        // Backend now returns { orders, page, totalPages, total }
+        const data = res.data;
+        setOrders(Array.isArray(data) ? data : data.orders || []);
       } catch (err) {
         console.error("Failed to load orders", err);
       } finally {
@@ -98,7 +103,7 @@ export default function MyOrders() {
 
     try {
       setDeliverModalOpen(false);
-      await api.put(`/orders/${orderToDeliver}/deliver`, {});
+      await confirmDeliveryService(orderToDeliver);
 
       // Update local UI state immediately
       setOrders((prev) =>

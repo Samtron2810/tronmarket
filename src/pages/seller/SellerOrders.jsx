@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import api from "../../services/api";
+import {
+  getSellerOrders,
+  updateOrderStatus,
+  sellerDeliveryClaim,
+} from "../../services/orderService";
 import { toast } from "react-toastify";
 import ConfirmModal from "../../components/ConfirmModal";
 import { Link } from "react-router-dom";
@@ -31,7 +35,7 @@ export default function SellerOrders() {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const res = await api.get("/orders/seller/orders");
+        const res = await getSellerOrders();
         setOrders(res.data || []);
       } catch (err) {
         console.error("Failed to load seller orders", err);
@@ -47,10 +51,11 @@ export default function SellerOrders() {
     const orderId = orderToShip;
     if (!orderId) return;
     try {
-      await api.put(`/orders/${orderId}/status`, {
-        status: "shipped",
-        note: "Order has been shipped by seller",
-      });
+      await updateOrderStatus(
+        orderId,
+        "shipped",
+        "Order has been shipped by seller",
+      );
       setOrders((prev) =>
         prev.map((ord) =>
           ord._id === orderId ? { ...ord, status: "shipped" } : ord,
@@ -69,7 +74,7 @@ export default function SellerOrders() {
     const orderId = orderToDeliver;
     if (!orderId) return;
     try {
-      await api.put(`/orders/${orderId}/seller-delivery-claim`, {});
+      await sellerDeliveryClaim(orderId);
       setOrders((prev) =>
         prev.map((ord) =>
           ord._id === orderId ? { ...ord, status: "delivery-claimed" } : ord,
@@ -215,8 +220,9 @@ export default function SellerOrders() {
                 </div>
                 {/* i added this myself */}
                 <div className="text-right gap-2 mt-2">
-                  {/* If order is paid, show mark shipped button */}
-                  {order.status === "paid" && (
+                  {/* If order is paid or processing, show mark shipped button */}
+                  {(order.status === "paid" ||
+                    order.status === "processing") && (
                     <button
                       onClick={() => {
                         setOrderToShip(order._id);
