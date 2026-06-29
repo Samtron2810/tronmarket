@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom"; // FIX #10: import useLocation
 import api from "../services/api";
 import {
   FiSmartphone,
@@ -26,6 +26,7 @@ const catIcons = {
 
 export default function Home() {
   const { user } = useContext(AuthContext);
+  const location = useLocation(); // FIX #10
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,11 +37,21 @@ export default function Home() {
 
   const [bannerVisible, setBannerVisible] = useState(true);
 
-  // Filter state — managed locally, not via URL params (avoids full re-renders)
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("");
   const debounceRef = useRef(null);
+
+  // FIX #10: Sync search state from URL on mount and whenever the URL changes.
+  // This makes the Navbar search bar work — it navigates to /?search=term,
+  // and this effect picks it up so the product grid actually filters.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlSearch = params.get("search") || "";
+    setSearch(urlSearch);
+    setDebouncedSearch(urlSearch);
+    setPage(1);
+  }, [location.search]);
 
   const handleSearchChange = (e) => {
     const val = e.target.value;
@@ -87,7 +98,6 @@ export default function Home() {
         className="relative mb-2 rounded-2xl overflow-hidden px-8 py-1 sm:px-12 sm:py-1"
         style={{ backgroundColor: "#FF8C00" }}
       >
-        {/* Subtle decorative circle */}
         <div
           className="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-20"
           style={{ backgroundColor: "#FFAA4D" }}
@@ -130,7 +140,6 @@ export default function Home() {
             verified sellers. Enjoy secure authentication and quick shipping.
           </p>
 
-          {/* if user is a seller or admin, show dashboard link */}
           {user?.role === "seller" && (
             <div className="mt-6">
               <Link
@@ -153,7 +162,6 @@ export default function Home() {
               </Link>
             </div>
           )}
-          {/* if user is a customer, show cart link */}
           {user?.role === "customer" && (
             <div className="mt-6">
               <Link
@@ -261,7 +269,6 @@ export default function Home() {
 
         {/* Products area */}
         <div className="flex-1 min-w-0">
-          {/* Loading skeletons */}
           {loading && (
             <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
               {[...Array(6)].map((_, i) => (
@@ -270,7 +277,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <div
               className="rounded-xl border p-6 text-center text-sm font-medium"
@@ -284,7 +290,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Grid */}
           {!loading && !error && (
             <>
               {products.length === 0 ? (

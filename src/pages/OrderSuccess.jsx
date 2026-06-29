@@ -10,6 +10,7 @@ import {
 } from "react-icons/fi";
 import { getOrderById } from "../services/orderService";
 import { thumbUrl } from "../utils/cloudinaryUrl";
+import ItemImage from "../components/ItemImage"; // FIX #12
 
 export default function OrderSuccess() {
   const { state } = useLocation();
@@ -261,14 +262,10 @@ export default function OrderSuccess() {
                     className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0 text-sm"
                   >
                     <div className="flex items-center gap-3">
-                      <img
-                        src={
-                          thumbUrl(item.image) ||
-                          "https://via.placeholder.com/150"
-                        }
+                      <ItemImage
+                        src={thumbUrl(item.image)}
                         alt={item.name}
-                        className="w-12 h-12 object-cover rounded-lg border border-gray-200 bg-gray-50 shrink-0"
-                        loading="lazy"
+                        className="w-12 h-12 rounded-lg border border-gray-200 bg-gray-50 shrink-0"
                       />
                       <div className="min-w-0">
                         <h4 className="font-bold text-sm text-[#1A1A1A] truncate max-w-50 sm:max-w-70">

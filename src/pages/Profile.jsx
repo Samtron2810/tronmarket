@@ -4,8 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaHome, FaStore } from "react-icons/fa";
 
 export default function Profile() {
-  const { user } = useContext(AuthContext);
-  const { handleLogout } = useContext(AuthContext);
+  // FIX #15: single useContext call instead of two
+  const { user, handleLogout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   if (!user)
@@ -31,7 +31,6 @@ export default function Profile() {
             <div className="text-sm text-secondary">Name</div>
             <div className="font-medium">{user.name}</div>
           </div>
-          {/* centerized line */}
           <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
           <div>
             <div className="text-sm text-secondary">Email</div>
@@ -44,12 +43,11 @@ export default function Profile() {
           </div>
         </div>
         <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
-        {/* apply for a seller role if the user is a customer */}
         {user.role === "customer" && (
           <div className="mb-6">
             <Link
               to="/apply-seller"
-              className="pointer-events-none px-6 py-2  rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
+              className="pointer-events-none px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
             >
               <span>Apply for Seller Role</span>{" "}
               <FaStore className="inline-block ml-2" />
