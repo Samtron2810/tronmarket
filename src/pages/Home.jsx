@@ -332,7 +332,7 @@ export default function Home() {
       {/* ── Layout: sidebar + grid ── */}
       <div className="flex flex-col sm:flex-row gap-5">
         {/* ── Desktop Sidebar (hidden on mobile) ── */}
-        <aside className="hidden sm:block w-48 shrink-0 self-start sticky top-37.5 z-20">
+        <aside className="hidden sm:block w-48 shrink-0 self-start sticky top-28 z-20">
           <div
             className="rounded-xl p-4 border"
             style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}

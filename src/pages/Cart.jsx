@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaStore, FaArrowLeft } from "react-icons/fa";
 import { thumbUrl } from "../utils/cloudinaryUrl";
+import { toast } from "react-toastify";
 
 export default function Cart() {
   const { cart, updateQtyLocal, removeItemLocal } = useContext(CartContext);
@@ -35,8 +36,22 @@ export default function Cart() {
     );
   }
 
-  const updateQty = (productId, quantity) => {
-    updateQtyLocal(productId, quantity);
+  // Clamp to available stock BEFORE updating state or hitting the network.
+  // This is what actually fixes the "reverts by only 1" bug: an over-stock
+  // value is never sent in the first place, so there's nothing to race or revert.
+  const updateQty = (item, rawValue) => {
+    const productId = item.product?._id || item.product;
+    const stock = item.product?.stock || 0;
+
+    let next = parseInt(rawValue, 10);
+    if (!Number.isFinite(next) || next < 1) next = 1;
+
+    if (next > stock) {
+      toast.error(`Only ${stock} left in stock`);
+      next = stock;
+    }
+
+    updateQtyLocal(productId, next);
   };
 
   const removeItem = (productId) => {
@@ -243,12 +258,7 @@ export default function Cart() {
                     type="number"
                     value={item.quantity}
                     min="1"
-                    onChange={(e) =>
-                      updateQty(
-                        item.product?._id || item.product,
-                        e.target.value,
-                      )
-                    }
+                    onChange={(e) => updateQty(item, e.target.value)}
                     disabled={!item.product?.stock || item.product.stock <= 0}
                     style={{
                       width: "64px",
