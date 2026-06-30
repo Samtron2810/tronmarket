@@ -282,7 +282,7 @@ export default function Home() {
       </div>
 
       {/* ── Section header (sticky) ── */}
-      <div className="sticky top-14 z-30 bg-white/90 backdrop-blur-sm py-1 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-3 flex-wrap border-b sm:border-none shadow-sm sm:shadow-none transition-all md:px-4 lg:px-8 rounded-lg">
+      <div className="sticky top-14 z-30 bg-white/0 backdrop-blur-md py-1 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-1 flex-wrap border-b sm:border-none shadow-sm sm:shadow-none transition-all md:px-4 lg:px-8 rounded-lg">
         <div className="flex items-center gap-3">
           {/* Mobile categories toggle — only visible on small screens */}
           <button
@@ -324,7 +324,7 @@ export default function Home() {
             value={search}
             onChange={handleSearchChange}
             placeholder="Search products…"
-            className="bg-white border border-gray-400 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF] w-80 sm:w-50 transition-all duration-150"
+            className="bg-white border border-gray-400 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF] w-80 sm:w-50 lg:w-90 transition-all duration-150"
           />
         </div>
       </div>
