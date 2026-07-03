@@ -54,9 +54,9 @@ export default function ProductCard({ product }) {
 
   return (
     <>
-      <div className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out w-full max-w-xs mx-auto">
+      <div className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-blue-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out w-full mx-auto">
         {/*  Image  */}
-        <div className="relative w-full aspect-3/2 overflow-hidden bg-blue-50">
+        <div className="relative w-full aspect-4/3 overflow-hidden bg-blue-50">
           <img
             src={thumbUrl(images[index])}
             alt={product.name}
@@ -100,16 +100,16 @@ export default function ProductCard({ product }) {
         </div>
 
         {/*  Content  */}
-        <div className="flex flex-1 flex-col p-2 gap-1">
+        <div className="flex flex-1 flex-col p-2 lg:p-1.5 gap-1 lg:gap-0.5">
           {/* Category + Name + Description */}
           <div className="flex-1 min-w-0">
-            <h3 className="mt-0.5 text-md font-bold text-gray-900 line-clamp-1 leading-snug">
+            <h3 className="mt-0.5 text-md lg:text-sm font-bold text-gray-900 line-clamp-1 leading-snug">
               {product.name}
             </h3>
-            <span className="text-blue-500 text-xs font-bold uppercase tracking-wider">
+            <span className="text-blue-500 text-xs lg:text-[11px] font-bold uppercase tracking-wider">
               {product.category || "General"}
             </span>
-            <p className="mt-0.5 text-xs text-gray-500 line-clamp-2 leading-relaxed">
+            <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
               {product.description || "No description available."}
             </p>
           </div>
@@ -119,17 +119,17 @@ export default function ProductCard({ product }) {
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 block">
               Price
             </span>
-            <span className="text-sm font-extrabold text-orange-500 leading-tight block truncate">
+            <span className="text-sm lg:text-xs font-extrabold text-orange-500 leading-tight block truncate">
               ₦{Number(product.price).toLocaleString()}
             </span>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-1.5">
+          <div className="flex gap-1.5 lg:gap-1">
             <button
               onClick={handleAdd}
               disabled={product.stock <= 0}
-              className={`flex items-center justify-center gap-1 flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 ${
+              className={`flex items-center justify-center gap-1 flex-1 py-1.5 lg:py-1.5 rounded-lg text-xs lg:text-[11px] font-semibold transition-all duration-150 ${
                 product.stock <= 0
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
                   : "bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95"
@@ -142,7 +142,7 @@ export default function ProductCard({ product }) {
 
             <button
               onClick={() => setPreviewOpen(true)}
-              className="flex items-center justify-center gap-1 flex-1 py-1.5 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-150"
+              className="flex items-center justify-center gap-1 flex-1 py-1.5 lg:py-1.5 rounded-lg text-xs lg:text-[11px] font-semibold bg-blue-600 text-white hover:bg-blue-700 active:scale-95 transition-all duration-150"
             >
               <FaEye className="w-2.5 h-2.5" />
               <span>View</span>
