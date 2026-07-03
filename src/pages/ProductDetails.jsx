@@ -10,7 +10,7 @@ import {
   FaChevronRight,
   FaArrowLeft,
 } from "react-icons/fa";
-import { thumbUrl, largeUrl } from "../utils/cloudinaryUrl";
+import { largeUrl } from "../utils/cloudinaryUrl";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -19,7 +19,7 @@ export default function ProductDetails() {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [imgIndex, setImgIndex] = useState(0);
-  const { addToCartLocal } = useContext(CartContext);
+  const { addToCartLocal, isAddingToCart } = useContext(CartContext);
   const { setWelcomeModalOpen } = useContext(AuthContext);
 
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ export default function ProductDetails() {
 
   const handleAddToCart = async () => {
     // Optimistic: toast immediately, update local cart instantly
-    toast.success("Added to cart");
+    toast.success("Adding to cart");
     try {
       await addToCartLocal(product._id, quantity, product);
     } catch (err) {
@@ -237,7 +237,7 @@ export default function ProductDetails() {
 
             {/* Add to Cart */}
             <button
-              disabled={!inStock}
+              disabled={!inStock || isAddingToCart}
               onClick={handleAddToCart}
               className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
             >

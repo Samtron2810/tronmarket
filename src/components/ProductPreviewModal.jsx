@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
   const { setWelcomeModalOpen } = useContext(AuthContext);
-  const { addToCartLocal } = useContext(CartContext);
+  const { addToCartLocal, isAddingToCart } = useContext(CartContext);
   const fallback = "https://loremflickr.com/g/640/480/product";
   const images =
     product?.images && product.images.length > 0
@@ -29,7 +29,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
 
   const handleAdd = async () => {
     // Optimistic: toast immediately, update local cart instantly
-    toast.success("Added to cart");
+    toast.success("Adding to cart");
     onClose();
     try {
       await addToCartLocal(product._id, qty, product);
@@ -188,7 +188,12 @@ export default function ProductPreviewModal({ open, product, onClose }) {
             <div className="flex gap-2 pt-1">
               <button
                 onClick={handleAdd}
-                disabled={!inStock || qty < 1 || qty > (product.stock || 0)}
+                disabled={
+                  !inStock ||
+                  qty < 1 ||
+                  qty > (product.stock || 0) ||
+                  isAddingToCart
+                }
                 className="flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
               >
                 <FaShoppingCart className="w-3 h-3" />

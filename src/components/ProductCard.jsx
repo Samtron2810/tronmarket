@@ -20,7 +20,7 @@ export default function ProductCard({ product }) {
       : [product.image || fallbackImage];
 
   const [index, setIndex] = useState(0);
-  const { addToCartLocal } = useContext(CartContext);
+  const { addToCartLocal, isAddingToCart } = useContext(CartContext);
   const { setWelcomeModalOpen } = useContext(AuthContext);
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -41,7 +41,7 @@ export default function ProductCard({ product }) {
     }
 
     // Optimistic: toast immediately, update local cart instantly
-    toast.success("Added to cart");
+    toast.success("Adding to cart");
     try {
       await addToCartLocal(product._id, 1, product);
     } catch (err) {
@@ -128,9 +128,9 @@ export default function ProductCard({ product }) {
           <div className="flex gap-1.5 lg:gap-1">
             <button
               onClick={handleAdd}
-              disabled={product.stock <= 0}
+              disabled={product.stock <= 0 || isAddingToCart}
               className={`flex items-center justify-center gap-1 flex-1 py-1.5 lg:py-1.5 rounded-lg text-xs lg:text-[11px] font-semibold transition-all duration-150 ${
-                product.stock <= 0
+                product.stock <= 0 || isAddingToCart
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
                   : "bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95"
               }`}
