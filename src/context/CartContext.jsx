@@ -285,7 +285,7 @@ export default function CartProvider({ children }) {
     [fetchCart],
   );
 
-  // ── Clear cart ────────────────────────────────────────────────────────────
+  // ── Clear cart
   const clearCartLocal = useCallback(async () => {
     let previousCart = null;
     setCart((prev) => {
