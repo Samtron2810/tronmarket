@@ -1,16 +1,17 @@
 import { useState, useContext } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // 1. Added useLocation
+import { useNavigate, useLocation } from "react-router-dom";
 import { createOrder } from "../services/orderService";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import MessageModal from "../components/MessageModal";
 import PayButton from "../components/PayButton";
+import ItemImage from "../components/ItemImage"; // FIX #12
 import { FaArrowLeft } from "react-icons/fa";
 import { FiCheckCircle } from "react-icons/fi";
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const location = useLocation(); // 2. Initialize useLocation
+  const location = useLocation();
   const { user } = useContext(AuthContext);
   const { fetchCart } = useContext(CartContext);
 
@@ -18,9 +19,9 @@ export default function Checkout() {
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 3. THE FIX: Grab the pending order from the router state if it exists!
   const [order, setOrder] = useState(location.state?.pendingOrder || null);
 
+  // FIX #7: controlled form — every input has a value prop
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -39,7 +40,7 @@ export default function Checkout() {
     try {
       const res = await createOrder({ shippingAddress: form });
       setOrder(res.data);
-      fetchCart(); // sync cart immediately — backend already cleared it
+      fetchCart();
     } catch (err) {
       setMsg(err.response?.data?.message || "Error placing order");
       setMsgOpen(true);
@@ -96,21 +97,25 @@ export default function Checkout() {
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-3">
+              {/* FIX #7: all inputs are now controlled with value= */}
               <input
                 name="fullName"
                 placeholder="Full Name"
+                value={form.fullName}
                 onChange={handleChange}
                 className={inputCls}
               />
               <input
                 name="phone"
                 placeholder="Phone Number"
+                value={form.phone}
                 onChange={handleChange}
                 className={inputCls}
               />
               <input
                 name="address"
                 placeholder="Street Address"
+                value={form.address}
                 onChange={handleChange}
                 className={inputCls}
               />
@@ -118,12 +123,14 @@ export default function Checkout() {
                 <input
                   name="city"
                   placeholder="City"
+                  value={form.city}
                   onChange={handleChange}
                   className={inputCls}
                 />
                 <input
                   name="state"
                   placeholder="State"
+                  value={form.state}
                   onChange={handleChange}
                   className={inputCls}
                 />
@@ -175,11 +182,10 @@ export default function Checkout() {
                         key={index}
                         className="flex items-center gap-3 bg-[#EBF2FF] px-4 py-3"
                       >
-                        <img
-                          src={item.image || "https://via.placeholder.com/150"}
+                        <ItemImage
+                          src={item.image}
                           alt={item.name}
-                          className="w-12 h-12 object-cover rounded-lg border border-white/60 shrink-0"
-                          loading="lazy"
+                          className="w-12 h-12 rounded-lg border border-white/60 shrink-0"
                         />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[#1A1A1A] truncate">

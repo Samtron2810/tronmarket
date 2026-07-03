@@ -15,8 +15,10 @@ import {
   cancelMyOrder,
   confirmDelivery as confirmDeliveryService,
 } from "../services/orderService";
-import ConfirmModal from "../components/ConfirmModal"; // 1. Import your custom modal
+import ConfirmModal from "../components/ConfirmModal";
 import { thumbUrl } from "../utils/cloudinaryUrl";
+import ItemImage from "../components/ItemImage"; // FIX #12
+import { toast } from "react-toastify"; // FIX #2: import toast
 
 const statusColors = {
   pending: "bg-amber-100 text-amber-800 border border-amber-200",
@@ -35,7 +37,6 @@ export default function MyOrders() {
   const [expandedOrders, setExpandedOrders] = useState({});
   const [cancellingId, setCancellingId] = useState(null);
 
-  // 2. New state variables for the modals
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
 
@@ -46,7 +47,6 @@ export default function MyOrders() {
     const fetchOrders = async () => {
       try {
         const res = await getMyOrders();
-        // Backend now returns { orders, page, totalPages, total }
         const data = res.data;
         setOrders(Array.isArray(data) ? data : data.orders || []);
       } catch (err) {
@@ -63,20 +63,18 @@ export default function MyOrders() {
     setExpandedOrders((prev) => ({ ...prev, [orderId]: !prev[orderId] }));
   };
 
-  // 3. Trigger the modal instead of window.confirm
   const initiateCancel = (e, orderId) => {
-    e.stopPropagation(); // Stop accordion from toggling
+    e.stopPropagation();
     setOrderToCancel(orderId);
     setCancelModalOpen(true);
   };
 
-  // 4. Execute the cancellation when the user confirms in the modal
   const confirmCancelOrder = async () => {
     if (!orderToCancel) return;
 
     try {
-      setCancelModalOpen(false); // Close modal immediately
-      setCancellingId(orderToCancel); // Start button loader
+      setCancelModalOpen(false);
+      setCancellingId(orderToCancel);
 
       await cancelMyOrder(orderToCancel);
 
@@ -86,7 +84,8 @@ export default function MyOrders() {
         ),
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to cancel order");
+      // FIX #2: replaced alert() with toast.error()
+      toast.error(err.response?.data?.message || "Failed to cancel order");
     } finally {
       setCancellingId(null);
       setOrderToCancel(null);
@@ -105,14 +104,14 @@ export default function MyOrders() {
       setDeliverModalOpen(false);
       await confirmDeliveryService(orderToDeliver);
 
-      // Update local UI state immediately
       setOrders((prev) =>
         prev.map((ord) =>
           ord._id === orderToDeliver ? { ...ord, status: "delivered" } : ord,
         ),
       );
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to confirm delivery");
+      // FIX #2: replaced alert() with toast.error()
+      toast.error(err.response?.data?.message || "Failed to confirm delivery");
     } finally {
       setOrderToDeliver(null);
     }
@@ -122,14 +121,12 @@ export default function MyOrders() {
     return (
       <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto space-y-6">
-          {/* Header Skeleton */}
           <div className="animate-pulse space-y-3">
             <div className="h-4 bg-black/10 rounded w-24"></div>
             <div className="h-8 bg-black/20 rounded-lg w-48"></div>
             <div className="h-4 bg-black/10 rounded w-64"></div>
           </div>
 
-          {/* List Skeletons */}
           <div className="space-y-3">
             {[1, 2, 3].map((n) => (
               <div
@@ -155,7 +152,6 @@ export default function MyOrders() {
   return (
     <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        {/* Navigation & Header */}
         <div className="mb-6">
           <Link
             to="/cart"
@@ -212,7 +208,6 @@ export default function MyOrders() {
                   key={order._id}
                   className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm transition-shadow hover:shadow-md"
                 >
-                  {/* Card Overview Area */}
                   <div
                     onClick={() => toggleOrderExpand(order._id)}
                     className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none hover:bg-gray-50/50 transition-colors"
@@ -260,10 +255,8 @@ export default function MyOrders() {
                     </div>
                   </div>
 
-                  {/* Dropdown Section */}
                   {isExpanded && (
                     <div className="border-t border-gray-200 bg-gray-50/30 divide-y divide-gray-100">
-                      {/* Products Listing Grid */}
                       <div className="p-4 space-y-3 bg-white">
                         {order.orderItems?.map((item, index) => (
                           <div
@@ -271,14 +264,10 @@ export default function MyOrders() {
                             className="flex items-center justify-between gap-4 text-sm"
                           >
                             <div className="flex items-center gap-3">
-                              <img
-                                src={
-                                  thumbUrl(item.image) ||
-                                  "https://via.placeholder.com/150"
-                                }
+                              <ItemImage
+                                src={thumbUrl(item.image)}
                                 alt={item.name}
-                                className="w-12 h-12 object-cover rounded-lg bg-gray-50 border border-gray-200 shrink-0"
-                                loading="lazy"
+                                className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 shrink-0"
                               />
                               <div>
                                 <h4 className="font-bold text-[#1A1A1A] line-clamp-1">
@@ -300,7 +289,6 @@ export default function MyOrders() {
                         ))}
                       </div>
 
-                      {/* Footer Actions / Metadata Fields */}
                       <div className="px-4 py-3 bg-gray-50/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-[#555555]">
                         <div className="line-clamp-1 max-w-xs sm:max-w-md">
                           <span className="font-medium text-gray-400">
@@ -313,10 +301,9 @@ export default function MyOrders() {
                         </div>
 
                         <div className="flex items-center gap-2 ml-auto sm:ml-0 w-full sm:w-auto justify-end">
-                          {/* Cancel Order Action Button */}
                           {isCancellable && (
                             <button
-                              onClick={(e) => initiateCancel(e, order._id)} // 5. Trigger modal here
+                              onClick={(e) => initiateCancel(e, order._id)}
                               disabled={cancellingId === order._id}
                               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-colors font-semibold shadow-sm disabled:opacity-50"
                             >
@@ -332,7 +319,6 @@ export default function MyOrders() {
                             </button>
                           )}
 
-                          {/* Complete Payment Button */}
                           {!order.isPaid && order.status === "pending" && (
                             <Link
                               to="/checkout"
@@ -343,7 +329,6 @@ export default function MyOrders() {
                               Complete Payment
                             </Link>
                           )}
-                          {/* confirm delivery button */}
                           {order.status === "shipped" && (
                             <button
                               onClick={() => initiateDeliver(order._id)}
@@ -363,7 +348,6 @@ export default function MyOrders() {
         )}
       </div>
 
-      {/* 6. The Cancel Confirm Modal rendered at the root level of the page */}
       <ConfirmModal
         open={cancelModalOpen}
         title="Cancel Order"
@@ -377,7 +361,6 @@ export default function MyOrders() {
         }}
       />
 
-      {/* 7. The Delivery Confirm Modal rendered at the root level of the page */}
       <ConfirmModal
         open={deliverModalOpen}
         title="Confirm Receipt"

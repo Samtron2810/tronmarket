@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaStore, FaArrowLeft } from "react-icons/fa";
 import { thumbUrl } from "../utils/cloudinaryUrl";
+import { toast } from "react-toastify";
 
 export default function Cart() {
   const { cart, updateQtyLocal, removeItemLocal } = useContext(CartContext);
@@ -35,8 +36,22 @@ export default function Cart() {
     );
   }
 
-  const updateQty = (productId, quantity) => {
-    updateQtyLocal(productId, quantity);
+  // Clamp to available stock BEFORE updating state or hitting the network.
+  // This is what actually fixes the "reverts by only 1" bug: an over-stock
+  // value is never sent in the first place, so there's nothing to race or revert.
+  const updateQty = (item, rawValue) => {
+    const productId = item.product?._id || item.product;
+    const stock = item.product?.stock || 0;
+
+    let next = parseInt(rawValue, 10);
+    if (!Number.isFinite(next) || next < 1) next = 1;
+
+    if (next > stock) {
+      toast.error(`Only ${stock} left in stock`);
+      next = stock;
+    }
+
+    updateQtyLocal(productId, next);
   };
 
   const removeItem = (productId) => {
@@ -49,6 +64,11 @@ export default function Cart() {
       return acc;
     return acc + (item.product.price || 0) * item.quantity;
   }, 0);
+
+  // FIX #5: only in-stock items are available for checkout — used in summary
+  const availableItems = cart.items.filter(
+    (item) => item.product?.stock && item.product.stock > 0,
+  );
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -161,7 +181,8 @@ export default function Cart() {
           <div className="flex-1 space-y-3">
             {cart.items.map((item) => (
               <div
-                key={item.product._id}
+                // FIX #6: safe key — product may be a plain string ID (not populated)
+                key={item.product?._id || item.product}
                 className="flex items-center gap-4 rounded-2xl border px-5 py-4 transition-shadow hover:shadow-sm"
                 style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
               >
@@ -170,7 +191,7 @@ export default function Cart() {
                   className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
                   style={{ backgroundColor: "#EBF2FF" }}
                 >
-                  {item.product.image ? (
+                  {item.product?.image ? (
                     <img
                       src={thumbUrl(item.product.image)}
                       alt={item.product.name}
@@ -203,9 +224,9 @@ export default function Cart() {
                     className="font-semibold text-sm truncate"
                     style={{ color: "#1A1A1A" }}
                   >
-                    {item.product.name}
+                    {item.product?.name}
                   </p>
-                  {item.product.stock && item.product.stock > 0 ? (
+                  {item.product?.stock && item.product.stock > 0 ? (
                     <>
                       <p
                         className="text-sm font-bold mt-0.5"
@@ -237,10 +258,8 @@ export default function Cart() {
                     type="number"
                     value={item.quantity}
                     min="1"
-                    onChange={(e) =>
-                      updateQty(item.product._id, e.target.value)
-                    }
-                    disabled={!item.product.stock || item.product.stock <= 0}
+                    onChange={(e) => updateQty(item, e.target.value)}
+                    disabled={!item.product?.stock || item.product.stock <= 0}
                     style={{
                       width: "64px",
                       padding: "6px 10px",
@@ -265,7 +284,9 @@ export default function Cart() {
                   />
 
                   <button
-                    onClick={() => removeItem(item.product._id)}
+                    onClick={() =>
+                      removeItem(item.product?._id || item.product)
+                    }
                     title="Remove item"
                     className="p-2 rounded-xl transition-all duration-150 active:scale-95"
                     style={{ backgroundColor: "#fff0f0", color: "#FF2E3B" }}
@@ -308,10 +329,11 @@ export default function Cart() {
                 Order Summary
               </h2>
 
+              {/* FIX #5: only show in-stock items in summary so prices match total */}
               <div className="space-y-2 mb-4">
-                {cart.items.map((item) => (
+                {availableItems.map((item) => (
                   <div
-                    key={item.product._id}
+                    key={item.product?._id || item.product}
                     className="flex justify-between text-sm"
                   >
                     <span
@@ -328,6 +350,11 @@ export default function Cart() {
                     </span>
                   </div>
                 ))}
+                {availableItems.length === 0 && (
+                  <p className="text-xs" style={{ color: "#555555" }}>
+                    No available items
+                  </p>
+                )}
               </div>
 
               <div

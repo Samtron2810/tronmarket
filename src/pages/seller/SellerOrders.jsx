@@ -25,7 +25,6 @@ export default function SellerOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal states
   const [shipModalOpen, setShipModalOpen] = useState(false);
   const [orderToShip, setOrderToShip] = useState(null);
   const [deliverModalOpen, setDeliverModalOpen] = useState(false);
@@ -152,11 +151,11 @@ export default function SellerOrders() {
                 key={order._id}
                 className="bg-white rounded-xl border border-gray-200 p-5"
               >
-                {/* Header */}
+                {/* Header — FIX #16: short ID instead of full ObjectId */}
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <div className="text-sm font-semibold text-[#1A1A1A]">
-                      Order #{order._id}
+                      Order #{order._id.slice(-8).toUpperCase()}
                     </div>
                     <div className="text-xs text-[#555555] mt-0.5">
                       {new Date(order.createdAt).toLocaleString()}
@@ -218,9 +217,7 @@ export default function SellerOrders() {
                     {order.status}
                   </span>
                 </div>
-                {/* i added this myself */}
                 <div className="text-right gap-2 mt-2">
-                  {/* If order is paid or processing, show mark shipped button */}
                   {(order.status === "paid" ||
                     order.status === "processing") && (
                     <button
@@ -228,13 +225,12 @@ export default function SellerOrders() {
                         setOrderToShip(order._id);
                         setShipModalOpen(true);
                       }}
-                      className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer font-semibold hover:bg-indigo-700 transition-colors shadow-sm "
+                      className="bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg cursor-pointer font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
                     >
                       Mark Shipped
                     </button>
                   )}
 
-                  {/* If order is shipped but customer goes quiet, seller hits this backup option */}
                   {order.status === "shipped" && (
                     <button
                       onClick={() => {
@@ -253,7 +249,6 @@ export default function SellerOrders() {
         )}
       </div>
 
-      {/* Ship Confirmation Modal */}
       <ConfirmModal
         open={shipModalOpen}
         title="Mark Order as Shipped"
@@ -267,7 +262,6 @@ export default function SellerOrders() {
         }}
       />
 
-      {/* Delivery Claim Confirmation Modal */}
       <ConfirmModal
         open={deliverModalOpen}
         title="Claim Delivery"

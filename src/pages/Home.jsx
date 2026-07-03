@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import api from "../services/api";
 import {
   FiSmartphone,
@@ -9,7 +9,12 @@ import {
   FiHome,
   FiZap,
 } from "react-icons/fi";
-import { FaTimes, FaBars } from "react-icons/fa";
+import {
+  FaTimes,
+  FaBars,
+  FaArrowAltCircleDown,
+  FaArrowAltCircleUp,
+} from "react-icons/fa";
 import ProductCard from "../components/ProductCard";
 import { AuthContext } from "../context/AuthContext";
 import Skeleton from "../components/Skeleton";
@@ -26,6 +31,7 @@ const catIcons = {
 
 export default function Home() {
   const { user } = useContext(AuthContext);
+  const location = useLocation();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,12 +41,32 @@ export default function Home() {
   const [total, setTotal] = useState(0);
 
   const [bannerVisible, setBannerVisible] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Filter state — managed locally, not via URL params (avoids full re-renders)
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("");
   const debounceRef = useRef(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlSearch = params.get("search") || "";
+    setSearch(urlSearch);
+    setDebouncedSearch(urlSearch);
+    setPage(1);
+  }, [location.search]);
+
+  // Lock body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSidebarOpen]);
 
   const handleSearchChange = (e) => {
     const val = e.target.value;
@@ -55,6 +81,7 @@ export default function Home() {
   const handleCategoryChange = (cat) => {
     setCategory(cat);
     setPage(1);
+    setIsSidebarOpen(false);
   };
 
   const fetchProducts = useCallback(async () => {
@@ -80,14 +107,101 @@ export default function Home() {
     fetchProducts();
   }, [fetchProducts]);
 
+  // Shared category list JSX used in both sidebar and drawer
+  const CategoryList = () => (
+    <div className="flex flex-col gap-1.5">
+      <button
+        onClick={() => handleCategoryChange("")}
+        className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
+        style={
+          !category
+            ? { backgroundColor: "#FF8C00", color: "#fff" }
+            : { backgroundColor: "#f3f4f6", color: "#222222" }
+        }
+        onMouseEnter={(e) => {
+          if (category) e.currentTarget.style.backgroundColor = "#EBF2FF";
+        }}
+        onMouseLeave={(e) => {
+          if (category) e.currentTarget.style.backgroundColor = "#f3f4f6";
+        }}
+      >
+        <FaBars className="w-4 h-4" />
+        All
+      </button>
+
+      {categories.map((cat) => {
+        const isActive = category === cat;
+        return (
+          <button
+            key={cat}
+            onClick={() => handleCategoryChange(cat)}
+            className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
+            style={
+              isActive
+                ? { backgroundColor: "#FF8C00", color: "#fff" }
+                : { backgroundColor: "#f3f4f6", color: "#222222" }
+            }
+            onMouseEnter={(e) => {
+              if (!isActive) e.currentTarget.style.backgroundColor = "#EBF2FF";
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) e.currentTarget.style.backgroundColor = "#f3f4f6";
+            }}
+          >
+            {catIcons[cat]}
+            {cat}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-2 sm:px-4 lg:px-4">
+      {/* ── Mobile Drawer Overlay ── */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 sm:hidden"
+          style={{ top: "56px" }} // sits below navbar
+        >
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+
+          {/* Drawer panel sliding from left */}
+          <div
+            className="absolute left-0 top-0 h-full w-64 shadow-2xl p-5 flex flex-col gap-4 overflow-y-auto"
+            style={{ backgroundColor: "#fff" }}
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between">
+              <p
+                className="text-xs font-bold uppercase tracking-widest"
+                style={{ color: "#555555" }}
+              >
+                Categories
+              </p>
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="text-gray-400 hover:text-red-500 transition-colors"
+                aria-label="Close categories"
+              >
+                <FaTimes size={16} />
+              </button>
+            </div>
+
+            <CategoryList />
+          </div>
+        </div>
+      )}
+
       {/* ── Hero ── */}
       <div
         className="relative mb-2 rounded-2xl overflow-hidden px-8 py-1 sm:px-12 sm:py-1"
         style={{ backgroundColor: "#FF8C00" }}
       >
-        {/* Subtle decorative circle */}
         <div
           className="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-20"
           style={{ backgroundColor: "#FFAA4D" }}
@@ -130,7 +244,6 @@ export default function Home() {
             verified sellers. Enjoy secure authentication and quick shipping.
           </p>
 
-          {/* if user is a seller or admin, show dashboard link */}
           {user?.role === "seller" && (
             <div className="mt-6">
               <Link
@@ -153,7 +266,6 @@ export default function Home() {
               </Link>
             </div>
           )}
-          {/* if user is a customer, show cart link */}
           {user?.role === "customer" && (
             <div className="mt-6">
               <Link
@@ -169,17 +281,42 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── Section header ── */}
-      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
-        <h2
-          className="text-2xl font-bold tracking-tight"
-          style={{ color: "#1A1A1A" }}
-        >
-          Explore Products
-        </h2>
+      {/* ── Section header (sticky) ── */}
+      <div className="sticky top-14 z-30 bg-white/0 backdrop-blur-md py-1 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-1 flex-wrap border-b sm:border-none shadow-sm sm:shadow-none transition-all md:px-4 lg:px-8 rounded-lg">
+        <div className="flex items-center gap-3">
+          {/* Mobile categories toggle — only visible on small screens */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="sm:hidden flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold shadow-sm transition-all duration-150"
+            style={{
+              backgroundColor: category ? "#FF8C00" : "#fff",
+              borderColor: category ? "#FF8C00" : "#e5e7eb",
+              color: category ? "#fff" : "#1A1A1A",
+            }}
+            aria-label="Open categories"
+          >
+            <FaBars className="w-4 h-4" />
+            <span>
+              {category
+                ? category.charAt(0).toUpperCase() + category.slice(1)
+                : "Categories"}
+            </span>
+          </button>
+
+          <h2
+            className="text-2xl font-bold tracking-tight"
+            style={{ color: "#1A1A1A" }}
+          >
+            Explore Products
+          </h2>
+        </div>
+
         <div className="flex items-center gap-3 flex-wrap">
           {!loading && (
-            <span className="text-sm font-medium" style={{ color: "#555555" }}>
+            <span
+              className="text-sm font-medium hidden"
+              style={{ color: "#555555" }}
+            >
               {total} product{total === 1 ? "" : "s"}
             </span>
           )}
@@ -187,15 +324,15 @@ export default function Home() {
             value={search}
             onChange={handleSearchChange}
             placeholder="Search products…"
-            className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF] w-52"
+            className="bg-white border border-gray-400 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF] w-80 sm:w-50 lg:w-90 transition-all duration-150"
           />
         </div>
       </div>
 
       {/* ── Layout: sidebar + grid ── */}
       <div className="flex flex-col sm:flex-row gap-5">
-        {/* Sidebar */}
-        <aside className="w-full sm:w-48 shrink-0">
+        {/* ── Desktop Sidebar (hidden on mobile) ── */}
+        <aside className="hidden sm:block w-48 shrink-0 self-start sticky top-28 z-20">
           <div
             className="rounded-xl p-4 border"
             style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
@@ -206,62 +343,12 @@ export default function Home() {
             >
               Categories
             </p>
-            <div className="flex flex-wrap gap-1.5 sm:flex-col sm:gap-0 sm:space-y-1.5">
-              {/* All */}
-              <button
-                onClick={() => handleCategoryChange("")}
-                className="sm:w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-                style={
-                  !category
-                    ? { backgroundColor: "#FF8C00", color: "#fff" }
-                    : { backgroundColor: "#f3f4f6", color: "#222222" }
-                }
-                onMouseEnter={(e) => {
-                  if (category)
-                    e.currentTarget.style.backgroundColor = "#EBF2FF";
-                }}
-                onMouseLeave={(e) => {
-                  if (category)
-                    e.currentTarget.style.backgroundColor = "#f3f4f6";
-                }}
-              >
-                <FaBars className="w-4 h-4" />
-                All
-              </button>
-
-              {categories.map((cat) => {
-                const isActive = category === cat;
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => handleCategoryChange(cat)}
-                    className="sm:w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
-                    style={
-                      isActive
-                        ? { backgroundColor: "#FF8C00", color: "#fff" }
-                        : { backgroundColor: "#f3f4f6", color: "#222222" }
-                    }
-                    onMouseEnter={(e) => {
-                      if (!isActive)
-                        e.currentTarget.style.backgroundColor = "#EBF2FF";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive)
-                        e.currentTarget.style.backgroundColor = "#f3f4f6";
-                    }}
-                  >
-                    {catIcons[cat]}
-                    {cat}
-                  </button>
-                );
-              })}
-            </div>
+            <CategoryList />
           </div>
         </aside>
 
-        {/* Products area */}
+        {/* ── Products area ── */}
         <div className="flex-1 min-w-0">
-          {/* Loading skeletons */}
           {loading && (
             <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
               {[...Array(6)].map((_, i) => (
@@ -270,7 +357,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Error */}
           {error && !loading && (
             <div
               className="rounded-xl border p-6 text-center text-sm font-medium"
@@ -284,7 +370,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Grid */}
           {!loading && !error && (
             <>
               {products.length === 0 ? (
