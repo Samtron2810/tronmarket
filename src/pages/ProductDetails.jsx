@@ -3,7 +3,6 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
-import { toast } from "react-toastify";
 import {
   FaShoppingCart,
   FaChevronLeft,
@@ -43,15 +42,13 @@ export default function ProductDetails() {
   }, [id]);
 
   const handleAddToCart = async () => {
-    // Optimistic: toast immediately, update local cart instantly
-    toast.success("Adding to cart");
     try {
+      // Wait for real API response — toast is handled inside addToCartLocal
       await addToCartLocal(product._id, quantity, product);
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);
       }
-      // Error toast is handled inside addToCartLocal for non-401 errors
     }
   };
 

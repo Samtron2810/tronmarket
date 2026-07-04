@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import React, { useState, useContext } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -9,7 +9,6 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import { mediumUrl } from "../utils/cloudinaryUrl";
-import { toast } from "react-toastify";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
   const { setWelcomeModalOpen } = useContext(AuthContext);
@@ -28,16 +27,16 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
 
   const handleAdd = async () => {
-    // Optimistic: toast immediately, update local cart instantly
-    toast.success("Adding to cart");
-    onClose();
     try {
+      // Wait for real API response — toast is handled inside addToCartLocal
       await addToCartLocal(product._id, qty, product);
+      // Only close modal if add was successful
+      onClose();
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);
       }
-      // Error toast is handled inside addToCartLocal for non-401 errors
+      // Toast is already shown by addToCartLocal
     }
   };
 

@@ -5,23 +5,29 @@ import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import MessageModal from "../components/MessageModal";
 import PayButton from "../components/PayButton";
-import ItemImage from "../components/ItemImage"; // FIX #12
+import ItemImage from "../components/ItemImage";
 import { FaArrowLeft } from "react-icons/fa";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
 
 export default function Checkout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useContext(AuthContext);
-  const { fetchCart } = useContext(CartContext);
+  const {
+    fetchCart,
+    validateCartBeforeCheckout,
+    removeItemLocal,
+    updateQtyLocal,
+  } = useContext(CartContext);
 
   const [msgOpen, setMsgOpen] = useState(false);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [stockErrors, setStockErrors] = useState([]);
 
   const [order, setOrder] = useState(location.state?.pendingOrder || null);
 
-  // FIX #7: controlled form — every input has a value prop
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -36,6 +42,39 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setStockErrors([]);
+
+    // ── Step 1: Validate stock before placing order ──────────────────────
+    // This catches cases where another user bought the last item after this
+    // user added it to cart but before they reached checkout.
+    setValidating(true);
+    try {
+      const validation = await validateCartBeforeCheckout();
+
+      if (!validation.valid) {
+        // Stock issues found — auto-fix what we can, then stop for user review
+        for (const err of validation.errors) {
+          if (err.reason === "out_of_stock") {
+            await removeItemLocal(err.productId);
+          } else if (err.reason === "insufficient") {
+            await updateQtyLocal(err.productId, err.availableStock);
+          }
+        }
+
+        // Save errors to show the user what changed
+        setStockErrors(validation.errors);
+        setValidating(false);
+        return; // Stop — user must review adjusted cart before placing order
+      }
+    } catch (err) {
+      // If validate endpoint isn't available yet, log and proceed.
+      // The backend order creation has a final stock check as the last line of
+      // defence, so this is safe to fail open.
+      console.error("Cart validation failed:", err);
+    }
+    setValidating(false);
+
+    // ── Step 2: Place order ───────────────────────────────────────────────
     setLoading(true);
     try {
       const res = await createOrder({ shippingAddress: form });
@@ -68,12 +107,10 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
       <div
-        className=" flex items-center gap-2 max-w-3xl mx-auto mb-6 cursor-pointer text-black hover:gap-3 transition-ease-in-out duration-200"
+        className="flex items-center gap-2 max-w-3xl mx-auto mb-6 cursor-pointer text-black hover:gap-3 transition-all duration-200"
         onClick={() => navigate(-1)}
       >
-        <span>
-          <FaArrowLeft />{" "}
-        </span>
+        <FaArrowLeft />
         <span>Back</span>
       </div>
 
@@ -88,6 +125,31 @@ export default function Checkout() {
           </p>
         </div>
 
+        {/* ── Stock error banner — shown after auto-adjustment ── */}
+        {stockErrors.length > 0 && (
+          <div className="mb-5 rounded-xl border border-amber-300 bg-amber-50 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <FiAlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <p className="text-sm font-bold text-amber-700">
+                Cart updated — stock availability changed
+              </p>
+            </div>
+            <ul className="space-y-1">
+              {stockErrors.map((err) => (
+                <li key={err.productId} className="text-xs text-amber-700">
+                  • <span className="font-semibold">{err.name || "Item"}</span>:{" "}
+                  {err.reason === "out_of_stock"
+                    ? "Removed — now out of stock"
+                    : `Quantity reduced to ${err.availableStock} (only available)`}
+                </li>
+              ))}
+            </ul>
+            <p className="text-xs text-amber-600 mt-2">
+              Please review your cart and submit again when ready.
+            </p>
+          </div>
+        )}
+
         {!order ? (
           /* ── Shipping Form ── */
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -97,13 +159,13 @@ export default function Checkout() {
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-3">
-              {/* FIX #7: all inputs are now controlled with value= */}
               <input
                 name="fullName"
                 placeholder="Full Name"
                 value={form.fullName}
                 onChange={handleChange}
                 className={inputCls}
+                required
               />
               <input
                 name="phone"
@@ -111,6 +173,7 @@ export default function Checkout() {
                 value={form.phone}
                 onChange={handleChange}
                 className={inputCls}
+                required
               />
               <input
                 name="address"
@@ -118,6 +181,7 @@ export default function Checkout() {
                 value={form.address}
                 onChange={handleChange}
                 className={inputCls}
+                required
               />
               <div className="grid grid-cols-2 gap-3">
                 <input
@@ -126,6 +190,7 @@ export default function Checkout() {
                   value={form.city}
                   onChange={handleChange}
                   className={inputCls}
+                  required
                 />
                 <input
                   name="state"
@@ -133,16 +198,21 @@ export default function Checkout() {
                   value={form.state}
                   onChange={handleChange}
                   className={inputCls}
+                  required
                 />
               </div>
 
               <div className="flex justify-end pt-2">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || validating}
                   className="px-5 py-2.5 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {loading ? "Placing order…" : "Place Order"}
+                  {validating
+                    ? "Checking stock..."
+                    : loading
+                      ? "Placing order…"
+                      : "Place Order"}
                 </button>
               </div>
             </form>

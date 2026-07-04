@@ -12,6 +12,7 @@ import {
   updateCartItem,
   removeCartItem,
   clearCart,
+  validateCartStock,
 } from "../services/cartService";
 import { AuthContext } from "./AuthContext";
 import { toast } from "react-toastify";
@@ -51,11 +52,13 @@ export default function CartProvider({ children }) {
   const [synced, setSynced] = useState(false);
   const mountedRef = useRef(true);
 
+  // Count of in-flight mutating operations (add / update / remove / clear).
+  // fetchCart will not overwrite local state while this is > 0.
   const pendingOpsRef = useRef(0);
 
   // ── Global "Add to Cart" cooldown ───────────────────────────────────────
-  // While true, every "Add to Cart" button across the app should render
-  // disabled. Set for a flat 1.5s window whenever an add-to-cart is triggered,
+  // While true, every "Add to Cart" button across the app renders disabled.
+  // Set for a flat 1.5s window whenever an add-to-cart is triggered,
   // independent of how long the underlying request actually takes.
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const addToCartCooldownRef = useRef(null);
@@ -74,10 +77,10 @@ export default function CartProvider({ children }) {
       const res = await getCart();
       if (!mountedRef.current) return;
 
-      // FIX: Only apply server response if no mutation is currently in flight.
-      // If a mutation is pending, its own fetchCart call (fired after the mutation
-      // resolves) will reconcile — we don't want a stale fetch to stomp on the
-      // freshly-optimised local state.
+      // Only apply server response if no mutation is currently in flight.
+      // If a mutation is pending, its own fetchCart call (fired after the
+      // mutation resolves) will reconcile — we don't want a stale fetch to
+      // stomp on the freshly-updated local state.
       if (pendingOpsRef.current === 0) {
         const serverCart = res.data;
         setCart(serverCart);
@@ -100,6 +103,10 @@ export default function CartProvider({ children }) {
   // On mount or auth change: re-fetch cart
   useEffect(() => {
     mountedRef.current = true;
+    // fetchCart is async — its setState calls (setCart/setSynced) only run
+    // after the internal `await getCart()` resolves, so nothing is set
+    // synchronously during this effect's execution. Safe to silence here.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCart();
     return () => {
       mountedRef.current = false;
@@ -108,8 +115,8 @@ export default function CartProvider({ children }) {
 
   // ── Add item ─────────────────────────────────────────────────────────────
   const addToCartLocal = useCallback(
-    async (productId, quantity = 1, productData = null) => {
-      // 0. Disable every "Add to Cart" button for a flat 1.5s cooldown,
+    async (productId, quantity = 1) => {
+      // Disable every "Add to Cart" button for a flat 1.5s cooldown,
       // regardless of how long the request itself takes.
       setIsAddingToCart(true);
       if (addToCartCooldownRef.current) {
@@ -119,60 +126,30 @@ export default function CartProvider({ children }) {
         if (mountedRef.current) setIsAddingToCart(false);
       }, 1500);
 
-      // 1. Optimistic update
-      let previousCart = null;
-      setCart((prev) => {
-        previousCart = prev;
-        if (!prev) return prev;
-
-        const existingIndex = prev.items.findIndex(
-          (item) =>
-            (item.product?._id ?? item.product)?.toString() ===
-            productId.toString(),
-        );
-
-        let newItems;
-        if (existingIndex >= 0) {
-          newItems = prev.items.map((item, idx) => {
-            if (idx !== existingIndex) return item;
-            return { ...item, quantity: item.quantity + quantity };
-          });
-        } else {
-          const newItem = productData
-            ? { product: productData, quantity }
-            : { product: { _id: productId }, quantity };
-          newItems = [...prev.items, newItem];
-        }
-
-        const updated = { ...prev, items: newItems };
-        saveLocalCart(updated);
-        return updated;
-      });
-
       pendingOpsRef.current += 1;
 
       try {
+        // Make the API call FIRST — wait for real response
         await addToCart({ productId, quantity });
+
+        // Only if API succeeds, fetch updated cart from server
         if (mountedRef.current) {
           pendingOpsRef.current -= 1;
           await fetchCart();
+          // Show success only after server confirms it was added
+          toast.success("Added to cart");
         }
       } catch (err) {
         pendingOpsRef.current = Math.max(0, pendingOpsRef.current - 1);
-        if (mountedRef.current) {
-          if (err.response?.status === 401) {
-            setCart(previousCart);
-            saveLocalCart(previousCart);
-          } else {
-            await fetchCart();
-          }
-        }
+
+        // Show the real error from the API
+        const errorMessage =
+          err.response?.data?.message || "Failed to add item to cart";
+        toast.error(errorMessage);
+
+        // Re-throw only for 401s so button handlers can open the auth modal
         if (err.response?.status === 401) {
           throw err;
-        } else {
-          toast.error(
-            err.response?.data?.message || "Failed to sync cart with server",
-          );
         }
       }
     },
@@ -209,12 +186,6 @@ export default function CartProvider({ children }) {
         }
       } catch (err) {
         pendingOpsRef.current = Math.max(0, pendingOpsRef.current - 1);
-        // FIX: re-fetch authoritative server state on failure instead of
-        // restoring a locally-captured `previousCart`. This is what was
-        // causing the "only reverts by 1" bug — overlapping rapid updates
-        // each captured their own (already wrong) previousCart, so the
-        // revert chain only ever undid the most recent step. Pulling fresh
-        // from the server always lands on the true, correct quantity.
         if (mountedRef.current) {
           await fetchCart();
         }
@@ -263,7 +234,7 @@ export default function CartProvider({ children }) {
     [fetchCart],
   );
 
-  // ── Clear cart
+  // ── Clear cart ────────────────────────────────────────────────────────────
   const clearCartLocal = useCallback(async () => {
     let previousCart = null;
     setCart((prev) => {
@@ -291,6 +262,15 @@ export default function CartProvider({ children }) {
     }
   }, [fetchCart]);
 
+  // ── Validate cart stock before checkout ──────────────────────────────────
+  // Calls POST /cart/validate on the server which checks every cart item's
+  // current stock level and returns any issues found.
+  // Returns: { valid: boolean, errors: [{ productId, name, reason, availableStock, cartQuantity }] }
+  const validateCartBeforeCheckout = useCallback(async () => {
+    const res = await validateCartStock();
+    return res.data;
+  }, []);
+
   return (
     <CartContext.Provider
       value={{
@@ -303,6 +283,7 @@ export default function CartProvider({ children }) {
         clearCartLocal,
         synced,
         isAddingToCart,
+        validateCartBeforeCheckout,
       }}
     >
       {children}
