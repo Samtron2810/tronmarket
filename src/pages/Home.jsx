@@ -34,6 +34,7 @@ export default function Home() {
   const location = useLocation();
 
   const [products, setProducts] = useState([]);
+  const [liveStock, setLiveStock] = useState({}); // { productId: stock }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
@@ -102,6 +103,28 @@ export default function Home() {
       setLoading(false);
     }
   }, [debouncedSearch, category, page]);
+
+  // ── Fetch real-time stock for displayed products ──
+  useEffect(() => {
+    const fetchLiveStock = async () => {
+      if (!products || products.length === 0) {
+        setLiveStock({});
+        return;
+      }
+
+      try {
+        const productIds = products.map((p) => p._id);
+        const res = await api.post("/products/stock-check", { productIds });
+        setLiveStock(res.data.stocks || {});
+      } catch (err) {
+        console.error("Failed to fetch live stock:", err);
+        // Silently fail — product cards will show cached stock as fallback
+        setLiveStock({});
+      }
+    };
+
+    fetchLiveStock();
+  }, [products]);
 
   useEffect(() => {
     fetchProducts();
@@ -384,7 +407,17 @@ export default function Home() {
               ) : (
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
                   {products.map((p) => (
-                    <ProductCard key={p._id} product={p} />
+                    <ProductCard
+                      key={p._id}
+                      product={{
+                        ...p,
+                        // Use live stock if available, fallback to cached stock
+                        stock:
+                          liveStock[p._id] !== undefined
+                            ? liveStock[p._id]
+                            : p.stock,
+                      }}
+                    />
                   ))}
                 </div>
               )}

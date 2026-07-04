@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
 import { FaStore, FaArrowLeft } from "react-icons/fa";
@@ -13,6 +13,9 @@ export default function Cart() {
   const [stockWarnings, setStockWarnings] = useState({});
   const [stockLoading, setStockLoading] = useState(false);
 
+  // Track previous warnings to prevent duplicate toasts
+  const previousWarningsRef = useRef({});
+
   // ── Refresh stock levels whenever the cart changes ──────────────────────
   // This catches the scenario where another user bought the last item while
   // this user had it sitting in their cart.
@@ -20,6 +23,7 @@ export default function Cart() {
     const refreshStock = async () => {
       if (!cart?.items || cart.items.length === 0) {
         setStockWarnings({});
+        previousWarningsRef.current = {};
         return;
       }
 
@@ -47,12 +51,23 @@ export default function Cart() {
 
         setStockWarnings(warnings);
 
+        // Only show toast if warnings have CHANGED, not just on every render
+        const previousWarnings = previousWarningsRef.current;
         const warningCount = Object.keys(warnings).length;
-        if (warningCount > 0) {
+        const previousWarningCount = Object.keys(previousWarnings).length;
+
+        // Check if warnings actually changed (not just re-fetched same warnings)
+        const warningsChanged =
+          warningCount !== previousWarningCount ||
+          JSON.stringify(warnings) !== JSON.stringify(previousWarnings);
+
+        if (warningsChanged && warningCount > 0) {
           toast.warning(
-            `${warningCount} item${warningCount > 1 ? "s" : ""} in your cart ${warningCount > 1 ? "have" : "has"} stock issues. Please review before checkout.`,
+            `⚠️ ${warningCount} item${warningCount > 1 ? "s" : ""} in your cart ${warningCount > 1 ? "have" : "has"} stock issues. Please review before checkout.`,
           );
         }
+
+        previousWarningsRef.current = warnings;
       } catch (err) {
         // Don't block the cart page if stock-check fails
         console.error("Stock refresh failed:", err);
