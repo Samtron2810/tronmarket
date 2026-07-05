@@ -32,12 +32,18 @@ const Login = () => {
         return;
       }
 
-      // role now comes directly from the response (no JWT decode needed)
       const user = { _id, name, email, role: role || "customer" };
       login(token, user);
       navigate(from, { replace: true });
     } catch (err) {
       const data = err.response?.data;
+
+      // Server signals unverified account — redirect silently to OTP page
+      if (data?.requiresVerification && data?.email) {
+        navigate("/verify-otp", { state: { email: data.email } });
+        return;
+      }
+
       const fieldError = data?.errors?.[0]?.message;
       setMsg(fieldError || data?.message || "Error logging in");
       setMsgOpen(true);
@@ -99,6 +105,7 @@ const Login = () => {
             </Link>
           </div>
         </form>
+
         <MessageModal
           open={msgOpen}
           message={msg}

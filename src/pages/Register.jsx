@@ -1,15 +1,10 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  register as apiRegister,
-  login as apiLogin,
-} from "../services/authService";
-import { AuthContext } from "../context/AuthContext";
+import { register as apiRegister } from "../services/authService";
 import MessageModal from "../components/MessageModal";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AuthContext);
 
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -24,32 +19,13 @@ const Register = () => {
     e.preventDefault();
     try {
       setLoading(true);
-
-      // Step 1: Register the account
       await apiRegister({
         name: form.name,
         email: form.email,
         password: form.password,
       });
-
-      // Step 2: Immediately log in so user lands on the right dashboard
-      const loginRes = await apiLogin({
-        email: form.email,
-        password: form.password,
-      });
-
-      const token = loginRes.data.token;
-      const user = {
-        _id: loginRes.data._id,
-        name: loginRes.data.name,
-        email: loginRes.data.email,
-        role: loginRes.data.role || "customer",
-      };
-
-      login(token, user);
-      navigate("/", { replace: true });
+      navigate("/verify-otp", { state: { email: form.email }, replace: true });
     } catch (err) {
-      // Show the first field-level error if available, otherwise the top-level message
       const data = err.response?.data;
       const fieldError = data?.errors?.[0]?.message;
       setMsg(fieldError || data?.message || "Registration failed");
@@ -118,12 +94,12 @@ const Register = () => {
             <button type="submit" className="primary-btn" disabled={loading}>
               {loading ? "Creating..." : "Create account"}
             </button>
-
             <Link to="/login" className="text-sm text-secondary">
               Already have an account?
             </Link>
           </div>
         </form>
+
         <MessageModal
           open={msgOpen}
           message={msg}

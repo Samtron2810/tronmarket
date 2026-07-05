@@ -124,7 +124,7 @@ export default function CartProvider({ children }) {
       }
       addToCartCooldownRef.current = setTimeout(() => {
         if (mountedRef.current) setIsAddingToCart(false);
-      }, 1500);
+      }, 2000);
 
       pendingOpsRef.current += 1;
 

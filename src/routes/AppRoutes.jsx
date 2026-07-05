@@ -4,6 +4,7 @@ import Home from "../pages/Home";
 import Cart from "../pages/Cart";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import VerifyOtp from "../pages/VerifyOtp";
 import ProductDetails from "../pages/ProductDetails";
 import NotFound from "../pages/NotFound";
 import GuestRoute from "../components/GuestRoute";
@@ -34,7 +35,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/checkout"
         element={
@@ -60,6 +60,7 @@ export default function AppRoutes() {
           </GuestRoute>
         }
       />
+      <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route
         path="/profile"
@@ -77,7 +78,6 @@ export default function AppRoutes() {
           </SellerRoute>
         }
       />
-
       <Route
         path="/seller/add"
         element={
@@ -86,7 +86,6 @@ export default function AppRoutes() {
           </SellerRoute>
         }
       />
-
       <Route
         path="/seller/edit/:id"
         element={
@@ -95,7 +94,6 @@ export default function AppRoutes() {
           </SellerRoute>
         }
       />
-
       <Route
         path="/my-orders"
         element={
@@ -104,7 +102,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
       <Route
         path="/seller/orders"
         element={
