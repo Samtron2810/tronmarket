@@ -96,8 +96,12 @@ const Login = () => {
             </div>
           </label>
 
-          <div className="flex justify-between items-center">
-            <button type="submit" className="primary-btn" disabled={loading}>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <button
+              type="submit"
+              className="primary-btn w-full sm:w-auto"
+              disabled={loading}
+            >
               {loading ? "Signing in..." : "Sign in"}
             </button>
             <Link to="/register" className="text-sm text-secondary">
