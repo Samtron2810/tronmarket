@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { verifyOtp, resendOtp } from "../services/authService";
 import { AuthContext } from "../context/AuthContext";
 import MessageModal from "../components/MessageModal";
+import { FaEnvelope } from "react-icons/fa";
 
 const RESEND_COOLDOWN = 60;
 
@@ -110,7 +111,7 @@ export default function VerifyOtp() {
       <div className="w-full max-w-md card p-8">
         <div className="flex justify-center mb-4">
           <div className="w-14 h-14 rounded-full bg-blue-50 border-2 border-[#2B80FF] flex items-center justify-center text-2xl">
-            ✉️
+            <FaEnvelope className="text-blue-500" />
           </div>
         </div>
 
