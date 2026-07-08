@@ -41,6 +41,11 @@ export default function ProductDetails() {
     fetchProduct();
   }, [id]);
 
+  // reset quantity when product changes
+  useEffect(() => {
+    setQuantity(1);
+  }, [id]);
+
   const handleAddToCart = async () => {
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
@@ -216,7 +221,12 @@ export default function ProductDetails() {
                   type="number"
                   min="1"
                   value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
+                  onChange={(e) => {
+                    let val = Number(e.target.value);
+                    if (!Number.isFinite(val) || val < 1) val = 1;
+                    if (val > product.stock) val = product.stock;
+                    setQuantity(val);
+                  }}
                   className="w-16 px-2.5 py-1.5 rounded-lg border border-blue-100 bg-blue-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                 />
               </label>

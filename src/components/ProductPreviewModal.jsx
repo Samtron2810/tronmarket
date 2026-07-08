@@ -168,14 +168,18 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                 <input
                   type="number"
                   min="1"
+                  max={product.stock || 1}
                   value={qty}
-                  onChange={(e) =>
-                    setQty(Math.max(1, Number(e.target.value || 1)))
-                  }
+                  onChange={(e) => {
+                    const val = Number(e.target.value || 1);
+                    setQty(Math.min(Math.max(1, val), product.stock || 1));
+                  }}
                   className="w-14 text-center rounded-lg border border-blue-100 bg-blue-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all px-2 py-1"
                 />
                 <button
-                  onClick={() => setQty((q) => q + 1)}
+                  onClick={() =>
+                    setQty((q) => Math.min(q + 1, product.stock || 1))
+                  }
                   className="px-2.5 py-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 text-sm font-semibold transition-all active:scale-95"
                 >
                   +

@@ -102,7 +102,11 @@ export default function EditProduct() {
     e.preventDefault();
     try {
       setLoading(true);
-      const payload = { ...form };
+      const payload = {
+        ...form,
+        price: Number(form.price),
+        stock: Number(form.stock),
+      };
       // if new files selected, upload them first
       if (files.length > 0) {
         const urls = await uploadService.uploadImages(files);
@@ -146,7 +150,12 @@ export default function EditProduct() {
 
   const removePreview = (idx) => {
     setPreviews((p) => p.filter((_, i) => i !== idx));
-    setFiles((fs) => fs.filter((_, i) => i !== idx));
+    // files only contains newly uploaded items appended AFTER existing previews
+    const existingCount = previews.length - files.length;
+    const fileIdx = idx - existingCount;
+    if (fileIdx >= 0) {
+      setFiles((fs) => fs.filter((_, i) => i !== fileIdx));
+    }
   };
 
   return (
