@@ -8,14 +8,17 @@ import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import AuthProvider from "./context/AuthContext";
 import CartProvider from "./context/CartContext";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AuthProvider>
-      <CartProvider>
-        <App />
-        <ToastContainer position="top-right" />
-      </CartProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <App />
+          <ToastContainer position="top-right" />
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

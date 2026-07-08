@@ -1,5 +1,6 @@
 import React from "react";
 import { FaArrowLeft } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const NotFound = () => {
   return (
@@ -8,12 +9,12 @@ const NotFound = () => {
       <br />
       <p>Sorry, the page you are looking for does not exist.</p>
       <br />
-      <a
-        href="/"
+      <Link
+        to="/"
         className="flex items-center gap-2 border-2 border-blue-400 rounded-md bg-black text-white px-3 py-2 cursor-pointer"
       >
         <FaArrowLeft /> Go back to Home
-      </a>
+      </Link>
     </main>
   );
 };
