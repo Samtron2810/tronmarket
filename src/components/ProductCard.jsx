@@ -107,7 +107,7 @@ export default function ProductCard({ product }) {
             <span className="text-blue-500 text-xs lg:text-[11px] font-bold uppercase tracking-wider">
               {product.category || "General"}
             </span>
-            <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed">
+            <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed truncate">
               {product.description || "No description available."}
             </p>
           </div>
