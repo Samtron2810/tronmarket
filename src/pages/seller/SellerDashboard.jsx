@@ -75,7 +75,7 @@ export default function SellerDashboard() {
         <Link
           to="/"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-          style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+          style={{ backgroundColor: "#101828", color: "#fff" }}
         >
           <FiArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
@@ -84,25 +84,25 @@ export default function SellerDashboard() {
       {/* ── Header ── */}
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-2xl px-6 py-3 mb-8"
-        style={{ backgroundColor: "#FFAA4D" }}
+        style={{ backgroundColor: "#101828" }}
       >
         <div>
           <span
             className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full inline-block mb-1"
             style={{
               backgroundColor: "rgba(255,255,255,0.25)",
-              color: "#1A1A1A",
+              color: "#FFFFFF",
             }}
           >
             Seller Portal
           </span>
           <h1
             className="text-2xl font-extrabold tracking-tight"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "#FFFFFF" }}
           >
             Your Dashboard
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: "#3a2a00" }}>
+          <p className="text-sm mt-0.5" style={{ color: "#D0D5DD" }}>
             {products.length} product{products.length === 1 ? "" : "s"} listed
           </p>
         </div>
@@ -110,12 +110,12 @@ export default function SellerDashboard() {
           <Link
             to="/seller/add"
             className="inline-flex items-center gap-2 px-2 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm self-start sm:self-auto"
-            style={{ backgroundColor: "#2B80FF", color: "#fff" }}
+            style={{ backgroundColor: "#047857", color: "#fff" }}
             onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#1a6de0")
+              (e.currentTarget.style.backgroundColor = "#065F46")
             }
             onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "#2B80FF")
+              (e.currentTarget.style.backgroundColor = "#047857")
             }
           >
             <FiPlus className="w-4 h-4" />
@@ -124,7 +124,7 @@ export default function SellerDashboard() {
           {/* view your orders */}
           <Link
             to="/seller/orders"
-            className="inline-flex items-center gap-2 px-2 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm self-start sm:self-auto border-2 border-white text-blue-600 hover:bg-blue-50 hover:border-blue-600"
+            className="inline-flex items-center gap-2 px-2 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm self-start sm:self-auto border-2 border-white text-emerald-700 hover:bg-emerald-50 hover:border-emerald-700"
           >
             <FiShoppingBag className="w-4 h-4" />
             View Your Orders
@@ -153,18 +153,18 @@ export default function SellerDashboard() {
         >
           <FiPackage
             className="w-10 h-10 mx-auto mb-3"
-            style={{ color: "#FFAA4D" }}
+            style={{ color: "#101828" }}
           />
-          <p className="font-semibold text-base" style={{ color: "#1A1A1A" }}>
+          <p className="font-semibold text-base" style={{ color: "#101828" }}>
             No products yet
           </p>
-          <p className="text-sm mt-1 mb-4" style={{ color: "#555555" }}>
+          <p className="text-sm mt-1 mb-4" style={{ color: "#667085" }}>
             Start by adding your first product to the marketplace.
           </p>
           <Link
             to="/seller/add"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition active:scale-95"
-            style={{ backgroundColor: "#2B80FF", color: "#fff" }}
+            style={{ backgroundColor: "#047857", color: "#fff" }}
           >
             <FiPlus className="w-4 h-4" />
             Add your first product
@@ -182,8 +182,8 @@ export default function SellerDashboard() {
               style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow =
-                  "0 8px 24px rgba(43,128,255,0.12), 0 2px 6px rgba(0,0,0,0.06)";
-                e.currentTarget.style.borderColor = "#d0e4ff";
+                  "0 8px 24px rgba(4,120,87,0.12), 0 2px 6px rgba(0,0,0,0.06)";
+                e.currentTarget.style.borderColor = "#A7F3D0";
                 e.currentTarget.style.transform = "translateY(-2px)";
               }}
               onMouseLeave={(e) => {
@@ -195,7 +195,7 @@ export default function SellerDashboard() {
               {/* Product image */}
               <div
                 className="relative h-32 w-full overflow-hidden"
-                style={{ backgroundColor: "#EBF2FF" }}
+                style={{ backgroundColor: "#ECFDF5" }}
               >
                 {p.image ? (
                   <img
@@ -211,7 +211,7 @@ export default function SellerDashboard() {
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
-                      style={{ color: "#2B80FF", opacity: 0.35 }}
+                      style={{ color: "#047857", opacity: 0.35 }}
                     >
                       <path
                         strokeLinecap="round"
@@ -229,13 +229,13 @@ export default function SellerDashboard() {
                 <div className="flex-1">
                   <h3
                     className="font-semibold text-sm leading-snug line-clamp-2"
-                    style={{ color: "#1A1A1A" }}
+                    style={{ color: "#101828" }}
                   >
                     {p.name}
                   </h3>
                   <p
                     className="text-sm font-bold mt-1"
-                    style={{ color: "#FF8C00" }}
+                    style={{ color: "#B45309" }}
                   >
                     ₦{Number(p.price).toLocaleString()}
                   </p>
@@ -245,12 +245,12 @@ export default function SellerDashboard() {
                   <Link
                     to={`/seller/edit/${p._id}`}
                     className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 active:scale-95"
-                    style={{ backgroundColor: "#EBF2FF", color: "#2B80FF" }}
+                    style={{ backgroundColor: "#ECFDF5", color: "#047857" }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#d0e4ff")
+                      (e.currentTarget.style.backgroundColor = "#A7F3D0")
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#EBF2FF")
+                      (e.currentTarget.style.backgroundColor = "#ECFDF5")
                     }
                   >
                     <svg
@@ -272,12 +272,12 @@ export default function SellerDashboard() {
                   <button
                     onClick={() => promptDelete(p._id)}
                     className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 active:scale-95"
-                    style={{ backgroundColor: "#fff0f0", color: "#FF2E3B" }}
+                    style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#ffd6d8")
+                      (e.currentTarget.style.backgroundColor = "#FECACA")
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#fff0f0")
+                      (e.currentTarget.style.backgroundColor = "#FEF2F2")
                     }
                   >
                     <svg

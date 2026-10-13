@@ -27,7 +27,7 @@ export default function MessageModal({
           {/* Top accent strip */}
           <div
             className="h-1.5 w-full"
-            style={{ backgroundColor: "#2B80FF" }}
+            style={{ backgroundColor: "#047857" }}
           />
 
           <div className="p-6">
@@ -35,25 +35,25 @@ export default function MessageModal({
             <div className="flex items-start gap-3 mb-3">
               <div
                 className="flex items-center justify-center w-9 h-9 rounded-full shrink-0"
-                style={{ backgroundColor: "#EBF2FF" }}
+                style={{ backgroundColor: "#ECFDF5" }}
               >
                 <FaExclamationTriangle
                   className="w-4 h-4"
-                  style={{ color: "#2B80FF" }}
+                  style={{ color: "#047857" }}
                 />
               </div>
               <div>
                 {title && (
                   <h3
                     className="text-base font-extrabold leading-tight"
-                    style={{ color: "#1A1A1A" }}
+                    style={{ color: "#101828" }}
                   >
                     {title}
                   </h3>
                 )}
                 <p
                   className="text-sm mt-1 leading-relaxed"
-                  style={{ color: "#555555" }}
+                  style={{ color: "#667085" }}
                 >
                   {message}
                 </p>
@@ -65,12 +65,12 @@ export default function MessageModal({
               <button
                 onClick={onClose}
                 className="px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
-                style={{ backgroundColor: "#2B80FF", color: "#fff" }}
+                style={{ backgroundColor: "#047857", color: "#fff" }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#1a6de0")
+                  (e.currentTarget.style.backgroundColor = "#065F46")
                 }
                 onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#2B80FF")
+                  (e.currentTarget.style.backgroundColor = "#047857")
                 }
               >
                 {okLabel}

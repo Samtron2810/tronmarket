@@ -19,7 +19,7 @@ export default function Profile() {
     <div className="page-container p-6">
       <Link
         to="/"
-        className="inline-flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:opacity-80 transition-opacity mb-4 group"
+        className="inline-flex items-center gap-2 text-sm font-medium text-[#101828] hover:opacity-80 transition-opacity mb-4 group"
       >
         <FaHome className="transform group-hover:-translate-x-1 transition-transform" />
         Back to Home
@@ -31,28 +31,28 @@ export default function Profile() {
             <div className="text-sm text-secondary">Name</div>
             <div className="font-medium">{user.name}</div>
           </div>
-          <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
+          <hr className="border border-emerald-200 my-4 w-1/2 mx-auto" />
           <div>
             <div className="text-sm text-secondary">Email</div>
             <div className="font-medium">{user.email}</div>
           </div>
-          <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
+          <hr className="border border-emerald-200 my-4 w-1/2 mx-auto" />
           <div>
             <div className="text-sm text-secondary">Role</div>
             <div className="font-medium">{user.role || "customer"}</div>
           </div>
         </div>
-        <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
+        <hr className="border border-emerald-200 my-4 w-1/2 mx-auto" />
         {user.role === "customer" && (
           <div className="mb-6">
             <Link
               to="/apply-seller"
-              className="pointer-events-none px-6 py-2 rounded-xl bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
+              className="pointer-events-none px-6 py-2 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
             >
               <span>Apply for Seller Role</span>{" "}
               <FaStore className="inline-block ml-2" />
             </Link>
-            <hr className="border border-blue-200 my-4 w-1/2 mx-auto" />
+            <hr className="border border-emerald-200 my-4 w-1/2 mx-auto" />
           </div>
         )}
         <div className="flex justify-center">

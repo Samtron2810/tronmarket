@@ -29,7 +29,7 @@ export default function ConfirmModal({
           {/* Top accent strip */}
           <div
             className="h-1.5 w-full"
-            style={{ backgroundColor: "#FF2E3B" }}
+            style={{ backgroundColor: "#DC2626" }}
           />
 
           <div className="p-6">
@@ -37,20 +37,20 @@ export default function ConfirmModal({
             <div className="flex items-start gap-3 mb-3">
               <div
                 className="flex items-center justify-center w-9 h-9 rounded-full shrink-0"
-                style={{ backgroundColor: "#fff0f0" }}
+                style={{ backgroundColor: "#FEF2F2" }}
               >
-                <FiTrash2 className="w-4 h-4" style={{ color: "#FF2E3B" }} />
+                <FiTrash2 className="w-4 h-4" style={{ color: "#DC2626" }} />
               </div>
               <div>
                 <h3
                   className="text-base font-extrabold leading-tight"
-                  style={{ color: "#1A1A1A" }}
+                  style={{ color: "#101828" }}
                 >
                   {title || "Confirm"}
                 </h3>
                 <p
                   className="text-sm mt-1 leading-relaxed"
-                  style={{ color: "#555555" }}
+                  style={{ color: "#667085" }}
                 >
                   {description || "Are you sure you want to proceed?"}
                 </p>
@@ -62,7 +62,7 @@ export default function ConfirmModal({
               <button
                 onClick={onClose}
                 className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
-                style={{ backgroundColor: "#f3f4f6", color: "#222222" }}
+                style={{ backgroundColor: "#f3f4f6", color: "#101828" }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.backgroundColor = "#e5e7eb")
                 }
@@ -76,12 +76,12 @@ export default function ConfirmModal({
               <button
                 onClick={onConfirm}
                 className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
-                style={{ backgroundColor: "#FF2E3B", color: "#fff" }}
+                style={{ backgroundColor: "#DC2626", color: "#fff" }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#e0001a")
+                  (e.currentTarget.style.backgroundColor = "#B91C1C")
                 }
                 onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#FF2E3B")
+                  (e.currentTarget.style.backgroundColor = "#DC2626")
                 }
               >
                 {confirmLabel}

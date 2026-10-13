@@ -83,7 +83,7 @@ export default function Cart() {
     return (
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         {/* Header skeleton */}
-        <div className="animate-pulse rounded-2xl px-6 py-5 mb-8 bg-[#FFAA4D]/60">
+        <div className="animate-pulse rounded-2xl px-6 py-5 mb-8 bg-[#D1FAE5]">
           <div className="h-5 w-24 bg-white/40 rounded-full mb-2" />
           <div className="h-7 w-32 bg-white/40 rounded-lg" />
         </div>
@@ -146,7 +146,7 @@ export default function Cart() {
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
       <Link
         to="/"
-        className="inline-flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:opacity-80 transition-opacity mb-4 group"
+        className="inline-flex items-center gap-2 text-sm font-medium text-[#101828] hover:opacity-80 transition-opacity mb-4 group"
       >
         <FaArrowLeft className="transform group-hover:-translate-x-1 transition-transform" />
         Back to Home
@@ -155,26 +155,26 @@ export default function Cart() {
       {/* ── Header ── */}
       <div
         className="flex items-center justify-between rounded-2xl px-6 py-5 mb-8"
-        style={{ backgroundColor: "#FFAA4D" }}
+        style={{ backgroundColor: "#101828" }}
       >
         <div>
           <span
             className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full inline-block mb-1"
             style={{
               backgroundColor: "rgba(255,255,255,0.25)",
-              color: "#1A1A1A",
+              color: "#FFFFFF",
             }}
           >
             Shopping
           </span>
           <h1
             className="text-2xl font-extrabold tracking-tight"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "#FFFFFF" }}
           >
             Your Cart
           </h1>
           {cart.items.length > 0 && (
-            <p className="text-sm mt-0.5" style={{ color: "#3a2a00" }}>
+            <p className="text-sm mt-0.5" style={{ color: "#D0D5DD" }}>
               {cart.items.length} item{cart.items.length === 1 ? "" : "s"} in
               your cart
             </p>
@@ -183,8 +183,8 @@ export default function Cart() {
 
         <Link
           to="/my-orders"
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-blue-600 text-sm font-medium transition-all duration-150"
-          style={{ color: "#222222" }}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-emerald-700 text-sm font-medium transition-all duration-150"
+          style={{ color: "#FFFFFF" }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.5)")
           }
@@ -208,7 +208,7 @@ export default function Cart() {
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
-            style={{ color: "#FFAA4D" }}
+            style={{ color: "#101828" }}
           >
             <path
               strokeLinecap="round"
@@ -219,17 +219,17 @@ export default function Cart() {
           </svg>
           <p
             className="font-semibold text-base mb-1"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "#101828" }}
           >
             Your cart is empty
           </p>
-          <p className="text-sm mb-5" style={{ color: "#555555" }}>
+          <p className="text-sm mb-5" style={{ color: "#667085" }}>
             Browse our marketplace and add something you love.
           </p>
           <Link
             to="/"
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95"
-            style={{ backgroundColor: "#2B80FF", color: "#fff" }}
+            style={{ backgroundColor: "#047857", color: "#fff" }}
           >
             <svg
               className="w-4 h-4"
@@ -268,7 +268,7 @@ export default function Cart() {
                     {/* Product image */}
                     <div
                       className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
-                      style={{ backgroundColor: "#EBF2FF" }}
+                      style={{ backgroundColor: "#ECFDF5" }}
                     >
                       {item.product?.image ? (
                         <img
@@ -284,7 +284,7 @@ export default function Cart() {
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
-                            style={{ color: "#2B80FF", opacity: 0.4 }}
+                            style={{ color: "#047857", opacity: 0.4 }}
                           >
                             <path
                               strokeLinecap="round"
@@ -301,7 +301,7 @@ export default function Cart() {
                     <div className="flex-1 min-w-0">
                       <p
                         className="font-semibold text-sm truncate"
-                        style={{ color: "#1A1A1A" }}
+                        style={{ color: "#101828" }}
                       >
                         {item.product?.name}
                       </p>
@@ -309,13 +309,13 @@ export default function Cart() {
                         <>
                           <p
                             className="text-sm font-bold mt-0.5"
-                            style={{ color: "#FF8C00" }}
+                            style={{ color: "#B45309" }}
                           >
                             ₦{item.product.price.toLocaleString()}
                           </p>
                           <p
                             className="text-xs mt-0.5"
-                            style={{ color: "#555555" }}
+                            style={{ color: "#667085" }}
                           >
                             Subtotal: ₦
                             {(
@@ -347,21 +347,21 @@ export default function Cart() {
                           width: "64px",
                           padding: "6px 10px",
                           borderRadius: "8px",
-                          border: "1.5px solid #d0e4ff",
-                          backgroundColor: "#EBF2FF",
-                          color: "#1A1A1A",
+                          border: "1.5px solid #A7F3D0",
+                          backgroundColor: "#ECFDF5",
+                          color: "#101828",
                           fontSize: "14px",
                           fontWeight: "600",
                           outline: "none",
                           textAlign: "center",
                         }}
                         onFocus={(e) => {
-                          e.target.style.borderColor = "#2B80FF";
+                          e.target.style.borderColor = "#047857";
                           e.target.style.boxShadow =
-                            "0 0 0 3px rgba(43,128,255,0.15)";
+                            "0 0 0 3px rgba(4,120,87,0.15)";
                         }}
                         onBlur={(e) => {
-                          e.target.style.borderColor = "#d0e4ff";
+                          e.target.style.borderColor = "#A7F3D0";
                           e.target.style.boxShadow = "none";
                         }}
                       />
@@ -370,12 +370,12 @@ export default function Cart() {
                         onClick={() => removeItem(productId)}
                         title="Remove item"
                         className="p-2 rounded-xl transition-all duration-150 active:scale-95"
-                        style={{ backgroundColor: "#fff0f0", color: "#FF2E3B" }}
+                        style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}
                         onMouseEnter={(e) =>
-                          (e.currentTarget.style.backgroundColor = "#ffd6d8")
+                          (e.currentTarget.style.backgroundColor = "#FECACA")
                         }
                         onMouseLeave={(e) =>
-                          (e.currentTarget.style.backgroundColor = "#fff0f0")
+                          (e.currentTarget.style.backgroundColor = "#FEF2F2")
                         }
                       >
                         <svg
@@ -435,7 +435,7 @@ export default function Cart() {
             >
               <h2
                 className="font-bold text-base mb-4"
-                style={{ color: "#1A1A1A" }}
+                style={{ color: "#101828" }}
               >
                 Order Summary
               </h2>
@@ -448,20 +448,20 @@ export default function Cart() {
                   >
                     <span
                       className="truncate max-w-35"
-                      style={{ color: "#555555" }}
+                      style={{ color: "#667085" }}
                     >
                       {item.product.name} ×{item.quantity}
                     </span>
                     <span
                       className="font-medium shrink-0"
-                      style={{ color: "#1A1A1A" }}
+                      style={{ color: "#101828" }}
                     >
                       ₦{(item.product.price * item.quantity).toLocaleString()}
                     </span>
                   </div>
                 ))}
                 {availableItems.length === 0 && (
-                  <p className="text-xs" style={{ color: "#555555" }}>
+                  <p className="text-xs" style={{ color: "#667085" }}>
                     No available items
                   </p>
                 )}
@@ -473,13 +473,13 @@ export default function Cart() {
               >
                 <span
                   className="font-bold text-sm"
-                  style={{ color: "#1A1A1A" }}
+                  style={{ color: "#101828" }}
                 >
                   Total
                 </span>
                 <span
                   className="text-lg font-extrabold"
-                  style={{ color: "#FF8C00" }}
+                  style={{ color: "#B45309" }}
                 >
                   ₦{total.toLocaleString()}
                 </span>
@@ -489,7 +489,7 @@ export default function Cart() {
               {stockLoading && (
                 <p
                   className="text-xs text-center mt-3"
-                  style={{ color: "#555555" }}
+                  style={{ color: "#667085" }}
                 >
                   Checking stock availability...
                 </p>
@@ -506,12 +506,12 @@ export default function Cart() {
                 <Link
                   to="/checkout"
                   className="mt-5 flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
-                  style={{ backgroundColor: "#2B80FF", color: "#fff" }}
+                  style={{ backgroundColor: "#047857", color: "#fff" }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#1a6de0")
+                    (e.currentTarget.style.backgroundColor = "#065F46")
                   }
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#2B80FF")
+                    (e.currentTarget.style.backgroundColor = "#047857")
                   }
                 >
                   Proceed to Checkout
@@ -534,7 +534,7 @@ export default function Cart() {
               <Link
                 to="/"
                 className="mt-2 flex items-center justify-center gap-1 w-full py-2.5 rounded-xl text-sm font-medium transition-all duration-150"
-                style={{ backgroundColor: "#f3f4f6", color: "#222222" }}
+                style={{ backgroundColor: "#f3f4f6", color: "#101828" }}
                 onMouseEnter={(e) =>
                   (e.currentTarget.style.backgroundColor = "#e5e7eb")
                 }

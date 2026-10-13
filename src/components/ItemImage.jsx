@@ -29,9 +29,9 @@ export default function ItemImage({ src, alt, className = "" }) {
 
   return (
     <div
-      className={`flex items-center justify-center bg-[#EBF2FF] ${className}`}
+      className={`flex items-center justify-center bg-[#ECFDF5] ${className}`}
     >
-      <FaImage className="w-5 h-5 text-[#2B80FF] opacity-50" />
+      <FaImage className="w-5 h-5 text-[#047857] opacity-50" />
     </div>
   );
 }

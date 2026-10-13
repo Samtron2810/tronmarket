@@ -11,7 +11,7 @@ const NotFound = () => {
       <br />
       <Link
         to="/"
-        className="flex items-center gap-2 border-2 border-blue-400 rounded-md bg-black text-white px-3 py-2 cursor-pointer"
+        className="flex items-center gap-2 border-2 border-emerald-400 rounded-md bg-black text-white px-3 py-2 cursor-pointer"
       >
         <FaArrowLeft /> Go back to Home
       </Link>

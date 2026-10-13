@@ -110,8 +110,8 @@ export default function VerifyOtp() {
     <main className="page-container flex items-center justify-center min-h-[70vh]">
       <div className="w-full max-w-md card p-8">
         <div className="flex justify-center mb-4">
-          <div className="w-14 h-14 rounded-full bg-blue-50 border-2 border-[#2B80FF] flex items-center justify-center text-2xl">
-            <FaEnvelope className="text-blue-500" />
+          <div className="w-14 h-14 rounded-full bg-emerald-50 border-2 border-[#047857] flex items-center justify-center text-2xl">
+            <FaEnvelope className="text-emerald-700" />
           </div>
         </div>
 
@@ -121,7 +121,7 @@ export default function VerifyOtp() {
         <p className="text-sm text-secondary mb-1 text-center">
           We sent a 6-digit code to
         </p>
-        <p className="text-sm font-semibold text-center text-[#2B80FF] mb-6 break-all">
+        <p className="text-sm font-semibold text-center text-[#047857] mb-6 break-all">
           {email}
         </p>
 
@@ -138,11 +138,11 @@ export default function VerifyOtp() {
                 onChange={(e) => handleDigitChange(i, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(i, e)}
                 className={[
-                  "w-11 h-14 text-center text-xl font-bold rounded-xl border-2 bg-[#EBF2FF] outline-none transition-colors",
+                  "w-11 h-14 text-center text-xl font-bold rounded-xl border-2 bg-[#ECFDF5] outline-none transition-colors",
                   d
-                    ? "border-[#2B80FF] text-[#1A1A1A]"
-                    : "border-gray-200 text-[#1A1A1A]",
-                  "focus:border-[#2B80FF]",
+                    ? "border-[#047857] text-[#101828]"
+                    : "border-gray-200 text-[#101828]",
+                  "focus:border-[#047857]",
                 ].join(" ")}
               />
             ))}
@@ -165,7 +165,7 @@ export default function VerifyOtp() {
             <button
               onClick={handleResend}
               disabled={resending}
-              className="text-[#2B80FF] font-semibold hover:underline disabled:opacity-50 cursor-pointer"
+              className="text-[#047857] font-semibold hover:underline disabled:opacity-50 cursor-pointer"
             >
               {resending ? "Sending..." : "Resend code"}
             </button>

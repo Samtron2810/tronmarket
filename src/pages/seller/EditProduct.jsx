@@ -10,9 +10,9 @@ import { toast } from "react-toastify";
 const categories = ["phones", "laptops", "fashion", "home", "electronics"];
 
 const inputStyle = {
-  backgroundColor: "#EBF2FF",
-  color: "#1A1A1A",
-  border: "1.5px solid #d0e4ff",
+  backgroundColor: "#ECFDF5",
+  color: "#101828",
+  border: "1.5px solid #A7F3D0",
   borderRadius: "10px",
   padding: "10px 14px",
   fontSize: "14px",
@@ -28,7 +28,7 @@ const labelStyle = {
   textTransform: "uppercase",
   letterSpacing: "0.07em",
   marginBottom: "6px",
-  color: "#555555",
+  color: "#667085",
 };
 
 function Field({ label, children }) {
@@ -90,11 +90,11 @@ export default function EditProduct() {
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const focusIn = (e) => {
-    e.target.style.borderColor = "#2B80FF";
-    e.target.style.boxShadow = "0 0 0 3px rgba(43,128,255,0.15)";
+    e.target.style.borderColor = "#047857";
+    e.target.style.boxShadow = "0 0 0 3px rgba(4,120,87,0.15)";
   };
   const focusOut = (e) => {
-    e.target.style.borderColor = "#d0e4ff";
+    e.target.style.borderColor = "#A7F3D0";
     e.target.style.boxShadow = "none";
   };
 
@@ -163,25 +163,25 @@ export default function EditProduct() {
       {/* ── Page header ── */}
       <div
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl px-6 py-5 mb-8"
-        style={{ backgroundColor: "#FFAA4D" }}
+        style={{ backgroundColor: "#101828" }}
       >
         <div>
           <span
             className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full inline-block mb-1"
             style={{
               backgroundColor: "rgba(255,255,255,0.25)",
-              color: "#1A1A1A",
+              color: "#FFFFFF",
             }}
           >
             Seller Portal
           </span>
           <h1
             className="text-2xl font-extrabold tracking-tight"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "#FFFFFF" }}
           >
             Edit Product
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: "#3a2a00" }}>
+          <p className="text-sm mt-0.5" style={{ color: "#D0D5DD" }}>
             Update the details below and save your changes.
           </p>
         </div>
@@ -191,7 +191,7 @@ export default function EditProduct() {
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 self-start sm:self-auto"
           style={{
             backgroundColor: "rgba(255,255,255,0.30)",
-            color: "#1A1A1A",
+            color: "#FFFFFF",
           }}
           onMouseEnter={(e) =>
             (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.50)")
@@ -221,7 +221,7 @@ export default function EditProduct() {
                   />
                   <div
                     className="h-10 w-full rounded-xl"
-                    style={{ backgroundColor: "#EBF2FF" }}
+                    style={{ backgroundColor: "#ECFDF5" }}
                   />
                 </div>
               ))}
@@ -252,7 +252,7 @@ export default function EditProduct() {
                       transform: "translateY(-50%)",
                       fontSize: "14px",
                       fontWeight: "600",
-                      color: "#FF8C00",
+                      color: "#B45309",
                       pointerEvents: "none",
                     }}
                   >
@@ -333,7 +333,7 @@ export default function EditProduct() {
                 {form.image && (
                   <div
                     className="mt-2 rounded-xl overflow-hidden border"
-                    style={{ borderColor: "#d0e4ff", height: "140px" }}
+                    style={{ borderColor: "#A7F3D0", height: "140px" }}
                   >
                     <img
                       src={form.image}
@@ -350,25 +350,25 @@ export default function EditProduct() {
                 <label
                   className="flex flex-col items-center justify-center gap-2 w-full cursor-pointer rounded-xl border-2 border-dashed transition-all duration-150"
                   style={{
-                    borderColor: "#2B80FF",
-                    backgroundColor: "#EBF2FF",
+                    borderColor: "#047857",
+                    backgroundColor: "#ECFDF5",
                     padding: "18px 14px",
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#d0e4ff")
+                    (e.currentTarget.style.backgroundColor = "#A7F3D0")
                   }
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#EBF2FF")
+                    (e.currentTarget.style.backgroundColor = "#ECFDF5")
                   }
                 >
-                  <FiUpload className="w-6 h-6" style={{ color: "#2B80FF" }} />
+                  <FiUpload className="w-6 h-6" style={{ color: "#047857" }} />
                   <span
                     className="text-sm font-semibold"
-                    style={{ color: "#2B80FF" }}
+                    style={{ color: "#047857" }}
                   >
                     Click to upload images
                   </span>
-                  <span className="text-xs" style={{ color: "#555555" }}>
+                  <span className="text-xs" style={{ color: "#667085" }}>
                     PNG, JPG, WEBP supported
                   </span>
                   <input
@@ -386,7 +386,7 @@ export default function EditProduct() {
                       <div
                         key={i}
                         className="relative rounded-xl overflow-hidden border"
-                        style={{ height: 80, borderColor: "#d0e4ff" }}
+                        style={{ height: 80, borderColor: "#A7F3D0" }}
                       >
                         <img
                           src={src}
@@ -397,7 +397,7 @@ export default function EditProduct() {
                           type="button"
                           onClick={() => removePreview(i)}
                           className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center rounded-full text-xs font-bold"
-                          style={{ backgroundColor: "#FF2E3B", color: "#fff" }}
+                          style={{ backgroundColor: "#DC2626", color: "#fff" }}
                         >
                           ✕
                         </button>
@@ -412,7 +412,7 @@ export default function EditProduct() {
                 <Link
                   to="/seller"
                   className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
-                  style={{ backgroundColor: "#f3f4f6", color: "#222222" }}
+                  style={{ backgroundColor: "#f3f4f6", color: "#101828" }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.backgroundColor = "#e5e7eb")
                   }
@@ -427,14 +427,14 @@ export default function EditProduct() {
                   type="submit"
                   disabled={loading}
                   className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: "#2B80FF", color: "#fff" }}
+                  style={{ backgroundColor: "#047857", color: "#fff" }}
                   onMouseEnter={(e) => {
                     if (!loading)
-                      e.currentTarget.style.backgroundColor = "#1a6de0";
+                      e.currentTarget.style.backgroundColor = "#065F46";
                   }}
                   onMouseLeave={(e) => {
                     if (!loading)
-                      e.currentTarget.style.backgroundColor = "#2B80FF";
+                      e.currentTarget.style.backgroundColor = "#047857";
                   }}
                 >
                   {loading ? (

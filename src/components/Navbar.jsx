@@ -14,15 +14,14 @@ import {
 import { CartContext } from "../context/CartContext";
 import { AuthContext } from "../context/AuthContext";
 
-/* ─── Design tokens (matching my color combo) ────────────────────────
-  Background header : #FFAA4D  (Sandy Orange  — separates nav from page)
-  Destructive action: #FF2E3B  (Crimson Red   — logout / delete)
-  Primary CTA       : #2B80FF  (Royal Blue    — login, search button)
-  Input tint        : #EBF2FF  (Light Blue    — soft brand connection)
-  Logo "Tron"       : #1A1A1A  (Charcoal)
-  Logo "Market"     : #0066FF  (Electric Blue)
-  Nav links         : #222222  (Dark Slate)
-  Badge / accent    : #FF8C00  (Vibrant Orange — cart count dot)
+/* ─── Theme A: Clean Commerce ───────────────────────────────────────
+  Header / footer   : #101828  (Ink)
+  Primary CTA       : #047857  (Emerald 700)
+  Logo "Market"     : #34D399  (Emerald 400)
+  Search input      : #FFFFFF on ink, emerald focus ring
+  Nav links         : #EAECF0 on ink
+  Badge / accent    : #F59E0B  (Amber 500, ink text)
+  Destructive       : #DC2626
 ───────────────────────────────────────────────────────────────────────── */
 
 export default function Navbar() {
@@ -77,10 +76,10 @@ export default function Navbar() {
     <header
       ref={ref}
       style={{
-        backgroundColor: "#FFAA4D",
+        backgroundColor: "#101828",
         boxShadow: scrolled
-          ? "0 4px 20px rgba(255,140,0,0.30), 0 1px 4px rgba(0,0,0,0.10)"
-          : "0 2px 8px rgba(255,140,0,0.18)",
+          ? "0 4px 20px rgba(16,24,40,0.35), 0 1px 4px rgba(0,0,0,0.20)"
+          : "0 2px 8px rgba(16,24,40,0.25)",
       }}
       className="sticky top-0 z-50 w-full transition-all duration-300"
     >
@@ -100,13 +99,13 @@ export default function Navbar() {
               className="h-7 sm:h-8 w-auto mr-2 object-contain"
             />
             <span
-              style={{ color: "#1A1A1A" }}
+              style={{ color: "#FFFFFF" }}
               className="text-lg sm:text-xl font-extrabold tracking-tight transition-opacity group-hover:opacity-80"
             >
               Tron
             </span>
             <span
-              style={{ color: "#0066FF" }}
+              style={{ color: "#34D399" }}
               className="text-lg sm:text-xl font-extrabold tracking-tight transition-opacity group-hover:opacity-80"
             >
               Market
@@ -120,7 +119,7 @@ export default function Navbar() {
               <div className="relative">
                 <span
                   className="absolute inset-y-0 left-2.5 flex items-center pointer-events-none"
-                  style={{ color: "#2B80FF" }}
+                  style={{ color: "#047857" }}
                 >
                   <FaSearch className="w-3.5 h-3.5" />
                 </span>
@@ -128,10 +127,10 @@ export default function Navbar() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search products…"
-                  style={{ backgroundColor: "#EBF2FF", color: "#1A1A1A" }}
-                  className="w-44 lg:w-60 pl-8 pr-10 py-2 rounded-lg text-sm placeholder-blue-300 focus:outline-none focus:ring-2 transition-all duration-200"
+                  style={{ backgroundColor: "#FFFFFF", color: "#101828" }}
+                  className="w-44 lg:w-60 pl-8 pr-10 py-2 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-200"
                   onFocus={(e) =>
-                    (e.target.style.boxShadow = "0 0 0 2px #2B80FF")
+                    (e.target.style.boxShadow = "0 0 0 2px #34D399")
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 />
@@ -152,7 +151,7 @@ export default function Navbar() {
               </div>
               <button
                 type="submit"
-                style={{ backgroundColor: "#2B80FF" }}
+                style={{ backgroundColor: "#047857" }}
                 className="px-3.5 py-2 rounded-lg text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition-all duration-150 shadow-sm"
               >
                 Search
@@ -163,7 +162,7 @@ export default function Navbar() {
             <Link
               to="/cart"
               className="relative flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-              style={{ color: "#222222" }}
+              style={{ color: "#EAECF0" }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor =
                   "rgba(255,255,255,0.25)")
@@ -176,7 +175,7 @@ export default function Navbar() {
               <span>Cart</span>
               {count > 0 && (
                 <span
-                  style={{ backgroundColor: "#FF8C00", color: "#fff" }}
+                  style={{ backgroundColor: "#F59E0B", color: "#101828" }}
                   className="absolute -top-1 -right-1 min-w-4.5 h-4.5 flex items-center justify-center text-[10px] font-bold rounded-full px-1 shadow"
                 >
                   {count}
@@ -190,7 +189,7 @@ export default function Navbar() {
                 <Link
                   to="/profile"
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-                  style={{ color: "#222222" }}
+                  style={{ color: "#EAECF0" }}
                   onMouseEnter={(e) =>
                     (e.currentTarget.style.backgroundColor =
                       "rgba(255,255,255,0.25)")
@@ -208,12 +207,12 @@ export default function Navbar() {
                   <Link
                     to="/seller"
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm"
-                    style={{ backgroundColor: "#1A1A1A", color: "#ffffff" }}
+                    style={{ backgroundColor: "#047857", color: "#ffffff" }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#333333")
+                      (e.currentTarget.style.backgroundColor = "#065F46")
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#1A1A1A")
+                      (e.currentTarget.style.backgroundColor = "#047857")
                     }
                   >
                     <FaStore className="w-3.5 h-3.5" />
@@ -223,8 +222,8 @@ export default function Navbar() {
                 {user?.role === "seller" && (
                   <Link
                     to="/seller/orders"
-                    className="flex items-center gap-1.5 px-3 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-medium transition-all duration-150"
-                    style={{ color: "#222222" }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-white/40 rounded-lg text-sm font-medium transition-all duration-150"
+                    style={{ color: "#EAECF0" }}
                     onMouseEnter={(e) =>
                       (e.currentTarget.style.backgroundColor =
                         "rgba(255,255,255,0.5)")
@@ -242,12 +241,12 @@ export default function Navbar() {
                   <Link
                     to="/admin"
                     className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm"
-                    style={{ backgroundColor: "#111827", color: "#ffffff" }}
+                    style={{ backgroundColor: "rgba(255,255,255,0.12)", color: "#ffffff" }}
                     onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#0f1720")
+                      (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.22)")
                     }
                     onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#111827")
+                      (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.12)")
                     }
                   >
                     <FaUserShield className="w-3.5 h-3.5" />
@@ -259,12 +258,12 @@ export default function Navbar() {
                 <button
                   onClick={onLogout}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm"
-                  style={{ backgroundColor: "#FF2E3B", color: "#ffffff" }}
+                  style={{ backgroundColor: "#DC2626", color: "#ffffff" }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#e0001a")
+                    (e.currentTarget.style.backgroundColor = "#B91C1C")
                   }
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#FF2E3B")
+                    (e.currentTarget.style.backgroundColor = "#DC2626")
                   }
                 >
                   <FaSignOutAlt className="w-3.5 h-3.5" />
@@ -275,12 +274,12 @@ export default function Navbar() {
               <Link
                 to="/login"
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm"
-                style={{ backgroundColor: "#2B80FF", color: "#ffffff" }}
+                style={{ backgroundColor: "#047857", color: "#ffffff" }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#1a6de0")
+                  (e.currentTarget.style.backgroundColor = "#065F46")
                 }
                 onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = "#2B80FF")
+                  (e.currentTarget.style.backgroundColor = "#047857")
                 }
               >
                 Login
@@ -293,7 +292,7 @@ export default function Navbar() {
             <Link
               to="/cart"
               className="relative p-2 rounded-lg transition-colors"
-              style={{ color: "#222222" }}
+              style={{ color: "#EAECF0" }}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor =
                   "rgba(255,255,255,0.25)")
@@ -305,7 +304,7 @@ export default function Navbar() {
               <FaShoppingCart className="w-5 h-5" />
               {count > 0 && (
                 <span
-                  style={{ backgroundColor: "#FF8C00", color: "#fff" }}
+                  style={{ backgroundColor: "#F59E0B", color: "#101828" }}
                   className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center text-[9px] font-bold rounded-full"
                 >
                   {count}
@@ -318,7 +317,7 @@ export default function Navbar() {
               aria-label="Toggle menu"
               style={{
                 backgroundColor: "rgba(255,255,255,0.30)",
-                color: "#1A1A1A",
+                color: "#FFFFFF",
               }}
               className="p-2 rounded-lg active:scale-95 transition-all duration-150"
             >
@@ -337,7 +336,7 @@ export default function Navbar() {
         className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
           open ? "max-h-130 opacity-100" : "max-h-0 opacity-0"
         }`}
-        style={{ backgroundColor: "#FF8C00" }}
+        style={{ backgroundColor: "#101828" }}
       >
         <div className="px-4 pb-5 pt-3 space-y-2.5">
           {/* Search */}
@@ -345,7 +344,7 @@ export default function Navbar() {
             <div className="relative flex-1">
               <span
                 className="absolute inset-y-0 left-2.5 flex items-center pointer-events-none"
-                style={{ color: "#2B80FF" }}
+                style={{ color: "#047857" }}
               >
                 <FaSearch className="w-3.5 h-3.5" />
               </span>
@@ -353,8 +352,8 @@ export default function Navbar() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search products…"
-                style={{ backgroundColor: "#EBF2FF", color: "#1A1A1A" }}
-                className="w-full pl-8 pr-10 py-2.5 rounded-xl text-sm placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                style={{ backgroundColor: "#FFFFFF", color: "#101828" }}
+                className="w-full pl-8 pr-10 py-2.5 rounded-xl text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
               />
               {search.trim() && (
                 <button
@@ -373,7 +372,7 @@ export default function Navbar() {
             </div>
             <button
               type="submit"
-              style={{ backgroundColor: "#2B80FF" }}
+              style={{ backgroundColor: "#047857" }}
               className="px-4 py-2.5 text-white rounded-xl text-sm font-semibold hover:opacity-90 active:scale-95 transition"
             >
               Go
@@ -387,7 +386,7 @@ export default function Navbar() {
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition"
               style={{
                 backgroundColor: "rgba(255,255,255,0.22)",
-                color: "#1A1A1A",
+                color: "#FFFFFF",
               }}
             >
               <FaUser className="w-4 h-4" />
@@ -400,7 +399,7 @@ export default function Navbar() {
               to="/seller"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition active:scale-95"
-              style={{ backgroundColor: "#1A1A1A", color: "#ffffff" }}
+              style={{ backgroundColor: "#047857", color: "#ffffff" }}
             >
               <FaStore className="w-4 h-4" />
               Seller Dashboard
@@ -414,7 +413,7 @@ export default function Navbar() {
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition"
               style={{
                 backgroundColor: "rgba(255,255,255,0.22)",
-                color: "#1A1A1A",
+                color: "#FFFFFF",
               }}
             >
               Orders
@@ -426,7 +425,7 @@ export default function Navbar() {
               to="/admin"
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition active:scale-95"
-              style={{ backgroundColor: "#111827", color: "#ffffff" }}
+              style={{ backgroundColor: "rgba(255,255,255,0.12)", color: "#ffffff" }}
             >
               <FaUserShield className="w-4 h-4" />
               Admin Dashboard
@@ -437,7 +436,7 @@ export default function Navbar() {
             <button
               onClick={onLogout}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition active:scale-95"
-              style={{ backgroundColor: "#FF2E3B", color: "#ffffff" }}
+              style={{ backgroundColor: "#DC2626", color: "#ffffff" }}
             >
               <FaSignOutAlt className="w-4 h-4" />
               Logout
@@ -447,7 +446,7 @@ export default function Navbar() {
               to="/login"
               onClick={() => setOpen(false)}
               className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition active:scale-95"
-              style={{ backgroundColor: "#2B80FF", color: "#ffffff" }}
+              style={{ backgroundColor: "#047857", color: "#ffffff" }}
             >
               Login
             </Link>

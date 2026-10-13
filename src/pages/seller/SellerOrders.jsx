@@ -11,14 +11,14 @@ import { FiArrowLeft } from "react-icons/fi";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
 
 const statusColors = {
-  pending: "bg-[#FFAA4D]/20 text-[#FF8C00]",
+  pending: "bg-amber-100 text-amber-800",
   paid: "bg-emerald-100 text-emerald-700",
-  processing: "bg-[#EBF2FF] text-[#2B80FF]",
-  shipped: "bg-[#EBF2FF] text-[#2B80FF]",
-  "delivery-claimed": "bg-orange-100 text-orange-700",
+  processing: "bg-[#ECFDF5] text-[#047857]",
+  shipped: "bg-[#ECFDF5] text-[#047857]",
+  "delivery-claimed": "bg-amber-100 text-amber-700",
   delivered: "bg-green-100 text-green-700",
   completed: "bg-teal-100 text-teal-700",
-  cancelled: "bg-[#FF2E3B]/10 text-[#FF2E3B]",
+  cancelled: "bg-[#DC2626]/10 text-[#DC2626]",
 };
 
 export default function SellerOrders() {
@@ -89,21 +89,21 @@ export default function SellerOrders() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
       {/* return home button */}
       <div className="mb-6">
         <Link
           to="/"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-          style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+          style={{ backgroundColor: "#101828", color: "#fff" }}
         >
           <FiArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
       </div>
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Seller Orders</h1>
-          <p className="text-sm text-[#555555] mt-1">
+          <h1 className="text-2xl font-bold text-[#101828]">Seller Orders</h1>
+          <p className="text-sm text-[#667085] mt-1">
             Orders placed for your products
           </p>
         </div>
@@ -142,7 +142,7 @@ export default function SellerOrders() {
           </div>
         ) : orders.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
-            <p className="text-[#555555]">No orders found.</p>
+            <p className="text-[#667085]">No orders found.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -154,22 +154,22 @@ export default function SellerOrders() {
                 {/* Header — FIX #16: short ID instead of full ObjectId */}
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <div className="text-sm font-semibold text-[#1A1A1A]">
+                    <div className="text-sm font-semibold text-[#101828]">
                       Order #{order._id.slice(-8).toUpperCase()}
                     </div>
-                    <div className="text-xs text-[#555555] mt-0.5">
+                    <div className="text-xs text-[#667085] mt-0.5">
                       {new Date(order.createdAt).toLocaleString()}
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-[#FF8C00]">
+                  <div className="text-sm font-bold text-[#B45309]">
                     ₦{Number(order.totalPrice).toLocaleString()}
                   </div>
                 </div>
 
                 {/* Customer */}
-                <div className="text-sm text-[#555555] mb-3 pb-3 border-b border-gray-100">
+                <div className="text-sm text-[#667085] mb-3 pb-3 border-b border-gray-100">
                   Customer:{" "}
-                  <span className="text-[#1A1A1A] font-medium">
+                  <span className="text-[#101828] font-medium">
                     {order.user?.name}
                   </span>
                   {" — "}
@@ -181,7 +181,7 @@ export default function SellerOrders() {
                   {order.orderItems.map((it) => (
                     <div
                       key={it.product}
-                      className="flex items-center gap-3 bg-[#EBF2FF] rounded-lg p-2"
+                      className="flex items-center gap-3 bg-[#ECFDF5] rounded-lg p-2"
                     >
                       <img
                         src={thumbUrl(it.image)}
@@ -190,15 +190,15 @@ export default function SellerOrders() {
                         loading="lazy"
                       />
                       <div className="flex-1">
-                        <div className="font-semibold text-sm text-[#1A1A1A]">
+                        <div className="font-semibold text-sm text-[#101828]">
                           {it.name}
                         </div>
-                        <div className="text-xs text-[#555555]">
+                        <div className="text-xs text-[#667085]">
                           Qty: {it.quantity} • ₦
                           {Number(it.price).toLocaleString()}
                         </div>
                       </div>
-                      <div className="text-sm font-semibold text-[#1A1A1A]">
+                      <div className="text-sm font-semibold text-[#101828]">
                         ₦{Number(it.price * it.quantity).toLocaleString()}
                       </div>
                     </div>
@@ -207,11 +207,11 @@ export default function SellerOrders() {
 
                 {/* Status */}
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-[#555555]">Status</span>
+                  <span className="text-sm text-[#667085]">Status</span>
                   <span
                     className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
                       statusColors[order.status] ||
-                      "bg-[#EBF2FF] text-[#1A1A1A]"
+                      "bg-[#ECFDF5] text-[#101828]"
                     }`}
                   >
                     {order.status}

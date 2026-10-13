@@ -44,7 +44,7 @@ export default function WelcomeModal({ open, onClose }) {
             to="/login"
             onClick={handleClose}
             className="block w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-150 active:scale-95 shadow-sm"
-            style={{ backgroundColor: "#2B80FF" }}
+            style={{ backgroundColor: "#047857" }}
           >
             Login
           </Link>

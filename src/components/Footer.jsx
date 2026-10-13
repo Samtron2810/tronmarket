@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#FFAA4D] mt-12">
+    <footer className="bg-[#101828] mt-12">
       <div className="mx-auto max-w-7xl px-4 py-8 flex flex-col items-center gap-6">
         {/* Social Icons */}
         <div className="flex items-center gap-5">
@@ -11,7 +11,7 @@ const Footer = () => {
             href="https://twitter.com/TronMarket"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#1A1A1A] hover:text-[#2B80FF] transition-colors duration-200"
+            className="text-[#EAECF0] hover:text-[#34D399] transition-colors duration-200"
             aria-label="Twitter"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -23,7 +23,7 @@ const Footer = () => {
             href="https://www.facebook.com/TronMarket"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#1A1A1A] hover:text-[#2B80FF] transition-colors duration-200"
+            className="text-[#EAECF0] hover:text-[#34D399] transition-colors duration-200"
             aria-label="Facebook"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -35,7 +35,7 @@ const Footer = () => {
             href="https://www.instagram.com/TronMarket"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#1A1A1A] hover:text-[#2B80FF] transition-colors duration-200"
+            className="text-[#EAECF0] hover:text-[#34D399] transition-colors duration-200"
             aria-label="Instagram"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -48,21 +48,21 @@ const Footer = () => {
         <div className="flex items-center gap-6 text-sm font-medium">
           <a
             href="/about"
-            className="text-[#1A1A1A] hover:text-[#2B80FF] transition-colors duration-200"
+            className="text-[#EAECF0] hover:text-[#34D399] transition-colors duration-200"
           >
             About Us
           </a>
-          <span className="text-[#1A1A1A]/30">|</span>
+          <span className="text-white/25">|</span>
           <a
             href="/contact"
-            className="text-[#1A1A1A] hover:text-[#2B80FF] transition-colors duration-200"
+            className="text-[#EAECF0] hover:text-[#34D399] transition-colors duration-200"
           >
             Contact Us
           </a>
         </div>
 
         {/* Copyright */}
-        <p className="text-xs text-[#555555]">
+        <p className="text-xs text-[#98A2B3]">
           © {new Date().getFullYear()} TronMarket. All rights reserved.
         </p>
       </div>

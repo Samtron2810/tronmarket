@@ -53,12 +53,12 @@ export default function ProductPreviewModal({ open, product, onClose }) {
       {/* Modal */}
       <div className="relative w-full max-w-2xl rounded-2xl overflow-hidden bg-white shadow-2xl">
         {/* Top accent */}
-        <div className="h-1 w-full bg-orange-500" />
+        <div className="h-1 w-full bg-amber-500" />
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-widest bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full">
+            <span className="text-xs font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full">
               {product.category || "General"}
             </span>
           </div>
@@ -73,7 +73,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
         {/* Body */}
         <div className="flex flex-col sm:flex-row">
           {/* Image pane */}
-          <div className="relative sm:w-5/12 w-full bg-blue-50 flex items-center justify-center min-h-56">
+          <div className="relative sm:w-5/12 w-full bg-emerald-50 flex items-center justify-center min-h-56">
             <img
               src={mediumUrl(images[index])}
               alt={product.name}
@@ -102,7 +102,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                     <span
                       key={i}
                       className={`rounded-full h-1 transition-all duration-200 ${
-                        i === index ? "w-3 bg-blue-500" : "w-1 bg-blue-200"
+                        i === index ? "w-3 bg-emerald-600" : "w-1 bg-emerald-200"
                       }`}
                     />
                   ))}
@@ -132,7 +132,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
               <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-0.5">
                 Price
               </span>
-              <span className="text-2xl font-black text-orange-500 leading-none">
+              <span className="text-2xl font-black text-amber-700 leading-none">
                 ₦{Number(product.price).toLocaleString()}
               </span>
             </div>
@@ -174,7 +174,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                     const val = Number(e.target.value || 1);
                     setQty(Math.min(Math.max(1, val), product.stock || 1));
                   }}
-                  className="w-14 text-center rounded-lg border border-blue-100 bg-blue-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all px-2 py-1"
+                  className="w-14 text-center rounded-lg border border-emerald-100 bg-emerald-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all px-2 py-1"
                 />
                 <button
                   onClick={() =>
@@ -197,7 +197,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                   qty > (product.stock || 0) ||
                   isAddingToCart
                 }
-                className="flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+                className="flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
               >
                 <FaShoppingCart className="w-3 h-3" />
                 Add to Cart
@@ -206,7 +206,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
               <Link
                 to={`/product/${product._id}`}
                 onClick={onClose}
-                className="flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl text-xs font-bold bg-orange-50 text-orange-600 hover:bg-orange-100 active:scale-95 border border-orange-200 transition-all duration-150"
+                className="flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-600 hover:bg-amber-100 active:scale-95 border border-amber-200 transition-all duration-150"
               >
                 Full Details
               </Link>

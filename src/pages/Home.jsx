@@ -138,11 +138,11 @@ export default function Home() {
         className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
         style={
           !category
-            ? { backgroundColor: "#FF8C00", color: "#fff" }
-            : { backgroundColor: "#f3f4f6", color: "#222222" }
+            ? { backgroundColor: "#047857", color: "#fff" }
+            : { backgroundColor: "#f3f4f6", color: "#101828" }
         }
         onMouseEnter={(e) => {
-          if (category) e.currentTarget.style.backgroundColor = "#EBF2FF";
+          if (category) e.currentTarget.style.backgroundColor = "#ECFDF5";
         }}
         onMouseLeave={(e) => {
           if (category) e.currentTarget.style.backgroundColor = "#f3f4f6";
@@ -161,11 +161,11 @@ export default function Home() {
             className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
             style={
               isActive
-                ? { backgroundColor: "#FF8C00", color: "#fff" }
-                : { backgroundColor: "#f3f4f6", color: "#222222" }
+                ? { backgroundColor: "#047857", color: "#fff" }
+                : { backgroundColor: "#f3f4f6", color: "#101828" }
             }
             onMouseEnter={(e) => {
-              if (!isActive) e.currentTarget.style.backgroundColor = "#EBF2FF";
+              if (!isActive) e.currentTarget.style.backgroundColor = "#ECFDF5";
             }}
             onMouseLeave={(e) => {
               if (!isActive) e.currentTarget.style.backgroundColor = "#f3f4f6";
@@ -202,7 +202,7 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <p
                 className="text-xs font-bold uppercase tracking-widest"
-                style={{ color: "#555555" }}
+                style={{ color: "#667085" }}
               >
                 Categories
               </p>
@@ -223,11 +223,11 @@ export default function Home() {
       {/* ── Hero ── */}
       <div
         className="relative mb-2 rounded-2xl overflow-hidden px-8 py-1 sm:px-12 sm:py-1"
-        style={{ backgroundColor: "#FF8C00" }}
+        style={{ backgroundColor: "#101828" }}
       >
         <div
           className="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-20"
-          style={{ backgroundColor: "#FFAA4D" }}
+          style={{ backgroundColor: "#047857" }}
         />
         <div
           className="absolute -bottom-10 right-20 w-40 h-40 rounded-full opacity-10"
@@ -241,7 +241,7 @@ export default function Home() {
             className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
             style={{
               backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#1A1A1A",
+              color: "#FFFFFF",
             }}
           >
             Featured Platform
@@ -255,13 +255,13 @@ export default function Home() {
           </button>
           <h1
             className="text-4xl sm:text-5xl font-extrabold tracking-tight"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "#FFFFFF" }}
           >
-            Welcome to <span style={{ color: "#0066FF" }}>TronMarket</span>
+            Welcome to <span style={{ color: "#34D399" }}>TronMarket</span>
           </h1>
           <p
             className="mt-4 text-base sm:text-lg leading-relaxed"
-            style={{ color: "#3a2a00" }}
+            style={{ color: "#D0D5DD" }}
           >
             Explore a diverse catalog of high-quality goods curated from
             verified sellers. Enjoy secure authentication and quick shipping.
@@ -272,7 +272,7 @@ export default function Home() {
               <Link
                 to="/seller"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+                style={{ backgroundColor: "#047857", color: "#fff" }}
               >
                 Go to Seller Dashboard
               </Link>
@@ -283,7 +283,7 @@ export default function Home() {
               <Link
                 to="/admin"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+                style={{ backgroundColor: "#047857", color: "#fff" }}
               >
                 Go to Admin Dashboard
               </Link>
@@ -294,7 +294,7 @@ export default function Home() {
               <Link
                 to="/cart"
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+                style={{ backgroundColor: "#101828", color: "#fff" }}
               >
                 <FiShoppingCart className="w-4 h-4" />
                 <span>View my Cart</span>
@@ -312,9 +312,9 @@ export default function Home() {
             onClick={() => setIsSidebarOpen(true)}
             className="sm:hidden flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold shadow-sm transition-all duration-150"
             style={{
-              backgroundColor: category ? "#FF8C00" : "#fff",
-              borderColor: category ? "#FF8C00" : "#e5e7eb",
-              color: category ? "#fff" : "#1A1A1A",
+              backgroundColor: category ? "#047857" : "#fff",
+              borderColor: category ? "#047857" : "#e5e7eb",
+              color: category ? "#fff" : "#101828",
             }}
             aria-label="Open categories"
           >
@@ -328,7 +328,7 @@ export default function Home() {
 
           <h2
             className="text-2xl font-bold tracking-tight"
-            style={{ color: "#1A1A1A" }}
+            style={{ color: "#101828" }}
           >
             Explore Products
           </h2>
@@ -338,7 +338,7 @@ export default function Home() {
           {!loading && (
             <span
               className="text-sm font-medium hidden"
-              style={{ color: "#555555" }}
+              style={{ color: "#667085" }}
             >
               {total} product{total === 1 ? "" : "s"}
             </span>
@@ -347,7 +347,7 @@ export default function Home() {
             value={search}
             onChange={handleSearchChange}
             placeholder="Search products…"
-            className="bg-white border border-gray-400 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF] w-80 sm:w-50 lg:w-90 transition-all duration-150"
+            className="bg-white border border-gray-400 rounded-lg px-3 py-2 text-sm text-[#101828] placeholder-[#667085] focus:outline-none focus:ring-2 focus:ring-[#047857] w-80 sm:w-50 lg:w-90 transition-all duration-150"
           />
         </div>
       </div>
@@ -362,7 +362,7 @@ export default function Home() {
           >
             <p
               className="text-xs font-bold uppercase tracking-widest mb-3"
-              style={{ color: "#555555" }}
+              style={{ color: "#667085" }}
             >
               Categories
             </p>
@@ -384,9 +384,9 @@ export default function Home() {
             <div
               className="rounded-xl border p-6 text-center text-sm font-medium"
               style={{
-                backgroundColor: "#fff0f0",
-                borderColor: "#FF2E3B",
-                color: "#FF2E3B",
+                backgroundColor: "#FEF2F2",
+                borderColor: "#DC2626",
+                color: "#DC2626",
               }}
             >
               {error}
@@ -400,7 +400,7 @@ export default function Home() {
                   className="rounded-xl border p-12 text-center"
                   style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
                 >
-                  <p className="text-base" style={{ color: "#555555" }}>
+                  <p className="text-base" style={{ color: "#667085" }}>
                     No products available at the moment.
                   </p>
                 </div>
@@ -430,17 +430,17 @@ export default function Home() {
               <button
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
               >
                 ← Prev
               </button>
-              <span className="text-sm font-medium text-[#555555]">
+              <span className="text-sm font-medium text-[#667085]">
                 Page {page} of {pages}
               </span>
               <button
                 disabled={page >= pages}
                 onClick={() => setPage((p) => Math.min(pages, p + 1))}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
               >
                 Next →
               </button>

@@ -104,13 +104,13 @@ export default function OrderSuccess() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#FF8C00] p-4 text-[#1A1A1A]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F6F7F4] p-4 text-[#101828]">
         <div className="bg-white rounded-2xl p-8 max-w-sm w-full text-center space-y-4 shadow-xl">
-          <div className="flex justify-center text-[#2B80FF]">
+          <div className="flex justify-center text-[#047857]">
             <FiLoader size={48} className="animate-spin" />
           </div>
           <h2 className="text-xl font-bold">Verifying Order Details...</h2>
-          <p className="text-sm text-[#555555]">
+          <p className="text-sm text-[#667085]">
             Please wait while we load your receipt.
           </p>
         </div>
@@ -123,13 +123,13 @@ export default function OrderSuccess() {
 
   if (error || (!order && !loading) || isOrderInvalid) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#FF8C00] p-4 text-[#1A1A1A]">
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F6F7F4] p-4 text-[#101828]">
         <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center space-y-5 shadow-xl">
           <div className="flex justify-center text-red-500">
             <FiAlertTriangle size={48} />
           </div>
           <h2 className="text-xl font-bold">Something Went Wrong</h2>
-          <p className="text-sm text-[#555555] leading-relaxed">
+          <p className="text-sm text-[#667085] leading-relaxed">
             {error ||
               (isOrderInvalid
                 ? "Invalid order record details."
@@ -144,7 +144,7 @@ export default function OrderSuccess() {
             </Link>
             <Link
               to="/my-orders"
-              className="inline-block bg-[#1A1A1A] hover:bg-black text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-md"
+              className="inline-block bg-[#101828] hover:bg-black text-white text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shadow-md"
             >
               View My Orders
             </Link>
@@ -155,17 +155,17 @@ export default function OrderSuccess() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] py-10 px-4 sm:px-6 lg:px-8 flex justify-center items-center">
+    <div className="min-h-screen bg-[#F6F7F4] py-10 px-4 sm:px-6 lg:px-8 flex justify-center items-center">
       <div className="max-w-xl w-full space-y-6">
         {/* Banner Card - Success Message (Hidden when printing) */}
         <div className="no-print bg-white rounded-2xl p-6 text-center space-y-2 border border-gray-200 shadow-md">
           <div className="flex justify-center text-green-500">
             <FiCheckCircle size={44} />
           </div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">
+          <h1 className="text-2xl font-bold text-[#101828]">
             Order Placed! 🎉
           </h1>
-          <p className="text-sm text-[#555555]">
+          <p className="text-sm text-[#667085]">
             Thank you for shopping with TronMarket. Your payment was verified
             successfully.
           </p>
@@ -202,7 +202,7 @@ export default function OrderSuccess() {
               <h3 className="font-bold text-gray-400 uppercase tracking-wider text-[11px]">
                 Order Information
               </h3>
-              <p className="text-[#1A1A1A]">
+              <p className="text-[#101828]">
                 <span className="font-semibold text-gray-700">Date:</span>{" "}
                 {order.createdAt
                   ? new Date(order.createdAt).toLocaleString("en-NG", {
@@ -211,13 +211,13 @@ export default function OrderSuccess() {
                     })
                   : "N/A"}
               </p>
-              <p className="text-[#1A1A1A]">
+              <p className="text-[#101828]">
                 <span className="font-semibold text-gray-700">Payment:</span>{" "}
                 <span className="capitalize">
                   {order.paymentMethod || "Paystack"}
                 </span>
               </p>
-              <p className="text-[#1A1A1A] break-all font-mono text-xs mt-1">
+              <p className="text-[#101828] break-all font-mono text-xs mt-1">
                 <span className="font-semibold text-gray-700 font-sans text-sm">
                   Ref:
                 </span>{" "}
@@ -228,7 +228,7 @@ export default function OrderSuccess() {
               <h3 className="font-bold text-gray-400 uppercase tracking-wider text-[11px]">
                 Shipping Details
               </h3>
-              <p className="font-bold text-[#1A1A1A]">
+              <p className="font-bold text-[#101828]">
                 {order.shippingAddress?.fullName ||
                   order.user?.name ||
                   "Customer"}
@@ -268,7 +268,7 @@ export default function OrderSuccess() {
                         className="w-12 h-12 rounded-lg border border-gray-200 bg-gray-50 shrink-0"
                       />
                       <div className="min-w-0">
-                        <h4 className="font-bold text-sm text-[#1A1A1A] truncate max-w-50 sm:max-w-70">
+                        <h4 className="font-bold text-sm text-[#101828] truncate max-w-50 sm:max-w-70">
                           {item.name || "Unknown Item"}
                         </h4>
                         <p className="text-xs text-gray-500 mt-0.5">
@@ -299,7 +299,7 @@ export default function OrderSuccess() {
                 FREE
               </span>
             </div>
-            <div className="border-t border-gray-100 my-2 pt-4 flex justify-between items-center text-[#1A1A1A]">
+            <div className="border-t border-gray-100 my-2 pt-4 flex justify-between items-center text-[#101828]">
               <span className="font-bold text-base">Total Amount Paid</span>
               <span className="text-xl font-black text-gray-900 font-mono">
                 ₦{Number(order.totalPrice || 0).toLocaleString()}
@@ -337,7 +337,7 @@ export default function OrderSuccess() {
           <div className="text-center pt-2">
             <Link
               to="/my-orders"
-              className="inline-block bg-[#1A1A1A] hover:bg-black text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors shadow-md w-full sm:w-auto"
+              className="inline-block bg-[#101828] hover:bg-black text-white text-sm font-bold px-6 py-3 rounded-xl transition-colors shadow-md w-full sm:w-auto"
             >
               View My Orders
             </Link>

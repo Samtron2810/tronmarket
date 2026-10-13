@@ -1,62 +1,89 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
-:root {
+/* ─── Theme A: Clean Commerce ─────────────────────────────────────────
+   Single source of truth for the palette. Tailwind v4 generates
+   utilities from these tokens (bg-brand-700, text-accent-700, bg-bg,
+   bg-surface, text-ink, text-muted, …). To re-theme later, edit only
+   this block.
+   Roles: emerald = primary actions/links · amber = prices/badges only
+   ink = header/footer/headings · warm neutral = page background     */
+@theme {
   --font-sans:
     "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
-  /* Brand colors */
-  --vibrant-orange: #ff8c00; /* page background */
-  --sandy-orange: #ffaa4d; /* nav header */
-  --royal-blue: #2b80ff; /* primary action button */
-  --electric-blue: #0066ff; /* branding accent */
-  --white: #ffffff; /* card surfaces */
-  --input-tint: #ebf2ff; /* input background */
-  --charcoal: #1a1a1a; /* headings/logo */
-  --slate-muted: #555555; /* secondary text */
-  --crimson: #ff2e3b; /* destructive / logout */
+  --color-bg: #f6f7f4; /* page background */
+  --color-surface: #ffffff; /* card surfaces */
+  --color-ink: #101828; /* headings / header / footer */
+  --color-muted: #667085; /* secondary text */
+  --color-line: #e5e7eb; /* borders */
 
-  /* Utility sizes */
+  --color-brand-50: #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #10b981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857; /* primary action */
+  --color-brand-800: #065f46; /* primary hover */
+  --color-brand-900: #064e3b;
+
+  --color-accent-100: #fef3c7;
+  --color-accent-500: #f59e0b; /* badges / highlights */
+  --color-accent-600: #d97706;
+  --color-accent-700: #b45309; /* prices (AA on white) */
+
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+
   --container-pad: 1rem;
 }
 
 body {
   font-family: var(--font-sans);
-  background: var(--vibrant-orange);
-  color: var(--charcoal);
+  background: var(--color-bg);
+  color: var(--color-ink);
   min-height: 100vh;
   margin: 0;
 }
 
 /* Navigation header */
 .nav-header {
-  background: var(--sandy-orange);
-  color: var(--charcoal);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  background: var(--color-ink);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(16, 24, 40, 0.25);
 }
 
 /* Primary content card */
 .card {
-  background: var(--white);
-  color: var(--charcoal);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border: 1px solid var(--color-line);
   border-radius: 1rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(16, 24, 40, 0.06);
 }
 
 /* Input fields */
 .input-field {
-  background: var(--input-tint);
-  border: 1px solid rgba(26, 26, 26, 0.06);
-  color: var(--charcoal);
+  background: var(--color-brand-50);
+  border: 1px solid rgba(16, 24, 40, 0.08);
+  color: var(--color-ink);
   padding: 0.6rem 0.8rem;
   border-radius: 0.5rem;
 }
 
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-brand-700);
+  box-shadow: 0 0 0 3px rgba(4, 120, 87, 0.15);
+}
+
 /* Primary button */
 .primary-btn {
-  background: var(--royal-blue);
-  color: var(--white);
+  background: var(--color-brand-700);
+  color: #ffffff;
   padding: 0.6rem 1rem;
   border-radius: 0.6rem;
   font-weight: 700;
@@ -64,24 +91,24 @@ body {
 }
 
 .primary-btn:hover {
-  opacity: 0.95;
+  background: var(--color-brand-800);
 }
 
 /* Logo variants */
 .logo-tro {
-  color: var(--charcoal);
+  color: #ffffff;
   font-weight: 800;
 }
 .logo-nites {
-  color: var(--electric-blue);
+  color: var(--color-brand-400);
   font-weight: 800;
 }
 
 .text-secondary {
-  color: var(--slate-muted);
+  color: var(--color-muted);
 }
 .danger {
-  color: var(--crimson);
+  color: var(--color-danger);
 }
 
 /* Card container spacing for pages */

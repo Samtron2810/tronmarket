@@ -11,9 +11,9 @@ const categories = ["phones", "laptops", "fashion", "home", "electronics"];
 const statusColors = {
   pending: "bg-amber-100 text-amber-800 border border-amber-200",
   paid: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  processing: "bg-blue-100 text-blue-800 border border-blue-200",
+  processing: "bg-emerald-100 text-emerald-800 border border-emerald-200",
   shipped: "bg-indigo-100 text-indigo-800 border border-indigo-200",
-  "delivery-claimed": "bg-orange-100 text-orange-800 border border-orange-200",
+  "delivery-claimed": "bg-amber-100 text-amber-800 border border-amber-200",
   delivered: "bg-green-100 text-green-800 border border-green-200",
   completed: "bg-teal-100 text-teal-800 border border-teal-200",
   cancelled: "bg-rose-100 text-rose-800 border border-rose-200",
@@ -21,7 +21,7 @@ const statusColors = {
 
 /* ── Shared input style ── */
 const inputCls =
-  "w-full bg-[#EBF2FF] border border-[#2B80FF]/20 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF]";
+  "w-full bg-[#ECFDF5] border border-[#047857]/20 rounded-lg px-3 py-2 text-sm text-[#101828] placeholder-[#667085] focus:outline-none focus:ring-2 focus:ring-[#047857]";
 
 /* ────────────────────────────────────────────────
    Sub-component: Products section
@@ -153,10 +153,10 @@ function ProductsSection({ userId, userRole }) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       {/* Section Header */}
-      <div className="bg-[#FFAA4D] px-5 py-4 flex items-center justify-between gap-3">
-        <h3 className="font-semibold text-[#1A1A1A] shrink-0">
+      <div className="bg-[#ECFDF5] px-5 py-4 flex items-center justify-between gap-3">
+        <h3 className="font-semibold text-[#101828] shrink-0">
           Products{" "}
-          <span className="ml-1 text-xs bg-white/60 text-[#1A1A1A] font-semibold px-2 py-0.5 rounded-full">
+          <span className="ml-1 text-xs bg-white/60 text-[#101828] font-semibold px-2 py-0.5 rounded-full">
             {productTotal}
           </span>
         </h3>
@@ -165,35 +165,35 @@ function ProductsSection({ userId, userRole }) {
           value={productSearch}
           onChange={handleSearchChange}
           placeholder="Search products…"
-          className="bg-white border border-white/60 rounded-lg px-3 py-1.5 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF] w-48"
+          className="bg-white border border-white/60 rounded-lg px-3 py-1.5 text-sm text-[#101828] placeholder-[#667085] focus:outline-none focus:ring-2 focus:ring-[#047857] w-48"
         />
       </div>
 
       <div className="p-5 space-y-5">
         {/* Create Product Form — seller only */}
         {userRole === "seller" && (
-          <div className="bg-[#EBF2FF] rounded-xl p-4">
+          <div className="bg-[#ECFDF5] rounded-xl p-4">
             <div
               onClick={() => setShowAddForm((prev) => !prev)}
-              className="flex items-center justify-between cursor-pointer select-none rounded-lg border-2 border-dashed border-[#2B80FF]/40 bg-white px-4 py-3 hover:border-[#2B80FF] hover:bg-[#F7FAFF] transition-all"
+              className="flex items-center justify-between cursor-pointer select-none rounded-lg border-2 border-dashed border-[#047857]/40 bg-white px-4 py-3 hover:border-[#047857] hover:bg-[#F6F7F4] transition-all"
             >
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2B80FF] text-white font-bold">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#047857] text-white font-bold">
                   +
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-[#1A1A1A]">
+                  <h4 className="text-sm font-semibold text-[#101828]">
                     Add New Product
                   </h4>
                   {!showAddForm && (
-                    <p className="text-xs text-[#555555]">
+                    <p className="text-xs text-[#667085]">
                       Click here to create a product
                     </p>
                   )}
                 </div>
               </div>
               <span
-                className="text-[#2B80FF] font-bold text-lg transition-transform duration-200"
+                className="text-[#047857] font-bold text-lg transition-transform duration-200"
                 style={{
                   transform: showAddForm ? "rotate(180deg)" : "rotate(0deg)",
                 }}
@@ -212,7 +212,7 @@ function ProductsSection({ userId, userRole }) {
                     }
                     className={`${inputCls} col-span-2`}
                   />
-                  <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
+                  <label className="text-sm font-medium text-[#101828] bg-gray-200 p-0.5 rounded-md">
                     Price (₦)
                     <input
                       type="number"
@@ -243,7 +243,7 @@ function ProductsSection({ userId, userRole }) {
                       </option>
                     ))}
                   </select>
-                  <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
+                  <label className="text-sm font-medium text-[#101828] bg-gray-200 p-0.5 rounded-md">
                     Stock
                     <input
                       type="number"
@@ -258,7 +258,7 @@ function ProductsSection({ userId, userRole }) {
                       className={inputCls}
                     />
                   </label>
-                  <label className="text-sm font-medium text-[#1A1A1A] bg-gray-200 p-0.5 rounded-md">
+                  <label className="text-sm font-medium text-[#101828] bg-gray-200 p-0.5 rounded-md">
                     Images
                     <input
                       type="file"
@@ -269,7 +269,7 @@ function ProductsSection({ userId, userRole }) {
                           images: Array.from(e.target.files),
                         }))
                       }
-                      className="text-sm text-[#555555] file:mr-2 file:px-3 file:py-2.5 file:rounded-lg file:border-0 file:bg-[#2B80FF] file:text-white file:text-xs file:font-medium file:cursor-pointer"
+                      className="text-sm text-[#667085] file:mr-2 file:px-3 file:py-2.5 file:rounded-lg file:border-0 file:bg-[#047857] file:text-white file:text-xs file:font-medium file:cursor-pointer"
                     />
                   </label>
                 </div>
@@ -287,7 +287,7 @@ function ProductsSection({ userId, userRole }) {
                 />
                 <button
                   disabled={creating}
-                  className="px-4 py-2 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="px-4 py-2 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
                   {creating ? "Creating…" : "Create Product"}
                 </button>
@@ -326,16 +326,16 @@ function ProductsSection({ userId, userRole }) {
                   loading="lazy"
                 />
                 <div className="p-3">
-                  <div className="text-sm font-semibold text-[#1A1A1A] truncate">
+                  <div className="text-sm font-semibold text-[#101828] truncate">
                     {p.name}
                   </div>
-                  <div className="text-xs text-[#555555] mt-0.5">
+                  <div className="text-xs text-[#667085] mt-0.5">
                     ₦{Number(p.price).toLocaleString()}
                   </div>
                   <div className="flex gap-1.5 mt-2">
                     <Link
                       to={`/product/${p._id}`}
-                      className="px-2 py-1 rounded-lg bg-[#EBF2FF] text-[#2B80FF] text-xs font-medium hover:opacity-80"
+                      className="px-2 py-1 rounded-lg bg-[#ECFDF5] text-[#047857] text-xs font-medium hover:opacity-80"
                     >
                       View
                     </Link>
@@ -344,7 +344,7 @@ function ProductsSection({ userId, userRole }) {
                         setEditProduct({ ...p });
                         setEditOpen(true);
                       }}
-                      className="px-2 py-1 rounded-lg bg-[#FF8C00] text-white text-xs font-medium hover:opacity-80"
+                      className="px-2 py-1 rounded-lg bg-[#F6F7F4] text-white text-xs font-medium hover:opacity-80"
                     >
                       Edit
                     </button>
@@ -353,7 +353,7 @@ function ProductsSection({ userId, userRole }) {
                         setSelectedProduct(p._id);
                         setConfirmProductOpen(true);
                       }}
-                      className="px-2 py-1 rounded-lg bg-[#FF2E3B] text-white text-xs font-medium hover:opacity-80"
+                      className="px-2 py-1 rounded-lg bg-[#DC2626] text-white text-xs font-medium hover:opacity-80"
                     >
                       Delete
                     </button>
@@ -362,7 +362,7 @@ function ProductsSection({ userId, userRole }) {
               </div>
             ))}
             {products.length === 0 && (
-              <p className="col-span-3 text-sm text-[#555555] py-4">
+              <p className="col-span-3 text-sm text-[#667085] py-4">
                 No products found.
               </p>
             )}
@@ -374,17 +374,17 @@ function ProductsSection({ userId, userRole }) {
           <button
             disabled={productPage <= 1}
             onClick={() => setProductPage((p) => Math.max(1, p - 1))}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
           >
             Prev
           </button>
-          <span className="text-sm text-[#555555]">
+          <span className="text-sm text-[#667085]">
             {productPage} / {productPages}
           </span>
           <button
             disabled={productPage >= productPages}
             onClick={() => setProductPage((p) => Math.min(productPages, p + 1))}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
           >
             Next
           </button>
@@ -411,8 +411,8 @@ function ProductsSection({ userId, userRole }) {
             onClick={() => setEditOpen(false)}
           />
           <div className="relative w-full max-w-2xl bg-white rounded-xl overflow-hidden shadow-xl">
-            <div className="bg-[#FFAA4D] px-5 py-4">
-              <h3 className="font-bold text-[#1A1A1A]">Edit Product</h3>
+            <div className="bg-[#ECFDF5] px-5 py-4">
+              <h3 className="font-bold text-[#101828]">Edit Product</h3>
             </div>
             <form onSubmit={handleEditSave} className="p-5 space-y-3">
               <div className="grid grid-cols-3 gap-2">
@@ -475,7 +475,7 @@ function ProductsSection({ userId, userRole }) {
                       images: Array.from(e.target.files),
                     }))
                   }
-                  className="text-sm text-[#555555] file:mr-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#2B80FF] file:text-white file:text-xs file:font-medium file:cursor-pointer"
+                  className="text-sm text-[#667085] file:mr-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#047857] file:text-white file:text-xs file:font-medium file:cursor-pointer"
                 />
               </div>
               <textarea
@@ -491,13 +491,13 @@ function ProductsSection({ userId, userRole }) {
                 <button
                   type="button"
                   onClick={() => setEditOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-[#1A1A1A] hover:bg-[#EBF2FF] transition-colors"
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-[#101828] hover:bg-[#ECFDF5] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                  className="px-4 py-2 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   Save Changes
                 </button>
@@ -544,10 +544,10 @@ function SellerSalesSection({ userId }) {
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="bg-[#FFAA4D] px-5 py-4 flex items-center justify-between">
-        <h3 className="font-semibold text-[#1A1A1A]">
+      <div className="bg-[#ECFDF5] px-5 py-4 flex items-center justify-between">
+        <h3 className="font-semibold text-[#101828]">
           Sales/Order from Customers{" "}
-          <span className="ml-1 text-xs bg-white/60 text-[#1A1A1A] font-semibold px-2 py-0.5 rounded-full">
+          <span className="ml-1 text-xs bg-white/60 text-[#101828] font-semibold px-2 py-0.5 rounded-full">
             {total}
           </span>
         </h3>
@@ -559,7 +559,7 @@ function SellerSalesSection({ userId }) {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="bg-[#EBF2FF] rounded-xl p-4 animate-pulse"
+                className="bg-[#ECFDF5] rounded-xl p-4 animate-pulse"
               >
                 <div className="flex justify-between mb-2">
                   <div className="h-3 w-32 bg-gray-300 rounded" />
@@ -574,18 +574,18 @@ function SellerSalesSection({ userId }) {
             ))}
           </div>
         ) : sales.length === 0 ? (
-          <p className="text-sm text-[#555555] py-4 text-center">
+          <p className="text-sm text-[#667085] py-4 text-center">
             No sales yet.
           </p>
         ) : (
           <div className="space-y-3">
             {sales.map((o) => (
-              <div key={o._id} className="bg-[#EBF2FF] rounded-xl p-4">
+              <div key={o._id} className="bg-[#ECFDF5] rounded-xl p-4">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-mono font-bold text-[#555555]">
+                  <span className="text-xs font-mono font-bold text-[#667085]">
                     #{o._id.slice(-8).toUpperCase()}
                   </span>
-                  <span className="text-xs text-[#555555]">
+                  <span className="text-xs text-[#667085]">
                     {o.createdAt
                       ? new Date(o.createdAt).toLocaleDateString("en-NG", {
                           dateStyle: "medium",
@@ -593,18 +593,18 @@ function SellerSalesSection({ userId }) {
                       : ""}
                   </span>
                 </div>
-                <div className="text-xs text-[#555555] mb-2">
+                <div className="text-xs text-[#667085] mb-2">
                   Customer:{" "}
-                  <span className="font-medium text-[#1A1A1A]">
+                  <span className="font-medium text-[#101828]">
                     {o.user?.name || "Unknown"} — {o.user?.email || ""}
                   </span>
                 </div>
-                <div className="text-xs text-[#555555] mb-2 truncate">
+                <div className="text-xs text-[#667085] mb-2 truncate">
                   Items:{" "}
                   {o.orderItems?.map((item) => item.name).join(", ") || "N/A"}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-bold text-[#1A1A1A]">
+                  <span className="text-sm font-bold text-[#101828]">
                     ₦{Number(o.totalPrice).toLocaleString()}
                   </span>
                   <span
@@ -624,17 +624,17 @@ function SellerSalesSection({ userId }) {
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
             >
               Prev
             </button>
-            <span className="text-sm text-[#555555]">
+            <span className="text-sm text-[#667085]">
               {page} / {totalPages}
             </span>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+              className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
             >
               Next
             </button>
@@ -706,9 +706,9 @@ export default function AdminUser() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto space-y-6">
-          <div className="bg-[#FFAA4D]/60 rounded-xl px-5 py-4 animate-pulse">
+          <div className="bg-[#D1FAE5] rounded-xl px-5 py-4 animate-pulse">
             <div className="h-4 w-24 bg-white/40 rounded mb-2" />
             <div className="h-6 w-36 bg-white/40 rounded" />
           </div>
@@ -737,31 +737,31 @@ export default function AdminUser() {
   const isSeller = user?.role === "seller";
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* ── Page Header ── */}
-        <div className="bg-[#FFAA4D] rounded-xl px-5 py-4 flex items-center justify-between">
+        <div className="bg-[#101828] rounded-xl px-5 py-4 flex items-center justify-between">
           <div>
-            <p className="text-xs text-[#555555] font-medium uppercase tracking-wide">
+            <p className="text-xs text-[#98A2B3] font-medium uppercase tracking-wide">
               Admin / Users
             </p>
-            <h2 className="text-xl font-bold text-[#1A1A1A] mt-0.5">
+            <h2 className="text-xl font-bold text-white mt-0.5">
               {user?.name}
             </h2>
-            <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full capitalize bg-white/50 text-[#1A1A1A]">
+            <span className="inline-block mt-1 text-xs font-semibold px-2 py-0.5 rounded-full capitalize bg-white/50 text-[#101828]">
               {user?.role}
             </span>
           </div>
           <div className="flex gap-2">
             <Link
               to="/admin"
-              className="px-3 py-1.5 rounded-lg border border-[#1A1A1A]/20 text-sm text-[#1A1A1A] hover:bg-white/30 transition-colors"
+              className="px-3 py-1.5 rounded-lg border border-white/30 text-sm text-white hover:bg-white/10 transition-colors"
             >
               ← Back
             </Link>
             <button
               onClick={() => setConfirmUserOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-[#FF2E3B] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+              className="px-3 py-1.5 rounded-lg bg-[#DC2626] text-white text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Delete User
             </button>
@@ -772,7 +772,7 @@ export default function AdminUser() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {/* Edit User */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="font-semibold text-[#1A1A1A] mb-4">Edit User</h3>
+            <h3 className="font-semibold text-[#101828] mb-4">Edit User</h3>
             <div className="space-y-3">
               <input
                 value={user?.name || ""}
@@ -810,7 +810,7 @@ export default function AdminUser() {
                     role: user.role,
                   })
                 }
-                className="px-4 py-2 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                className="px-4 py-2 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 Save Changes
               </button>
@@ -819,23 +819,23 @@ export default function AdminUser() {
 
           {/* Customer purchase orders */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="font-semibold text-[#1A1A1A] mb-4">
+            <h3 className="font-semibold text-[#101828] mb-4">
               {isSeller ? "User's Purchases" : "Orders"}{" "}
-              <span className="ml-1 text-xs bg-[#EBF2FF] text-[#2B80FF] font-semibold px-2 py-0.5 rounded-full">
+              <span className="ml-1 text-xs bg-[#ECFDF5] text-[#047857] font-semibold px-2 py-0.5 rounded-full">
                 {ordersTotal}
               </span>
             </h3>
             <div className="space-y-2 max-h-52 overflow-auto pr-1">
               {orders.length === 0 && (
-                <p className="text-sm text-[#555555]">No orders yet.</p>
+                <p className="text-sm text-[#667085]">No orders yet.</p>
               )}
               {orders.map((o) => (
-                <div key={o._id} className="bg-[#EBF2FF] rounded-lg px-3 py-2">
+                <div key={o._id} className="bg-[#ECFDF5] rounded-lg px-3 py-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono text-[#555555] truncate">
+                    <span className="text-xs font-mono text-[#667085] truncate">
                       #{o._id.slice(-8).toUpperCase()}
                     </span>
-                    <span className="text-xs text-[#555555]">
+                    <span className="text-xs text-[#667085]">
                       {o.createdAt
                         ? new Date(o.createdAt).toLocaleDateString("en-NG", {
                             dateStyle: "medium",
@@ -843,14 +843,14 @@ export default function AdminUser() {
                         : ""}
                     </span>
                   </div>
-                  <div className="text-xs text-[#1A1A1A] font-medium mt-1 truncate">
+                  <div className="text-xs text-[#101828] font-medium mt-1 truncate">
                     {o.orderItems?.map((item) => item.name).join(", ") || "N/A"}
                   </div>
                   <div className="flex items-center justify-between mt-1">
-                    <span className="text-sm font-semibold text-[#1A1A1A]">
+                    <span className="text-sm font-semibold text-[#101828]">
                       ₦{Number(o.totalPrice).toLocaleString()}
                     </span>
-                    <span className="text-xs bg-white border border-gray-200 text-[#555555] px-2 py-0.5 rounded-full capitalize">
+                    <span className="text-xs bg-white border border-gray-200 text-[#667085] px-2 py-0.5 rounded-full capitalize">
                       {o.status}
                     </span>
                   </div>
@@ -860,7 +860,7 @@ export default function AdminUser() {
             {ordersTotal > 0 && (
               <Link
                 to={`/admin/users/${id}/orders`}
-                className="mt-3 inline-block w-full text-center px-3 py-2 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity"
+                className="mt-3 inline-block w-full text-center px-3 py-2 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 View All Orders →
               </Link>

@@ -35,7 +35,7 @@ function AppContent() {
   }, [token, setWelcomeModalOpen, location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-transparent text-slate-100 selection:bg-cyan-500 selection:text-slate-900">
+    <div className="min-h-screen flex flex-col bg-[#F6F7F4] text-[#101828] selection:bg-emerald-700 selection:text-white">
       <Navbar />
       <main className="flex-1">
         <AppRoutes />

@@ -10,9 +10,9 @@ import ItemImage from "../../components/ItemImage"; // FIX #12
 const statusColors = {
   pending: "bg-amber-100 text-amber-800 border border-amber-200",
   paid: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  processing: "bg-blue-100 text-blue-800 border border-blue-200",
+  processing: "bg-emerald-100 text-emerald-800 border border-emerald-200",
   shipped: "bg-indigo-100 text-indigo-800 border border-indigo-200",
-  "delivery-claimed": "bg-orange-100 text-orange-800 border border-orange-200",
+  "delivery-claimed": "bg-amber-100 text-amber-800 border border-amber-200",
   delivered: "bg-green-100 text-green-800 border border-green-200",
   completed: "bg-teal-100 text-teal-800 border border-teal-200",
   cancelled: "bg-rose-100 text-rose-800 border border-rose-200",
@@ -63,7 +63,7 @@ export default function AdminOrders() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <div className="animate-pulse h-4 w-24 bg-gray-200 rounded mb-6" />
           <div className="animate-pulse h-7 w-48 bg-gray-200 rounded-lg mb-6" />
@@ -73,7 +73,7 @@ export default function AdminOrders() {
                 key={n}
                 className="bg-white rounded-xl border border-gray-200 overflow-hidden"
               >
-                <div className="bg-[#FFAA4D]/60 px-5 py-3">
+                <div className="bg-[#D1FAE5] px-5 py-3">
                   <div className="h-4 w-32 bg-white/40 rounded" />
                 </div>
                 <div className="p-5 space-y-3">
@@ -97,19 +97,19 @@ export default function AdminOrders() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl">
         {/* Header */}
         <div className="mb-6">
           <Link
             to={`/admin/users/${id}`}
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:opacity-80 transition-opacity mb-4"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#101828] hover:opacity-80 transition-opacity mb-4"
           >
             ← Back to User
           </Link>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">
+          <h1 className="text-2xl font-bold text-[#101828]">
             Orders{" "}
-            <span className="ml-1 text-base font-normal text-[#555555]">
+            <span className="ml-1 text-base font-normal text-[#667085]">
               ({orders.length} total)
             </span>
           </h1>
@@ -117,7 +117,7 @@ export default function AdminOrders() {
 
         {orders.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
-            <p className="text-[#555555]">No orders found for this user.</p>
+            <p className="text-[#667085]">No orders found for this user.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -127,12 +127,12 @@ export default function AdminOrders() {
                 className="bg-white rounded-xl border border-gray-200 overflow-hidden"
               >
                 {/* Order Header */}
-                <div className="bg-[#FFAA4D] px-5 py-3 flex items-center justify-between">
+                <div className="bg-[#ECFDF5] px-5 py-3 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-mono font-bold text-[#555555]">
+                    <span className="text-xs font-mono font-bold text-[#667085]">
                       #{order._id.slice(-8).toUpperCase()}
                     </span>
-                    <span className="text-xs text-[#555555] ml-3">
+                    <span className="text-xs text-[#667085] ml-3">
                       {order.createdAt
                         ? new Date(order.createdAt).toLocaleString("en-NG", {
                             dateStyle: "medium",
@@ -158,7 +158,7 @@ export default function AdminOrders() {
                   {order.orderItems?.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-3 bg-[#EBF2FF] rounded-lg p-3"
+                      className="flex items-center gap-3 bg-[#ECFDF5] rounded-lg p-3"
                     >
                       <ItemImage
                         src={thumbUrl(item.image)}
@@ -166,15 +166,15 @@ export default function AdminOrders() {
                         className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-[#1A1A1A] truncate">
+                        <div className="font-semibold text-sm text-[#101828] truncate">
                           {item.name}
                         </div>
-                        <div className="text-xs text-[#555555] mt-0.5">
+                        <div className="text-xs text-[#667085] mt-0.5">
                           Qty: {item.quantity} × ₦
                           {Number(item.price).toLocaleString()}
                         </div>
                       </div>
-                      <div className="text-sm font-bold text-[#1A1A1A] text-right shrink-0">
+                      <div className="text-sm font-bold text-[#101828] text-right shrink-0">
                         ₦{(item.price * item.quantity).toLocaleString()}
                       </div>
                     </div>
@@ -184,14 +184,14 @@ export default function AdminOrders() {
                 {/* Order Footer */}
                 <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between">
                   <div className="text-sm">
-                    <span className="text-[#555555]">Total: </span>
-                    <span className="font-bold text-[#1A1A1A]">
+                    <span className="text-[#667085]">Total: </span>
+                    <span className="font-bold text-[#101828]">
                       ₦{Number(order.totalPrice).toLocaleString()}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {order.shippingAddress && (
-                      <span className="text-xs text-[#555555] truncate max-w-50">
+                      <span className="text-xs text-[#667085] truncate max-w-50">
                         📍 {order.shippingAddress.address},{" "}
                         {order.shippingAddress.city}
                       </span>

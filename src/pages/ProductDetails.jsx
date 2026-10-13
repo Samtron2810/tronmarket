@@ -96,7 +96,7 @@ export default function ProductDetails() {
           </p>
           <Link
             to="/"
-            className="mt-4 inline-block text-sm font-semibold underline text-blue-600"
+            className="mt-4 inline-block text-sm font-semibold underline text-emerald-700"
           >
             ← Back to Shop
           </Link>
@@ -116,7 +116,7 @@ export default function ProductDetails() {
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-sm font-semibold mb-6 text-blue-600 hover:opacity-70 transition-opacity"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold mb-6 text-emerald-700 hover:opacity-70 transition-opacity"
       >
         <FaArrowLeft className="w-3 h-3" />
         Back to catalog
@@ -125,7 +125,7 @@ export default function ProductDetails() {
       {/* ── Card ── */}
       <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden lg:grid lg:grid-cols-2">
         {/* ── Image pane ── */}
-        <div className="relative flex items-center justify-center h-64 sm:h-80 lg:h-full bg-blue-50">
+        <div className="relative flex items-center justify-center h-64 sm:h-80 lg:h-full bg-emerald-50">
           <img
             src={largeUrl(images[imgIndex])}
             alt={product.name}
@@ -156,7 +156,7 @@ export default function ProductDetails() {
                   <span
                     key={i}
                     className={`rounded-full h-1 transition-all duration-200 ${
-                      i === imgIndex ? "w-3 bg-blue-500" : "w-1 bg-blue-200"
+                      i === imgIndex ? "w-3 bg-emerald-600" : "w-1 bg-emerald-200"
                     }`}
                   />
                 ))}
@@ -169,7 +169,7 @@ export default function ProductDetails() {
         <div className="flex flex-col justify-between p-5 sm:p-6">
           <div className="space-y-4">
             {/* Category */}
-            <span className="inline-block text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-blue-50 text-blue-600">
+            <span className="inline-block text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
               {product.category || "General"}
             </span>
 
@@ -193,7 +193,7 @@ export default function ProductDetails() {
               <span className="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-1">
                 Price
               </span>
-              <span className="text-2xl font-black text-orange-500">
+              <span className="text-2xl font-black text-amber-700">
                 ₦{Number(product.price).toLocaleString()}
               </span>
             </div>
@@ -227,7 +227,7 @@ export default function ProductDetails() {
                     if (val > product.stock) val = product.stock;
                     setQuantity(val);
                   }}
-                  className="w-16 px-2.5 py-1.5 rounded-lg border border-blue-100 bg-blue-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
+                  className="w-16 px-2.5 py-1.5 rounded-lg border border-emerald-100 bg-emerald-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
                 />
               </label>
 
@@ -246,7 +246,7 @@ export default function ProductDetails() {
             <button
               disabled={!inStock || isAddingToCart}
               onClick={handleAddToCart}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-bold bg-emerald-700 text-white hover:bg-emerald-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"
             >
               <FaShoppingCart className="w-4 h-4" />
               Add to Cart

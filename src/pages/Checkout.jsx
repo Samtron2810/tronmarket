@@ -102,10 +102,10 @@ export default function Checkout() {
   };
 
   const inputCls =
-    "w-full bg-[#EBF2FF] border border-[#2B80FF]/20 rounded-lg px-3 py-2.5 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF]";
+    "w-full bg-[#ECFDF5] border border-[#047857]/20 rounded-lg px-3 py-2.5 text-sm text-[#101828] placeholder-[#667085] focus:outline-none focus:ring-2 focus:ring-[#047857]";
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
       <div
         className="flex items-center gap-2 max-w-3xl mx-auto mb-6 cursor-pointer text-black hover:gap-3 transition-all duration-200"
         onClick={() => navigate(-1)}
@@ -117,8 +117,8 @@ export default function Checkout() {
       <div className="max-w-xl mx-auto">
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Checkout</h1>
-          <p className="text-sm text-[#555555] mt-1">
+          <h1 className="text-2xl font-bold text-[#101828]">Checkout</h1>
+          <p className="text-sm text-[#667085] mt-1">
             {order
               ? "Complete your payment to finalize the order"
               : "Fill in your delivery details to place your order"}
@@ -153,8 +153,8 @@ export default function Checkout() {
         {!order ? (
           /* ── Shipping Form ── */
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-[#FFAA4D] px-5 py-4">
-              <h2 className="font-semibold text-[#1A1A1A]">
+            <div className="bg-[#ECFDF5] px-5 py-4">
+              <h2 className="font-semibold text-[#101828]">
                 Shipping Information
               </h2>
             </div>
@@ -206,7 +206,7 @@ export default function Checkout() {
                 <button
                   type="submit"
                   disabled={loading || validating}
-                  className="px-5 py-2.5 rounded-lg bg-[#2B80FF] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
                   {validating
                     ? "Checking stock..."
@@ -220,14 +220,14 @@ export default function Checkout() {
         ) : (
           /* ── Order Placed — Pay Now ── */
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="bg-[#FFAA4D] px-5 py-4">
-              <h2 className="font-semibold text-[#1A1A1A]">Complete Payment</h2>
+            <div className="bg-[#ECFDF5] px-5 py-4">
+              <h2 className="font-semibold text-[#101828]">Complete Payment</h2>
             </div>
             <div className="p-5 space-y-4">
               {/* Success notice */}
-              <div className="flex items-center gap-2 bg-[#EBF2FF] rounded-lg px-4 py-3">
-                <FiCheckCircle className="w-5 h-5 text-[#2B80FF] shrink-0" />
-                <span className="text-sm font-semibold text-[#2B80FF]">
+              <div className="flex items-center gap-2 bg-[#ECFDF5] rounded-lg px-4 py-3">
+                <FiCheckCircle className="w-5 h-5 text-[#047857] shrink-0" />
+                <span className="text-sm font-semibold text-[#047857]">
                   {location.state?.pendingOrder
                     ? "Pending Order Recovered"
                     : "Order placed successfully"}
@@ -235,22 +235,22 @@ export default function Checkout() {
               </div>
 
               {/* Order ID */}
-              <div className="bg-[#EBF2FF] rounded-lg px-4 py-3">
-                <p className="text-xs text-[#555555] mb-0.5">Order ID</p>
-                <p className="text-sm font-mono text-[#1A1A1A]">{order._id}</p>
+              <div className="bg-[#ECFDF5] rounded-lg px-4 py-3">
+                <p className="text-xs text-[#667085] mb-0.5">Order ID</p>
+                <p className="text-sm font-mono text-[#101828]">{order._id}</p>
               </div>
 
               {/* Order Items */}
               {order.orderItems?.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-[#555555] uppercase tracking-wide">
+                  <p className="text-xs font-semibold text-[#667085] uppercase tracking-wide">
                     Items Ordered
                   </p>
                   <div className="divide-y divide-gray-100 rounded-lg border border-gray-200 overflow-hidden">
                     {order.orderItems.map((item, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-3 bg-[#EBF2FF] px-4 py-3"
+                        className="flex items-center gap-3 bg-[#ECFDF5] px-4 py-3"
                       >
                         <ItemImage
                           src={item.image}
@@ -258,15 +258,15 @@ export default function Checkout() {
                           className="w-12 h-12 rounded-lg border border-white/60 shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[#1A1A1A] truncate">
+                          <p className="text-sm font-semibold text-[#101828] truncate">
                             {item.name}
                           </p>
-                          <p className="text-xs text-[#555555] mt-0.5">
+                          <p className="text-xs text-[#667085] mt-0.5">
                             Qty: {item.quantity} × ₦
                             {Number(item.price).toLocaleString()}
                           </p>
                         </div>
-                        <p className="text-sm font-bold text-[#1A1A1A] shrink-0">
+                        <p className="text-sm font-bold text-[#101828] shrink-0">
                           ₦{(item.price * item.quantity).toLocaleString()}
                         </p>
                       </div>
@@ -276,15 +276,15 @@ export default function Checkout() {
               )}
 
               {/* Info text */}
-              <p className="text-sm text-[#555555]">
+              <p className="text-sm text-[#667085]">
                 Complete payment to confirm your order and notify sellers to
                 dispatch your items.
               </p>
 
               {/* Total */}
               <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                <span className="font-semibold text-[#1A1A1A]">Total</span>
-                <span className="text-lg font-bold text-[#FF8C00]">
+                <span className="font-semibold text-[#101828]">Total</span>
+                <span className="text-lg font-bold text-[#B45309]">
                   ₦{order.totalPrice.toLocaleString()}
                 </span>
               </div>

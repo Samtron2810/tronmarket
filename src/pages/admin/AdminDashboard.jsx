@@ -81,22 +81,22 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F6F7F4] px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         {/* return back to home button */}
         <div className="mb-6">
           <Link
             to="/"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ backgroundColor: "#1A1A1A", color: "#fff" }}
+            style={{ backgroundColor: "#101828", color: "#fff" }}
           >
             ← Back to Home
           </Link>
         </div>
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">Admin Dashboard</h1>
-          <p className="text-sm text-[#555555] mt-1">
+          <h1 className="text-2xl font-bold text-[#101828]">Admin Dashboard</h1>
+          <p className="text-sm text-[#667085] mt-1">
             Manage users, roles, and permissions
           </p>
         </div>
@@ -104,31 +104,31 @@ export default function AdminDashboard() {
         {/* Card — toolbar always rendered so input never loses focus */}
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           {/* Toolbar */}
-          <div className="bg-[#FFAA4D] px-5 py-4 flex items-center justify-between gap-4">
+          <div className="bg-[#ECFDF5] px-5 py-4 flex items-center justify-between gap-4">
             <input
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
               }}
               placeholder="Search by name or email…"
-              className="w-full max-w-sm bg-white border border-white/60 rounded-lg px-3 py-2 text-sm text-[#1A1A1A] placeholder-[#555555] focus:outline-none focus:ring-2 focus:ring-[#2B80FF]"
+              className="w-full max-w-sm bg-white border border-white/60 rounded-lg px-3 py-2 text-sm text-[#101828] placeholder-[#667085] focus:outline-none focus:ring-2 focus:ring-[#047857]"
             />
-            <span className="text-sm font-medium text-[#1A1A1A] whitespace-nowrap">
+            <span className="text-sm font-medium text-[#101828] whitespace-nowrap">
               {total} {total === 1 ? "user" : "users"}
             </span>
           </div>
 
           {loading ? (
             <div className="p-6 space-y-3">
-              <div className="h-5 w-48 bg-[#EBF2FF] animate-pulse rounded" />
-              <div className="h-40 bg-[#EBF2FF] animate-pulse rounded" />
+              <div className="h-5 w-48 bg-[#ECFDF5] animate-pulse rounded" />
+              <div className="h-40 bg-[#ECFDF5] animate-pulse rounded" />
             </div>
           ) : (
             <>
               {/* Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#EBF2FF] text-[#1A1A1A]">
+                  <thead className="bg-[#ECFDF5] text-[#101828]">
                     <tr>
                       <th className="px-5 py-3 text-left font-semibold">
                         Name
@@ -148,12 +148,12 @@ export default function AdminDashboard() {
                     {users.map((u) => (
                       <tr
                         key={u._id}
-                        className="hover:bg-[#EBF2FF]/40 transition-colors"
+                        className="hover:bg-[#ECFDF5]/40 transition-colors"
                       >
-                        <td className="px-5 py-3 text-[#1A1A1A] font-medium">
+                        <td className="px-5 py-3 text-[#101828] font-medium">
                           {u.name}
                         </td>
-                        <td className="px-5 py-3 text-[#555555]">{u.email}</td>
+                        <td className="px-5 py-3 text-[#667085]">{u.email}</td>
                         <td className="px-5 py-3">
                           <select
                             disabled
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
                               setPendingUserId(u._id);
                               setRoleConfirmOpen(true);
                             }}
-                            className="bg-[#EBF2FF] border border-[#2B80FF]/30 text-[#1A1A1A] text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#2B80FF]"
+                            className="bg-[#ECFDF5] border border-[#047857]/30 text-[#101828] text-sm rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#047857]"
                           >
                             <option value="customer">customer</option>
                             <option value="seller">seller</option>
@@ -174,13 +174,13 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-2">
                             <Link
                               to={`/admin/users/${u._id}`}
-                              className="px-3 py-1.5 rounded-lg bg-[#2B80FF] text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                              className="px-3 py-1.5 rounded-lg bg-[#047857] text-white text-xs font-medium hover:opacity-90 transition-opacity"
                             >
                               Manage
                             </Link>
                             <button
                               onClick={() => confirmRemove(u._id)}
-                              className="px-3 py-1.5 rounded-lg bg-[#FF2E3B] text-white text-xs font-medium hover:opacity-90 transition-opacity"
+                              className="px-3 py-1.5 rounded-lg bg-[#DC2626] text-white text-xs font-medium hover:opacity-90 transition-opacity"
                             >
                               Delete
                             </button>
@@ -193,7 +193,7 @@ export default function AdminDashboard() {
                       <tr>
                         <td
                           colSpan={4}
-                          className="px-5 py-10 text-center text-[#555555]"
+                          className="px-5 py-10 text-center text-[#667085]"
                         >
                           No users found.
                         </td>
@@ -208,17 +208,17 @@ export default function AdminDashboard() {
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
                 >
                   Prev
                 </button>
-                <span className="text-sm text-[#555555] px-1">
+                <span className="text-sm text-[#667085] px-1">
                   {page} / {pages}
                 </span>
                 <button
                   disabled={page >= pages}
                   onClick={() => setPage((p) => Math.min(pages, p + 1))}
-                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#1A1A1A] disabled:opacity-40 hover:bg-[#EBF2FF] transition-colors"
+                  className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
                 >
                   Next
                 </button>

@@ -23,9 +23,9 @@ import { toast } from "react-toastify"; // FIX #2: import toast
 const statusColors = {
   pending: "bg-amber-100 text-amber-800 border border-amber-200",
   paid: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-  processing: "bg-blue-100 text-blue-800 border border-blue-200",
+  processing: "bg-emerald-100 text-emerald-800 border border-emerald-200",
   shipped: "bg-indigo-100 text-indigo-800 border border-indigo-200",
-  "delivery-claimed": "bg-orange-100 text-orange-800 border border-orange-200",
+  "delivery-claimed": "bg-amber-100 text-amber-800 border border-amber-200",
   delivered: "bg-green-100 text-green-800 border border-green-200",
   completed: "bg-teal-100 text-teal-800 border border-teal-200",
   cancelled: "bg-rose-100 text-rose-800 border border-rose-200",
@@ -119,7 +119,7 @@ export default function MyOrders() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="animate-pulse space-y-3">
             <div className="h-4 bg-black/10 rounded w-24"></div>
@@ -150,18 +150,18 @@ export default function MyOrders() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FF8C00] px-4 py-10 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
           <Link
             to="/cart"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#1A1A1A] hover:opacity-80 transition-opacity mb-4 group"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[#101828] hover:opacity-80 transition-opacity mb-4 group"
           >
             <FiArrowLeft className="transform group-hover:-translate-x-1 transition-transform" />
             Back to Cart
           </Link>
-          <h1 className="text-2xl font-bold text-[#1A1A1A]">My Orders</h1>
-          <p className="text-sm text-[#555555] mt-1">
+          <h1 className="text-2xl font-bold text-[#101828]">My Orders</h1>
+          <p className="text-sm text-[#667085] mt-1">
             Track and review your past purchases
           </p>
         </div>
@@ -171,15 +171,15 @@ export default function MyOrders() {
             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4 text-gray-400">
               <FiPackage size={24} />
             </div>
-            <h3 className="text-base font-bold text-[#1A1A1A] mb-1">
+            <h3 className="text-base font-bold text-[#101828] mb-1">
               No orders found
             </h3>
-            <p className="text-sm text-[#555555] mb-6">
+            <p className="text-sm text-[#667085] mb-6">
               You haven't placed any orders on TronMarket yet.
             </p>
             <Link
               to="/"
-              className="inline-block bg-[#1A1A1A] hover:bg-black text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors shadow-sm"
+              className="inline-block bg-[#101828] hover:bg-black text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-colors shadow-sm"
             >
               Start Shopping
             </Link>
@@ -218,20 +218,20 @@ export default function MyOrders() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <p className="text-xs font-mono font-bold text-[#555555]">
+                          <p className="text-xs font-mono font-bold text-[#667085]">
                             #{order._id.slice(-8).toUpperCase()}
                           </p>
                           <span className="text-gray-300 text-xs hidden sm:inline">
                             •
                           </span>
-                          <div className="flex items-center gap-1 text-xs text-[#555555]">
+                          <div className="flex items-center gap-1 text-xs text-[#667085]">
                             <FiCalendar size={12} className="text-gray-400" />
                             {formattedDate}
                           </div>
                         </div>
-                        <p className="text-base font-bold text-[#1A1A1A] mt-1">
+                        <p className="text-base font-bold text-[#101828] mt-1">
                           ₦{Number(order.totalPrice).toLocaleString()}
-                          <span className="text-xs font-normal text-[#555555] ml-1.5">
+                          <span className="text-xs font-normal text-[#667085] ml-1.5">
                             ({totalItemsCount}{" "}
                             {totalItemsCount === 1 ? "item" : "items"})
                           </span>
@@ -270,10 +270,10 @@ export default function MyOrders() {
                                 className="w-12 h-12 rounded-lg bg-gray-50 border border-gray-200 shrink-0"
                               />
                               <div>
-                                <h4 className="font-bold text-[#1A1A1A] line-clamp-1">
+                                <h4 className="font-bold text-[#101828] line-clamp-1">
                                   {item.name}
                                 </h4>
-                                <p className="text-xs text-[#555555] mt-0.5">
+                                <p className="text-xs text-[#667085] mt-0.5">
                                   Quantity:{" "}
                                   <span className="font-mono text-gray-700 font-bold">
                                     {item.quantity}
@@ -289,7 +289,7 @@ export default function MyOrders() {
                         ))}
                       </div>
 
-                      <div className="px-4 py-3 bg-gray-50/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-[#555555]">
+                      <div className="px-4 py-3 bg-gray-50/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-[#667085]">
                         <div className="line-clamp-1 max-w-xs sm:max-w-md">
                           <span className="font-medium text-gray-400">
                             Shipping To:{" "}
@@ -323,7 +323,7 @@ export default function MyOrders() {
                             <Link
                               to="/checkout"
                               state={{ pendingOrder: order }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#2B80FF] text-white hover:opacity-90 transition-opacity font-semibold shadow-sm"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#047857] text-white hover:opacity-90 transition-opacity font-semibold shadow-sm"
                             >
                               <FiCreditCard size={12} />
                               Complete Payment
