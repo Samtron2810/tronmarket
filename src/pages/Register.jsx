@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { register as apiRegister } from "../services/authService";
 import MessageModal from "../components/MessageModal";
@@ -24,6 +24,14 @@ const Register = () => {
         email: form.email,
         password: form.password,
       });
+      try {
+        sessionStorage.setItem(
+          "tronmarket:pendingVerificationEmail",
+          form.email.trim(),
+        );
+      } catch {
+        // navigation state below still carries the email
+      }
       navigate("/verify-otp", { state: { email: form.email }, replace: true });
     } catch (err) {
       const data = err.response?.data;

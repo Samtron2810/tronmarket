@@ -24,20 +24,15 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminUser from "../pages/admin/AdminUser";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminSellerApplications from "../pages/admin/AdminSellerApplications";
+import AdminAuditLogs from "../pages/admin/AdminAuditLogs";
+import Invoice from "../pages/Invoice";
 import AdminRoute from "../components/AdminRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route
-        path="/cart"
-        element={
-          <ProtectedRoute>
-            <Cart />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/cart" element={<Cart />} />
       <Route
         path="/checkout"
         element={
@@ -130,6 +125,14 @@ export default function AppRoutes() {
         }
       />
       <Route
+        path="/orders/:id/invoice"
+        element={
+          <ProtectedRoute>
+            <Invoice />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin"
         element={
           <AdminRoute>
@@ -142,6 +145,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminSellerApplications />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <AdminRoute>
+            <AdminAuditLogs />
           </AdminRoute>
         }
       />

@@ -9,6 +9,13 @@ export const getMyOrders = (params) => api.get("/orders/my-orders", { params });
 // Get single order
 export const getOrderById = (id) => api.get(`/orders/${id}`);
 
+// Server-calculated delivery quote for the current cart
+export const getShippingQuote = (state) =>
+  api.get("/orders/shipping-quote", { params: { state } });
+
+// Printable invoice/payout statement (access is scoped server-side)
+export const getOrderInvoice = (id) => api.get(`/orders/${id}/invoice`);
+
 // Customer: cancel their own order
 export const cancelMyOrder = (orderId) => api.put(`/orders/${orderId}/cancel`);
 

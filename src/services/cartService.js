@@ -24,3 +24,6 @@ export const clearCart = () => api.delete("/cart");
 
 // Validate all cart items against server stock before checkout
 export const validateCartStock = () => api.post("/cart/validate");
+
+// Merge browser-held guest items into the authenticated account cart
+export const mergeGuestCart = (items) => api.post("/cart/merge", { items });

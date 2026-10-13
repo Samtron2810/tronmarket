@@ -25,7 +25,8 @@ const lineLabel = (item) =>
 const lineImage = (item) => item.variant?.image || item.product?.image;
 
 export default function Cart() {
-  const { cart, updateQtyLocal, removeItemLocal } = useContext(CartContext);
+  const { cart, updateQtyLocal, removeItemLocal, isGuestCart } =
+    useContext(CartContext);
 
   // stockWarnings: { [productId]: { available: number, inCart: number, status: "out_of_stock" | "insufficient" } }
   const [stockWarnings, setStockWarnings] = useState({});
@@ -220,6 +221,13 @@ export default function Cart() {
           <span>View my Orders</span>
         </Link>
       </div>
+
+      {isGuestCart && cart.items.length > 0 && (
+        <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900">
+          You are shopping as a guest. This cart is saved in this browser and
+          will be added to your account cart when you sign in.
+        </div>
+      )}
 
       {/* ── Empty state ── */}
       {cart.items.length === 0 ? (
@@ -503,7 +511,7 @@ export default function Cart() {
                   className="font-bold text-sm"
                   style={{ color: "#101828" }}
                 >
-                  Total
+                  Items subtotal
                 </span>
                 <span
                   className="text-lg font-extrabold"
@@ -512,6 +520,10 @@ export default function Cart() {
                   ₦{total.toLocaleString()}
                 </span>
               </div>
+
+              <p className="mt-2 text-xs" style={{ color: "#667085" }}>
+                Delivery is calculated at checkout from your delivery state.
+              </p>
 
               {/* Stock loading indicator */}
               {stockLoading && (

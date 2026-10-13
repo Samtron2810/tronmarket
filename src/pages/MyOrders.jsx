@@ -367,6 +367,21 @@ export default function MyOrders() {
                         </div>
                       )}
 
+                      <div className="bg-white px-4 py-3 text-xs text-[#667085]">
+                        <div className="flex justify-between py-0.5">
+                          <span>Items subtotal</span>
+                          <span>₦{Number(order.itemsSubtotal ?? Math.max(0, order.totalPrice - (order.shippingPrice || 0))).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between py-0.5">
+                          <span>Delivery{order.shippingZone ? ` (${order.shippingZone})` : ""}</span>
+                          <span>{Number(order.shippingPrice || 0) === 0 ? "FREE" : `₦${Number(order.shippingPrice).toLocaleString()}`}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-gray-100 py-1 font-bold text-[#101828]">
+                          <span>Total</span>
+                          <span>₦{Number(order.totalPrice).toLocaleString()}</span>
+                        </div>
+                      </div>
+
                       <div className="px-4 py-3 bg-gray-50/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-[#667085]">
                         <div className="line-clamp-1 max-w-xs sm:max-w-md">
                           <span className="font-medium text-gray-400">
@@ -403,6 +418,12 @@ export default function MyOrders() {
                             </button>
                           )}
 
+                          <Link
+                            to={`/orders/${order._id}/invoice`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 transition-colors font-semibold shadow-sm"
+                          >
+                            View Invoice
+                          </Link>
                           {!order.isPaid && order.status === "pending" && (
                             <Link
                               to="/checkout"

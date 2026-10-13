@@ -42,7 +42,7 @@ export default function AdminDashboard() {
         setTotal(res.data.total || 0);
         setPages(res.data.pages || 1);
         setPage(res.data.page || 1);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load users");
       } finally {
         setLoading(false);
@@ -103,12 +103,20 @@ export default function AdminDashboard() {
               Manage users, roles, and permissions
             </p>
           </div>
-          <Link
-            to="/admin/seller-applications"
-            className="inline-flex w-fit rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-          >
-            Review Seller Applications
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/admin/seller-applications"
+              className="inline-flex w-fit rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+            >
+              Review Seller Applications
+            </Link>
+            <Link
+              to="/admin/audit-logs"
+              className="inline-flex w-fit rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+            >
+              View Audit Trail
+            </Link>
+          </div>
         </div>
 
         {/* Card — toolbar always rendered so input never loses focus */}

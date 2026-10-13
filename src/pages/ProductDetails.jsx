@@ -51,13 +51,18 @@ export default function ProductDetails() {
 
   // reset quantity when product changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setQuantity(1);
   }, [id]);
 
   const handleAddToCart = async () => {
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
-      await addToCartLocal(product._id, quantity, selectedVariant?._id ?? null);
+      await addToCartLocal(product._id, quantity, selectedVariant?._id ?? null, {
+        product,
+        variant: selectedVariant,
+        variantLabel: selectedVariant ? variantLabel(selectedVariant) : "",
+      });
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);

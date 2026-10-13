@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { verifyOtp, resendOtp } from "../services/authService";
 import { AuthContext } from "../context/AuthContext";
@@ -7,17 +7,34 @@ import { FaEnvelope } from "react-icons/fa";
 
 const RESEND_COOLDOWN = 60;
 
+const PENDING_EMAIL_KEY = "tronmarket:pendingVerificationEmail";
+
+function storedPendingEmail(location) {
+  try {
+    return (
+      location.state?.email ||
+      new URLSearchParams(location.search).get("email") ||
+      sessionStorage.getItem(PENDING_EMAIL_KEY) ||
+      ""
+    );
+  } catch {
+    return location.state?.email || "";
+  }
+}
+
 export default function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useContext(AuthContext);
 
-  const email = location.state?.email || "";
+  const [email, setEmail] = useState(() => storedPendingEmail(location));
 
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [countdown, setCountdown] = useState(RESEND_COOLDOWN);
+  const [countdown, setCountdown] = useState(() =>
+    location.state?.email ? RESEND_COOLDOWN : 0,
+  );
   const [msgOpen, setMsgOpen] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -29,11 +46,24 @@ export default function VerifyOtp() {
     return () => clearTimeout(timer);
   }, [countdown]);
 
+  // Remember the address across refreshes/direct visits. The field stays
+  // editable because a typo or a different inbox should not force the user
+  // to start registration again.
   useEffect(() => {
-    if (!email) navigate("/register", { replace: true });
-  }, [email, navigate]);
+    try {
+      if (email.trim()) {
+        sessionStorage.setItem(PENDING_EMAIL_KEY, email.trim());
+      } else {
+        sessionStorage.removeItem(PENDING_EMAIL_KEY);
+      }
+    } catch {
+      // storage unavailable — the in-memory field still works
+    }
+  }, [email]);
 
   const otp = digits.join("");
+  const normalizedEmail = email.trim().toLowerCase();
+  const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail);
 
   const handleDigitChange = (index, value) => {
     const cleaned = value.replace(/\D/g, "").slice(-1);
@@ -69,6 +99,11 @@ export default function VerifyOtp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!emailIsValid) {
+      setMsg("Please enter the email address you registered with.");
+      setMsgOpen(true);
+      return;
+    }
     if (otp.length < 6) {
       setMsg("Please enter all 6 digits.");
       setMsgOpen(true);
@@ -76,8 +111,13 @@ export default function VerifyOtp() {
     }
     try {
       setLoading(true);
-      const res = await verifyOtp({ email, otp });
+      const res = await verifyOtp({ email: normalizedEmail, otp });
       const { token, _id, name, email: resEmail, role } = res.data;
+      try {
+        sessionStorage.removeItem(PENDING_EMAIL_KEY);
+      } catch {
+        // ignore storage errors
+      }
       login(token, { _id, name, email: resEmail, role });
       navigate("/", { replace: true });
     } catch (err) {
@@ -91,9 +131,14 @@ export default function VerifyOtp() {
 
   const handleResend = async () => {
     if (countdown > 0 || resending) return;
+    if (!emailIsValid) {
+      setMsg("Please enter the email address you registered with first.");
+      setMsgOpen(true);
+      return;
+    }
     try {
       setResending(true);
-      await resendOtp({ email });
+      await resendOtp({ email: normalizedEmail });
       setCountdown(RESEND_COOLDOWN);
       setMsg("A new code has been sent to your email.");
       setMsgOpen(true);
@@ -118,12 +163,21 @@ export default function VerifyOtp() {
         <h1 className="text-2xl font-bold mb-1 text-center">
           Verify your email
         </h1>
-        <p className="text-sm text-secondary mb-1 text-center">
-          We sent a 6-digit code to
+        <p className="text-sm text-secondary mb-3 text-center">
+          Enter the 6-digit code sent to your email. You can correct the
+          address here if you refreshed or opened this page directly.
         </p>
-        <p className="text-sm font-semibold text-center text-[#047857] mb-6 break-all">
-          {email}
-        </p>
+        <label className="block mb-6">
+          <span className="sr-only">Email address</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email address used to register"
+            autoComplete="email"
+            className="input-field w-full text-center"
+          />
+        </label>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-center gap-2" onPaste={handlePaste}>
@@ -151,7 +205,7 @@ export default function VerifyOtp() {
           <button
             type="submit"
             className="primary-btn w-full"
-            disabled={loading || otp.length < 6}
+            disabled={loading || otp.length < 6 || !emailIsValid}
           >
             {loading ? "Verifying..." : "Verify Account"}
           </button>

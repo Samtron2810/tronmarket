@@ -1,6 +1,10 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { createOrder, getOrderById } from "../services/orderService";
+import {
+  createOrder,
+  getOrderById,
+  getShippingQuote,
+} from "../services/orderService";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
@@ -15,6 +19,7 @@ export default function Checkout() {
   const location = useLocation();
   const { user } = useContext(AuthContext);
   const {
+    cart,
     fetchCart,
     validateCartBeforeCheckout,
     removeItemLocal,
@@ -27,6 +32,8 @@ export default function Checkout() {
   const [validating, setValidating] = useState(false);
   const [stockErrors, setStockErrors] = useState([]);
   const [stockErrorMode, setStockErrorMode] = useState("adjusted");
+  const [shippingQuote, setShippingQuote] = useState(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
   const [now, setNow] = useState(() => Date.now());
 
   const [order, setOrder] = useState(location.state?.pendingOrder || null);
@@ -155,6 +162,44 @@ export default function Checkout() {
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+
+  const cartItemsSubtotal = (cart?.items || []).reduce((sum, item) => {
+    const price = Number(item.variant?.price ?? item.product?.price ?? 0);
+    return sum + price * Number(item.quantity || 0);
+  }, 0);
+  const visibleShippingQuote =
+    shippingQuote?.state?.trim().toLowerCase() ===
+    form.state.trim().toLowerCase()
+      ? shippingQuote
+      : null;
+
+  // Shipping is priced by the server from the delivery state. Refresh the
+  // quote as the state settles so the buyer sees delivery before ordering;
+  // the order endpoint recalculates it and never trusts this display value.
+  useEffect(() => {
+    const state = form.state.trim();
+    if (order || state.length < 2 || cartItemsSubtotal <= 0) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setQuoteLoading(true);
+      try {
+        const res = await getShippingQuote(state);
+        if (!cancelled) setShippingQuote(res.data);
+      } catch {
+        if (!cancelled) setShippingQuote(null);
+      } finally {
+        if (!cancelled) setQuoteLoading(false);
+      }
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [cartItemsSubtotal, form.state, order]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -346,6 +391,34 @@ export default function Checkout() {
                 />
               </div>
 
+              <div className="rounded-lg border border-emerald-100 bg-[#ECFDF5] px-4 py-3 text-sm">
+                <div className="flex justify-between py-0.5">
+                  <span className="text-[#667085]">Items subtotal</span>
+                  <span className="font-semibold">NGN {cartItemsSubtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between py-0.5">
+                  <span className="text-[#667085]">
+                    Delivery{visibleShippingQuote?.shippingZone ? ` (${visibleShippingQuote.shippingZone})` : ""}
+                  </span>
+                  <span className="font-semibold">
+                    {quoteLoading
+                      ? "Calculating…"
+                      : visibleShippingQuote
+                        ? visibleShippingQuote.freeShipping
+                          ? "FREE"
+                          : `NGN ${Number(visibleShippingQuote.shippingPrice).toLocaleString()}`
+                        : "Enter delivery state"}
+                  </span>
+                </div>
+                <div className="mt-2 flex justify-between border-t border-emerald-200 pt-2 font-bold">
+                  <span>Total to pay</span>
+                  <span>NGN {Number(visibleShippingQuote?.totalPrice ?? cartItemsSubtotal).toLocaleString()}</span>
+                </div>
+                {visibleShippingQuote?.freeShipping && (
+                  <p className="mt-1 text-xs text-[#047857]">Your order qualifies for free shipping.</p>
+                )}
+              </div>
+
               <div className="flex justify-end pt-2">
                 <button
                   type="submit"
@@ -456,12 +529,22 @@ export default function Checkout() {
                 dispatch your items.
               </p>
 
-              {/* Total */}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                <span className="font-semibold text-[#101828]">Total</span>
-                <span className="text-lg font-bold text-[#B45309]">
-                  ₦{order.totalPrice.toLocaleString()}
-                </span>
+              {/* Totals — delivery is part of the amount sent to Paystack */}
+              <div className="space-y-1.5 pt-2 border-t border-gray-100 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-[#667085]">Items subtotal</span>
+                  <span>₦{Number(order.itemsSubtotal ?? Math.max(0, order.totalPrice - (order.shippingPrice || 0))).toLocaleString()}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[#667085]">Delivery{order.shippingZone ? ` (${order.shippingZone})` : ""}</span>
+                  <span>{Number(order.shippingPrice || 0) === 0 ? "FREE" : `₦${Number(order.shippingPrice).toLocaleString()}`}</span>
+                </div>
+                <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+                  <span className="font-semibold text-[#101828]">Total</span>
+                  <span className="text-lg font-bold text-[#B45309]">
+                    ₦{order.totalPrice.toLocaleString()}
+                  </span>
+                </div>
               </div>
 
               {paymentExpired ? (

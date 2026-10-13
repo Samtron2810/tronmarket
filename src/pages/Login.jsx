@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { login as apiLogin } from "../services/authService";
 import { AuthContext } from "../context/AuthContext";
@@ -40,6 +40,14 @@ const Login = () => {
 
       // Server signals unverified account — redirect silently to OTP page
       if (data?.requiresVerification && data?.email) {
+        try {
+          sessionStorage.setItem(
+            "tronmarket:pendingVerificationEmail",
+            data.email,
+          );
+        } catch {
+          // navigation state below still carries the email
+        }
         navigate("/verify-otp", { state: { email: data.email } });
         return;
       }

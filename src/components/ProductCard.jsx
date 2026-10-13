@@ -49,7 +49,7 @@ export default function ProductCard({ product }) {
 
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
-      await addToCartLocal(product._id, 1);
+      await addToCartLocal(product._id, 1, null, { product, variant: null });
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);

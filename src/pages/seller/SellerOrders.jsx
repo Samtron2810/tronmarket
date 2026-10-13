@@ -243,6 +243,17 @@ export default function SellerOrders() {
                     {order.sellerStatus || order.status}
                   </span>
                 </div>
+                <div className="mt-3 space-y-1 rounded-lg bg-gray-50 px-3 py-2 text-xs text-[#667085]">
+                  <div className="flex justify-between"><span>Your item subtotal</span><span>₦{Number(order.sellerSubtotal ?? order.totalPrice).toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Platform commission ({(Number(order.sellerCommissionRate || 0) * 100).toFixed(2)}%)</span><span>-₦{Number(order.sellerCommissionAmount || 0).toLocaleString()}</span></div>
+                  <div className="flex justify-between border-t border-gray-200 pt-1 font-bold text-[#101828]"><span>Your payout</span><span>₦{Number(order.sellerPayoutAmount ?? order.sellerSubtotal ?? order.totalPrice).toLocaleString()}</span></div>
+                  <div className="flex justify-between"><span>Payout status</span><span className="capitalize">{order.payoutStatus || "not-eligible"}</span></div>
+                  <div className="pt-1 text-right">
+                    <Link to={`/orders/${order._id}/invoice`} className="font-semibold text-[#047857] hover:underline">
+                      View payout statement
+                    </Link>
+                  </div>
+                </div>
                 <div className="text-right gap-2 mt-2">
                   {((order.sellerStatus || order.status) === "paid" ||
                     (order.sellerStatus || order.status) === "processing") && (

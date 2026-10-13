@@ -85,6 +85,7 @@ function ProductsSection({ userId, userRole }) {
   }, [userId, debouncedSearch, productPage]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProducts();
   }, [fetchProducts]);
 
@@ -281,6 +282,7 @@ function ProductsSection({ userId, userRole }) {
                     Images
                     <input
                       type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
                       multiple
                       onChange={(e) =>
                         setNewProduct((n) => ({
@@ -499,6 +501,7 @@ function ProductsSection({ userId, userRole }) {
                 />
                 <input
                   type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   multiple
                   onChange={(e) =>
                     setEditProduct((s) => ({
@@ -578,6 +581,7 @@ function SellerSalesSection({ userId }) {
   }, [userId, page]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSales();
   }, [fetchSales]);
 

@@ -403,11 +403,11 @@ export default function EditProduct() {
                     Click to upload images
                   </span>
                   <span className="text-xs" style={{ color: "#667085" }}>
-                    PNG, JPG, WEBP supported
+                    PNG, JPG, WEBP or GIF, up to 5 images at 5 MB each
                   </span>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
                     multiple
                     onChange={handleFiles}
                     className="hidden"

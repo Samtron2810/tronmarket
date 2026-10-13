@@ -1,4 +1,5 @@
-import { createContext, useState, useEffect } from "react";
+/* eslint-disable react-refresh/only-export-components -- context and provider are intentionally co-located. */
+import { createContext, useState, useEffect, useCallback } from "react";
 import {
   getToken,
   logout as doLogout,
@@ -6,7 +7,7 @@ import {
   getUser,
   setUser,
 } from "../utils/auth";
-import api from "../services/api";
+import api, { SESSION_EXPIRED_EVENT } from "../services/api";
 import { getMe } from "../services/authService";
 
 export const AuthContext = createContext();
@@ -15,6 +16,12 @@ export default function AuthProvider({ children }) {
   const [token, setTokenState] = useState(() => getToken());
   const [user, setUserState] = useState(() => getUser());
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
+
+  const clearSession = useCallback(() => {
+    doLogout();
+    setTokenState(null);
+    setUserState(null);
+  }, []);
 
   const login = (t, u = null) => {
     setToken(t);
@@ -25,47 +32,66 @@ export default function AuthProvider({ children }) {
     }
   };
 
-  useEffect(() => {
-    // On page refresh: token is in localStorage but React state needs hydrating.
-    // getUser() reads the full user object (including role) that login() stored.
-    // If it's missing (user logged in before role was stored), force a logout
-    // so they re-authenticate and get a fresh user object with role.
-    if (token && !user) {
-      const stored = getUser();
-      if (stored?.role) {
-        setUserState(stored);
-      } else {
-        // Stale session — no role info available, force clean re-login
-        doLogout();
-        setTokenState(null);
-        setUserState(null);
-      }
-    }
-  }, [token]);
-
   // Re-read the account from the server (e.g. after a seller application
-  // is approved, the stored role must catch up with the new one).
-  const refreshUser = async () => {
+  // is approved, the stored role must catch up with the new one). A 401
+  // clears the session; a transient network failure does not log the user
+  // out or erase an otherwise usable stored profile.
+  const refreshUser = useCallback(async () => {
     try {
       const res = await getMe();
       setUser(res.data);
       setUserState(res.data);
       return res.data;
-    } catch {
+    } catch (error) {
+      if (error.response?.status === 401) {
+        clearSession();
+      }
       return null;
     }
-  };
+  }, [clearSession]);
+
+  useEffect(() => {
+    const onSessionExpired = () => {
+      setTokenState(null);
+      setUserState(null);
+    };
+    window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+    return () =>
+      window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+  }, []);
+
+  // Validate/refresh the profile whenever a session starts or the token
+  // changes. This keeps role changes and deleted/suspended accounts from
+  // lingering in localStorage after a refresh.
+  useEffect(() => {
+    if (!token) {
+      return undefined;
+    }
+
+    let cancelled = false;
+    (async () => {
+      const me = await refreshUser();
+      if (!cancelled && !me) {
+        // refreshUser only clears state itself on a 401. For other errors,
+        // retain the stored user rather than logging out on a flaky network.
+        const stored = getUser();
+        if (stored) setUserState(stored);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [token, refreshUser]);
 
   const handleLogout = async () => {
     try {
       // try server-side logout (if endpoint exists)
       await api.post("/auth/logout");
-    } catch (err) {
+    } catch {
       // ignore network errors
     }
-    doLogout();
-    setTokenState(null);
-    setUserState(null);
+    clearSession();
   };
 
   return (

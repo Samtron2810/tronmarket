@@ -42,7 +42,10 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const handleAdd = async () => {
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
-      await addToCartLocal(product._id, qty, selectedVariant?._id ?? null);
+      await addToCartLocal(product._id, qty, selectedVariant?._id ?? null, {
+        product,
+        variant: selectedVariant,
+      });
       // Only close modal if add was successful
       onClose();
     } catch (err) {
