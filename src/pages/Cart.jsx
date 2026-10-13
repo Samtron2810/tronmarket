@@ -5,6 +5,24 @@ import { FaStore, FaArrowLeft } from "react-icons/fa";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
 import api from "../services/api";
+import { variantLabel as buildVariantLabel } from "../utils/variants";
+
+// Per-line helpers — a line's price/stock come from its variant when one
+// was chosen, otherwise from the product (legacy behaviour).
+const lineVariantId = (item) =>
+  (item.variant?._id ?? item.variant ?? null)?.toString() ?? null;
+const lineKey = (item) =>
+  `${(item.product?._id ?? item.product)?.toString()}:${lineVariantId(item) ?? ""}`;
+const linePrice = (item) =>
+  item.variant?.price ?? item.product?.price ?? 0;
+const lineStock = (item) =>
+  item.variant && typeof item.variant === "object" && "stock" in item.variant
+    ? (item.variant.stock ?? 0)
+    : (item.product?.stock ?? 0);
+const lineLabel = (item) =>
+  item.variantLabel ||
+  (item.variant?.attributes ? buildVariantLabel(item.variant) : "");
+const lineImage = (item) => item.variant?.image || item.product?.image;
 
 export default function Cart() {
   const { cart, updateQtyLocal, removeItemLocal } = useContext(CartContext);
@@ -39,13 +57,19 @@ export default function Cart() {
         const warnings = {};
         cart.items.forEach((item) => {
           const productId = (item.product?._id ?? item.product)?.toString();
-          const available = res.data.stocks?.[productId] ?? 0;
+          const variantId = lineVariantId(item);
+          const perVariant = res.data.variants?.[productId];
+          const available =
+            variantId && perVariant
+              ? (perVariant[variantId] ?? 0)
+              : (res.data.stocks?.[productId] ?? 0);
           const inCart = item.quantity;
+          const key = lineKey(item);
 
           if (available === 0) {
-            warnings[productId] = { available, inCart, status: "out_of_stock" };
+            warnings[key] = { available, inCart, status: "out_of_stock" };
           } else if (available < inCart) {
-            warnings[productId] = { available, inCart, status: "insufficient" };
+            warnings[key] = { available, inCart, status: "insufficient" };
           }
         });
 
@@ -110,7 +134,7 @@ export default function Cart() {
   // Clamp to available stock BEFORE updating state or hitting the network.
   const updateQty = (item, rawValue) => {
     const productId = item.product?._id || item.product;
-    const stock = item.product?.stock || 0;
+    const stock = lineStock(item);
 
     let next = parseInt(rawValue, 10);
     if (!Number.isFinite(next) || next < 1) next = 1;
@@ -120,21 +144,21 @@ export default function Cart() {
       next = stock;
     }
 
-    updateQtyLocal(productId, next);
+    updateQtyLocal(productId, next, lineVariantId(item));
   };
 
-  const removeItem = (productId) => {
-    removeItemLocal(productId);
+  const removeItem = (item) => {
+    const productId = item.product?._id || item.product;
+    removeItemLocal(productId, lineVariantId(item));
   };
 
   const total = cart.items.reduce((acc, item) => {
-    if (!item.product || !item.product.stock || item.product.stock <= 0)
-      return acc;
-    return acc + (item.product.price || 0) * item.quantity;
+    if (!item.product || lineStock(item) <= 0) return acc;
+    return acc + linePrice(item) * item.quantity;
   }, 0);
 
   const availableItems = cart.items.filter(
-    (item) => item.product?.stock && item.product.stock > 0,
+    (item) => item.product && lineStock(item) > 0,
   );
 
   // Block checkout if any item is fully out of stock
@@ -252,12 +276,11 @@ export default function Cart() {
           {/* ── Cart items ── */}
           <div className="flex-1 space-y-3">
             {cart.items.map((item) => {
-              const productId = (item.product?._id ?? item.product)?.toString();
-              const warning = stockWarnings[productId];
+              const warning = stockWarnings[lineKey(item)];
 
               return (
                 <div
-                  key={productId}
+                  key={lineKey(item)}
                   className="rounded-2xl border px-5 py-4 transition-shadow hover:shadow-sm"
                   style={{
                     backgroundColor: "#fff",
@@ -270,9 +293,9 @@ export default function Cart() {
                       className="w-16 h-16 rounded-xl overflow-hidden shrink-0"
                       style={{ backgroundColor: "#ECFDF5" }}
                     >
-                      {item.product?.image ? (
+                      {lineImage(item) ? (
                         <img
-                          src={thumbUrl(item.product.image)}
+                          src={thumbUrl(lineImage(item))}
                           alt={item.product.name}
                           className="w-full h-full object-cover"
                           loading="lazy"
@@ -305,13 +328,18 @@ export default function Cart() {
                       >
                         {item.product?.name}
                       </p>
-                      {item.product?.stock && item.product.stock > 0 ? (
+                      {lineLabel(item) && (
+                        <span className="inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
+                          {lineLabel(item)}
+                        </span>
+                      )}
+                      {lineStock(item) > 0 ? (
                         <>
                           <p
                             className="text-sm font-bold mt-0.5"
                             style={{ color: "#B45309" }}
                           >
-                            ₦{item.product.price.toLocaleString()}
+                            ₦{linePrice(item).toLocaleString()}
                           </p>
                           <p
                             className="text-xs mt-0.5"
@@ -319,7 +347,7 @@ export default function Cart() {
                           >
                             Subtotal: ₦
                             {(
-                              item.product.price * item.quantity
+                              linePrice(item) * item.quantity
                             ).toLocaleString()}
                           </p>
                         </>
@@ -340,9 +368,7 @@ export default function Cart() {
                         value={item.quantity}
                         min="1"
                         onChange={(e) => updateQty(item, e.target.value)}
-                        disabled={
-                          !item.product?.stock || item.product.stock <= 0
-                        }
+                        disabled={lineStock(item) <= 0}
                         style={{
                           width: "64px",
                           padding: "6px 10px",
@@ -367,7 +393,7 @@ export default function Cart() {
                       />
 
                       <button
-                        onClick={() => removeItem(productId)}
+                        onClick={() => removeItem(item)}
                         title="Remove item"
                         className="p-2 rounded-xl transition-all duration-150 active:scale-95"
                         style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}
@@ -403,7 +429,7 @@ export default function Cart() {
                         the last one.
                       </p>
                       <button
-                        onClick={() => removeItem(productId)}
+                        onClick={() => removeItem(item)}
                         className="shrink-0 text-xs font-bold text-red-600 underline hover:text-red-700"
                       >
                         Remove
@@ -443,20 +469,22 @@ export default function Cart() {
               <div className="space-y-2 mb-4">
                 {availableItems.map((item) => (
                   <div
-                    key={item.product?._id || item.product}
+                    key={lineKey(item)}
                     className="flex justify-between text-sm"
                   >
                     <span
                       className="truncate max-w-35"
                       style={{ color: "#667085" }}
                     >
-                      {item.product.name} ×{item.quantity}
+                      {item.product.name}
+                      {lineLabel(item) ? ` — ${lineLabel(item)}` : ""} ×
+                      {item.quantity}
                     </span>
                     <span
                       className="font-medium shrink-0"
                       style={{ color: "#101828" }}
                     >
-                      ₦{(item.product.price * item.quantity).toLocaleString()}
+                      ₦{(linePrice(item) * item.quantity).toLocaleString()}
                     </span>
                   </div>
                 ))}

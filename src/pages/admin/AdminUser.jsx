@@ -5,6 +5,7 @@ import uploadService from "../../services/uploadService";
 import { toast } from "react-toastify";
 import ConfirmModal from "../../components/ConfirmModal";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
+import VariantEditor from "../../components/VariantEditor";
 
 const categories = ["phones", "laptops", "fashion", "home", "electronics"];
 
@@ -44,6 +45,9 @@ function ProductsSection({ userId, userRole }) {
     description: "",
     stock: 0,
     images: [],
+    hasVariants: false,
+    options: [],
+    variants: [],
   });
   const [confirmProductOpen, setConfirmProductOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -99,6 +103,10 @@ function ProductsSection({ userId, userRole }) {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    if (newProduct.hasVariants && newProduct.variants.length === 0) {
+      toast.error("Generate at least one variant, or turn variants off.");
+      return;
+    }
     try {
       setCreating(true);
       let urls = [];
@@ -107,6 +115,14 @@ function ProductsSection({ userId, userRole }) {
       }
       await api.post(`/admin/users/${userId}/products`, {
         ...newProduct,
+        options: newProduct.hasVariants ? newProduct.options : [],
+        variants: newProduct.hasVariants
+          ? newProduct.variants.map((v) => ({
+              ...v,
+              price: Number(v.price) || 0,
+              stock: Number(v.stock) || 0,
+            }))
+          : [],
         images: urls,
         image: urls[0],
       });
@@ -118,6 +134,9 @@ function ProductsSection({ userId, userRole }) {
         description: "",
         stock: 0,
         images: [],
+        hasVariants: false,
+        options: [],
+        variants: [],
       });
       setShowAddForm(false);
       fetchProducts();
@@ -285,6 +304,14 @@ function ProductsSection({ userId, userRole }) {
                   }
                   className={inputCls}
                 />
+                <VariantEditor
+                  category={newProduct.category}
+                  basePrice={Number(newProduct.price) || 0}
+                  value={newProduct}
+                  onChange={(next) =>
+                    setNewProduct((n) => ({ ...n, ...next }))
+                  }
+                />
                 <button
                   disabled={creating}
                   className="px-4 py-2 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
@@ -330,7 +357,11 @@ function ProductsSection({ userId, userRole }) {
                     {p.name}
                   </div>
                   <div className="text-xs text-[#667085] mt-0.5">
-                    ₦{Number(p.price).toLocaleString()}
+                    {p.hasVariants ? "From " : ""}₦
+                    {Number(p.price).toLocaleString()}
+                    {p.hasVariants
+                      ? ` · ${p.variantCount ?? p.variants?.length ?? 0} variants · ${p.stock ?? 0} in stock`
+                      : ` · ${p.stock ?? 0} in stock`}
                   </div>
                   <div className="flex gap-1.5 mt-2">
                     <Link
@@ -344,7 +375,7 @@ function ProductsSection({ userId, userRole }) {
                         setEditProduct({ ...p });
                         setEditOpen(true);
                       }}
-                      className="px-2 py-1 rounded-lg bg-[#F6F7F4] text-white text-xs font-medium hover:opacity-80"
+                      className="px-2 py-1 rounded-lg bg-[#101828] text-white text-xs font-medium hover:opacity-80"
                     >
                       Edit
                     </button>
@@ -487,6 +518,14 @@ function ProductsSection({ userId, userRole }) {
                 }
                 className={inputCls}
               />
+              <VariantEditor
+                category={editProduct.category}
+                basePrice={Number(editProduct.price) || 0}
+                value={editProduct}
+                onChange={(next) =>
+                  setEditProduct((s) => ({ ...s, ...next }))
+                }
+              />
               <div className="flex gap-2 justify-end pt-1">
                 <button
                   type="button"
@@ -601,7 +640,7 @@ function SellerSalesSection({ userId }) {
                 </div>
                 <div className="text-xs text-[#667085] mb-2 truncate">
                   Items:{" "}
-                  {o.orderItems?.map((item) => item.name).join(", ") || "N/A"}
+                  {o.orderItems?.map((item) => item.variantLabel ? `${item.name} (${item.variantLabel})` : item.name).join(", ") || "N/A"}
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-[#101828]">
@@ -844,7 +883,7 @@ export default function AdminUser() {
                     </span>
                   </div>
                   <div className="text-xs text-[#101828] font-medium mt-1 truncate">
-                    {o.orderItems?.map((item) => item.name).join(", ") || "N/A"}
+                    {o.orderItems?.map((item) => item.variantLabel ? `${item.name} (${item.variantLabel})` : item.name).join(", ") || "N/A"}
                   </div>
                   <div className="flex items-center justify-between mt-1">
                     <span className="text-sm font-semibold text-[#101828]">

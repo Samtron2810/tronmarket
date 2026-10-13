@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import { useState, useContext } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -9,6 +9,12 @@ import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import { mediumUrl } from "../utils/cloudinaryUrl";
+import VariantSelector from "./VariantSelector";
+import {
+  displayPrice,
+  findVariant,
+  isSelectionComplete,
+} from "../utils/variants";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
   const { setWelcomeModalOpen } = useContext(AuthContext);
@@ -20,6 +26,13 @@ export default function ProductPreviewModal({ open, product, onClose }) {
       : [product?.image || fallback];
   const [index, setIndex] = useState(0);
   const [qty, setQty] = useState(1);
+  const [selection, setSelection] = useState({});
+  const selectedVariant = findVariant(product, selection);
+  const selectionDone = isSelectionComplete(product, selection);
+  const effectiveStock = product?.hasVariants
+    ? (selectedVariant?.stock ?? 0)
+    : (product?.stock ?? 0);
+  const displayImage = selectedVariant?.image || images[index];
 
   if (!open || !product) return null;
 
@@ -29,7 +42,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const handleAdd = async () => {
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
-      await addToCartLocal(product._id, qty, product);
+      await addToCartLocal(product._id, qty, selectedVariant?._id ?? null);
       // Only close modal if add was successful
       onClose();
     } catch (err) {
@@ -40,7 +53,9 @@ export default function ProductPreviewModal({ open, product, onClose }) {
     }
   };
 
-  const inStock = product.stock && product.stock > 0;
+  const inStock = product.hasVariants
+    ? selectionDone && effectiveStock > 0
+    : product.stock && product.stock > 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -75,7 +90,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
           {/* Image pane */}
           <div className="relative sm:w-5/12 w-full bg-emerald-50 flex items-center justify-center min-h-56">
             <img
-              src={mediumUrl(images[index])}
+              src={mediumUrl(displayImage)}
               alt={product.name}
               className="max-w-full max-h-64 object-contain p-4"
               loading="lazy"
@@ -133,7 +148,9 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                 Price
               </span>
               <span className="text-2xl font-black text-amber-700 leading-none">
-                ₦{Number(product.price).toLocaleString()}
+                {selectedVariant
+                  ? `₦${Number(selectedVariant.price).toLocaleString()}`
+                  : displayPrice(product).label}
               </span>
             </div>
 
@@ -141,6 +158,27 @@ export default function ProductPreviewModal({ open, product, onClose }) {
             <p className="text-xs text-gray-500 leading-relaxed line-clamp-4 whitespace-pre-line flex-1">
               {product.description || "No description provided."}
             </p>
+
+            {product.hasVariants && (
+              <VariantSelector
+                product={product}
+                selection={selection}
+                onChange={(next) => {
+                  setSelection(next);
+                  setQty(1);
+                }}
+              />
+            )}
+            {!selectionDone && product.hasVariants && (
+              <p className="text-xs font-semibold text-amber-700">
+                Select{" "}
+                {(product.options || [])
+                  .filter((o) => !selection[o.name])
+                  .map((o) => o.name)
+                  .join(" and ")}{" "}
+                to continue
+              </p>
+            )}
 
             {/* Stock badge */}
             <span
@@ -150,7 +188,11 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                   : "bg-amber-50 text-amber-600 border-amber-200"
               }`}
             >
-              {inStock ? `In Stock (${product.stock})` : "Out of Stock"}
+              {product.hasVariants && !selectionDone
+                ? "Select options"
+                : inStock
+                  ? `In Stock (${effectiveStock})`
+                  : "Out of Stock"}
             </span>
 
             {/* Quantity selector */}
@@ -168,17 +210,17 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                 <input
                   type="number"
                   min="1"
-                  max={product.stock || 1}
+                  max={effectiveStock || 1}
                   value={qty}
                   onChange={(e) => {
                     const val = Number(e.target.value || 1);
-                    setQty(Math.min(Math.max(1, val), product.stock || 1));
+                    setQty(Math.min(Math.max(1, val), effectiveStock || 1));
                   }}
                   className="w-14 text-center rounded-lg border border-emerald-100 bg-emerald-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all px-2 py-1"
                 />
                 <button
                   onClick={() =>
-                    setQty((q) => Math.min(q + 1, product.stock || 1))
+                    setQty((q) => Math.min(q + 1, effectiveStock || 1))
                   }
                   className="px-2.5 py-1 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100 text-sm font-semibold transition-all active:scale-95"
                 >
@@ -194,7 +236,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                 disabled={
                   !inStock ||
                   qty < 1 ||
-                  qty > (product.stock || 0) ||
+                  qty > (effectiveStock || 0) ||
                   isAddingToCart
                 }
                 className="flex items-center justify-center gap-1.5 flex-1 py-2 rounded-xl text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150"

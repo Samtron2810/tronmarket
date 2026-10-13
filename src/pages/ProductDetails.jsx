@@ -10,6 +10,13 @@ import {
   FaArrowLeft,
 } from "react-icons/fa";
 import { largeUrl } from "../utils/cloudinaryUrl";
+import VariantSelector from "../components/VariantSelector";
+import {
+  displayPrice,
+  findVariant,
+  isSelectionComplete,
+  variantLabel,
+} from "../utils/variants";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -18,6 +25,7 @@ export default function ProductDetails() {
   const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [imgIndex, setImgIndex] = useState(0);
+  const [selection, setSelection] = useState({});
   const { addToCartLocal, isAddingToCart } = useContext(CartContext);
   const { setWelcomeModalOpen } = useContext(AuthContext);
 
@@ -49,7 +57,7 @@ export default function ProductDetails() {
   const handleAddToCart = async () => {
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
-      await addToCartLocal(product._id, quantity, product);
+      await addToCartLocal(product._id, quantity, selectedVariant?._id ?? null);
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);
@@ -105,11 +113,19 @@ export default function ProductDetails() {
     );
   }
 
-  const inStock = product.stock && product.stock > 0;
+  const selectedVariant = findVariant(product, selection);
+  const selectionDone = isSelectionComplete(product, selection);
+  const effectiveStock = product.hasVariants
+    ? (selectedVariant?.stock ?? 0)
+    : product.stock;
+  const inStock = product.hasVariants
+    ? selectionDone && effectiveStock > 0
+    : product.stock && product.stock > 0;
   const images =
     product.images && product.images.length > 0
       ? product.images
       : [product.image || fallbackImage];
+  const displayImage = selectedVariant?.image || images[imgIndex];
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -127,7 +143,7 @@ export default function ProductDetails() {
         {/* ── Image pane ── */}
         <div className="relative flex items-center justify-center h-64 sm:h-80 lg:h-full bg-emerald-50">
           <img
-            src={largeUrl(images[imgIndex])}
+            src={largeUrl(displayImage)}
             alt={product.name}
             className="w-full h-full object-contain p-6"
             loading="lazy"
@@ -194,8 +210,16 @@ export default function ProductDetails() {
                 Price
               </span>
               <span className="text-2xl font-black text-amber-700">
-                ₦{Number(product.price).toLocaleString()}
+                {selectedVariant
+                  ? `₦${Number(selectedVariant.price).toLocaleString()}`
+                  : displayPrice(product).label}
               </span>
+              {selectedVariant && (
+                <span className="ml-2 text-sm font-semibold text-gray-500">
+                  {variantLabel(selectedVariant)}
+                  {selectedVariant.sku ? ` · SKU ${selectedVariant.sku}` : ""}
+                </span>
+              )}
             </div>
 
             {/* Description */}
@@ -208,6 +232,29 @@ export default function ProductDetails() {
               </p>
             </div>
           </div>
+
+          {product.hasVariants && (
+            <div className="mt-5">
+              <VariantSelector
+                product={product}
+                selection={selection}
+                onChange={(next) => {
+                  setSelection(next);
+                  setQuantity(1);
+                }}
+              />
+              {!selectionDone && (
+                <p className="mt-2 text-xs font-semibold text-amber-700">
+                  Select{" "}
+                  {(product.options || [])
+                    .filter((o) => !selection[o.name])
+                    .map((o) => o.name)
+                    .join(" and ")}{" "}
+                  to add this item to cart
+                </p>
+              )}
+            </div>
+          )}
 
           {/* ── Purchase box ── */}
           <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
@@ -224,7 +271,7 @@ export default function ProductDetails() {
                   onChange={(e) => {
                     let val = Number(e.target.value);
                     if (!Number.isFinite(val) || val < 1) val = 1;
-                    if (val > product.stock) val = product.stock;
+                    if (val > effectiveStock) val = effectiveStock;
                     setQuantity(val);
                   }}
                   className="w-16 px-2.5 py-1.5 rounded-lg border border-emerald-100 bg-emerald-50 text-gray-900 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
@@ -238,7 +285,11 @@ export default function ProductDetails() {
                     : "bg-amber-50 text-amber-600 border-amber-200"
                 }`}
               >
-                {inStock ? `In Stock (${product.stock})` : "Out of Stock"}
+                {product.hasVariants && !selectionDone
+                  ? "Select options"
+                  : inStock
+                    ? `In Stock (${effectiveStock})`
+                    : "Out of Stock"}
               </span>
             </div>
 

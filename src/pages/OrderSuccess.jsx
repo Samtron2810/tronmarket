@@ -84,7 +84,7 @@ export default function OrderSuccess() {
       const price = item.price || 0;
       const quantity = item.quantity || 0;
       const itemTotal = (price * quantity).toLocaleString();
-      receiptText += `${item.name || "Unknown Item"}\n`;
+      receiptText += `${item.name || "Unknown Item"}${item.variantLabel ? ` (${item.variantLabel})` : ""}${item.sku ? ` [${item.sku}]` : ""}\n`;
       receiptText += `  Qty: ${quantity} x ₦${price.toLocaleString()} = ₦${itemTotal}\n`;
       receiptText += `${dashSeparator}\n`;
     });
@@ -270,6 +270,7 @@ export default function OrderSuccess() {
                       <div className="min-w-0">
                         <h4 className="font-bold text-sm text-[#101828] truncate max-w-50 sm:max-w-70">
                           {item.name || "Unknown Item"}
+                          {item.variantLabel ? ` — ${item.variantLabel}` : ""}
                         </h4>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {quantity} × ₦{price.toLocaleString()}

@@ -5,6 +5,7 @@ import api from "../../services/api";
 import uploadService from "../../services/uploadService";
 import { useNavigate, Link } from "react-router-dom";
 import MessageModal from "../../components/MessageModal";
+import VariantEditor from "../../components/VariantEditor";
 import { toast } from "react-toastify";
 
 const categories = ["phones", "laptops", "fashion", "home", "electronics"];
@@ -51,6 +52,9 @@ export default function AddProduct() {
     image: "",
     images: [],
     stock: 0,
+    hasVariants: false,
+    options: [],
+    variants: [],
   });
   const [loading, setLoading] = useState(false);
   const [msgOpen, setMsgOpen] = useState(false);
@@ -74,10 +78,24 @@ export default function AddProduct() {
     e.preventDefault();
     try {
       setLoading(true);
+      if (form.hasVariants && form.variants.length === 0) {
+        const m = "Generate at least one variant, or turn variants off.";
+        setMsg(m);
+        setMsgOpen(true);
+        return;
+      }
       const payload = {
         ...form,
         price: Number(form.price),
         stock: Number(form.stock),
+        options: form.hasVariants ? form.options : [],
+        variants: form.hasVariants
+          ? form.variants.map((v) => ({
+              ...v,
+              price: Number(v.price) || 0,
+              stock: Number(v.stock) || 0,
+            }))
+          : [],
       };
       // If files are present, upload them first to get URLs
       if (files.length > 0) {
@@ -353,6 +371,21 @@ export default function AddProduct() {
                 </div>
               )}
             </Field>
+
+            {/* Variants */}
+            <VariantEditor
+              category={form.category}
+              basePrice={Number(form.price) || 0}
+              value={form}
+              onChange={(next) => setForm((f) => ({ ...f, ...next }))}
+            />
+            {form.hasVariants && (
+              <p className="text-xs" style={{ color: "#667085" }}>
+                The Stock field above is ignored for variant products — stock
+                is tracked per variant. The Price above is the starting price
+                used to prefill new variants.
+              </p>
+            )}
 
             {/* Description */}
             <Field label="Description">

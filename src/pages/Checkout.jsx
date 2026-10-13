@@ -260,6 +260,7 @@ export default function Checkout() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-[#101828] truncate">
                             {item.name}
+                            {item.variantLabel ? ` — ${item.variantLabel}` : ""}
                           </p>
                           <p className="text-xs text-[#667085] mt-0.5">
                             Qty: {item.quantity} × ₦

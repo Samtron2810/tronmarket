@@ -115,7 +115,7 @@ export default function CartProvider({ children }) {
 
   // ── Add item ─────────────────────────────────────────────────────────────
   const addToCartLocal = useCallback(
-    async (productId, quantity = 1) => {
+    async (productId, quantity = 1, variantId = null) => {
       // Disable every "Add to Cart" button for a flat 1.5s cooldown,
       // regardless of how long the request itself takes.
       setIsAddingToCart(true);
@@ -130,7 +130,7 @@ export default function CartProvider({ children }) {
 
       try {
         // Make the API call FIRST — wait for real response
-        await addToCart({ productId, quantity });
+        await addToCart({ productId, variantId, quantity });
 
         // Only if API succeeds, fetch updated cart from server
         if (mountedRef.current) {
@@ -158,7 +158,7 @@ export default function CartProvider({ children }) {
 
   // ── Update quantity ───────────────────────────────────────────────────────
   const updateQtyLocal = useCallback(
-    async (productId, quantity) => {
+    async (productId, quantity, variantId = null) => {
       setCart((prev) => {
         if (!prev) return prev;
 
@@ -168,6 +168,10 @@ export default function CartProvider({ children }) {
             productId.toString()
           )
             return item;
+          const itemVariant = (
+            item.variant?._id ?? item.variant ?? ""
+          ).toString();
+          if (itemVariant !== (variantId ?? "").toString()) return item;
           return { ...item, quantity: Number(quantity) };
         });
 
@@ -179,7 +183,11 @@ export default function CartProvider({ children }) {
       pendingOpsRef.current += 1;
 
       try {
-        await updateCartItem(productId, { quantity: Number(quantity) });
+        await updateCartItem(
+          productId,
+          { quantity: Number(quantity) },
+          variantId,
+        );
         if (mountedRef.current) {
           pendingOpsRef.current -= 1;
           await fetchCart();
@@ -197,17 +205,23 @@ export default function CartProvider({ children }) {
 
   // ── Remove item ───────────────────────────────────────────────────────────
   const removeItemLocal = useCallback(
-    async (productId) => {
+    async (productId, variantId = null) => {
       let previousCart = null;
       setCart((prev) => {
         previousCart = prev;
         if (!prev) return prev;
 
-        const newItems = prev.items.filter(
-          (item) =>
+        const newItems = prev.items.filter((item) => {
+          if (
             (item.product?._id ?? item.product)?.toString() !==
-            productId.toString(),
-        );
+            productId.toString()
+          )
+            return true;
+          const itemVariant = (
+            item.variant?._id ?? item.variant ?? ""
+          ).toString();
+          return itemVariant !== (variantId ?? "").toString();
+        });
 
         const updated = { ...prev, items: newItems };
         saveLocalCart(updated);
@@ -217,7 +231,7 @@ export default function CartProvider({ children }) {
       pendingOpsRef.current += 1;
 
       try {
-        await removeCartItem(productId);
+        await removeCartItem(productId, variantId);
         if (mountedRef.current) {
           pendingOpsRef.current -= 1;
           await fetchCart();

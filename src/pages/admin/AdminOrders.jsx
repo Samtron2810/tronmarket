@@ -168,6 +168,7 @@ export default function AdminOrders() {
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm text-[#101828] truncate">
                           {item.name}
+                          {item.variantLabel ? ` — ${item.variantLabel}` : ""}
                         </div>
                         <div className="text-xs text-[#667085] mt-0.5">
                           Qty: {item.quantity} × ₦

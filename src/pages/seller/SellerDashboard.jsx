@@ -237,7 +237,13 @@ export default function SellerDashboard() {
                     className="text-sm font-bold mt-1"
                     style={{ color: "#B45309" }}
                   >
-                    ₦{Number(p.price).toLocaleString()}
+                    {p.hasVariants ? "From " : ""}₦
+                    {Number(p.price).toLocaleString()}
+                  </p>
+                  <p className="text-[11px] mt-0.5" style={{ color: "#667085" }}>
+                    {p.hasVariants
+                      ? `${p.variantCount ?? 0} variants · ${p.stock ?? 0} total in stock`
+                      : `${p.stock ?? 0} in stock`}
                   </p>
                 </div>
 

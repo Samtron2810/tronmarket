@@ -5,6 +5,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import api from "../../services/api";
 import uploadService from "../../services/uploadService";
 import MessageModal from "../../components/MessageModal";
+import VariantEditor from "../../components/VariantEditor";
 import { toast } from "react-toastify";
 
 const categories = ["phones", "laptops", "fashion", "home", "electronics"];
@@ -52,6 +53,9 @@ export default function EditProduct() {
     image: "",
     images: [],
     stock: 0,
+    hasVariants: false,
+    options: [],
+    variants: [],
   });
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -73,6 +77,9 @@ export default function EditProduct() {
           image: res.data.image || "",
           images: res.data.images || [],
           stock: res.data.stock || 0,
+          hasVariants: res.data.hasVariants || false,
+          options: res.data.options || [],
+          variants: res.data.variants || [],
         });
         setPreviews(
           res.data.images || (res.data.image ? [res.data.image] : []),
@@ -102,10 +109,23 @@ export default function EditProduct() {
     e.preventDefault();
     try {
       setLoading(true);
+      if (form.hasVariants && form.variants.length === 0) {
+        setMsg("Generate at least one variant, or turn variants off.");
+        setMsgOpen(true);
+        return;
+      }
       const payload = {
         ...form,
         price: Number(form.price),
         stock: Number(form.stock),
+        options: form.hasVariants ? form.options : [],
+        variants: form.hasVariants
+          ? form.variants.map((v) => ({
+              ...v,
+              price: Number(v.price) || 0,
+              stock: Number(v.stock) || 0,
+            }))
+          : [],
       };
       // if new files selected, upload them first
       if (files.length > 0) {
@@ -291,6 +311,20 @@ export default function EditProduct() {
                   ))}
                 </select>
               </Field>
+
+              {/* Variants */}
+              <VariantEditor
+                category={form.category}
+                basePrice={Number(form.price) || 0}
+                value={form}
+                onChange={(next) => setForm((f) => ({ ...f, ...next }))}
+              />
+              {form.hasVariants && (
+                <p className="text-xs" style={{ color: "#667085" }}>
+                  Stock and starting price above are derived from the
+                  variants below for variant products.
+                </p>
+              )}
 
               {/* Description */}
               <Field label="Description">

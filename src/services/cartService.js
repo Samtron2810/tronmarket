@@ -6,12 +6,18 @@ export const getCart = () => api.get("/cart");
 // Add to cart
 export const addToCart = (data) => api.post("/cart", data);
 
-// Update quantity
-export const updateCartItem = (productId, data) =>
-  api.put(`/cart/${productId}`, data);
+// Update quantity (variantId identifies the line for variant products)
+export const updateCartItem = (productId, data, variantId) =>
+  api.put(
+    variantId ? `/cart/${productId}/${variantId}` : `/cart/${productId}`,
+    data,
+  );
 
 // Remove item
-export const removeCartItem = (productId) => api.delete(`/cart/${productId}`);
+export const removeCartItem = (productId, variantId) =>
+  api.delete(
+    variantId ? `/cart/${productId}/${variantId}` : `/cart/${productId}`,
+  );
 
 // Clear cart
 export const clearCart = () => api.delete("/cart");

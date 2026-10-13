@@ -272,6 +272,7 @@ export default function MyOrders() {
                               <div>
                                 <h4 className="font-bold text-[#101828] line-clamp-1">
                                   {item.name}
+                                  {item.variantLabel ? ` — ${item.variantLabel}` : ""}
                                 </h4>
                                 <p className="text-xs text-[#667085] mt-0.5">
                                   Quantity:{" "}

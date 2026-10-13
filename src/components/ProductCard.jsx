@@ -10,6 +10,7 @@ import ProductPreviewModal from "./ProductPreviewModal";
 import { CartContext } from "../context/CartContext";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
+import { displayPrice, variantHint } from "../utils/variants";
 
 export default function ProductCard({ product }) {
   const fallbackImage = "https://loremflickr.com/g/320/240/product";
@@ -39,10 +40,16 @@ export default function ProductCard({ product }) {
       toast.error("Product is out of stock");
       return;
     }
+    // Variant products must be configured first — send the buyer to the
+    // selector instead of silently adding an arbitrary combination.
+    if (product.hasVariants) {
+      setPreviewOpen(true);
+      return;
+    }
 
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
-      await addToCartLocal(product._id, 1, product);
+      await addToCartLocal(product._id, 1);
     } catch (err) {
       if (err.response?.status === 401) {
         setWelcomeModalOpen(true);
@@ -110,6 +117,11 @@ export default function ProductCard({ product }) {
             <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed truncate">
               {product.description || "No description available."}
             </p>
+            {product.hasVariants && variantHint(product) && (
+              <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
+                {variantHint(product)}
+              </span>
+            )}
           </div>
 
           {/* Price */}
@@ -118,7 +130,7 @@ export default function ProductCard({ product }) {
               Price
             </span>
             <span className="text-sm lg:text-xs font-extrabold text-amber-700 leading-tight block truncate">
-              ₦{Number(product.price).toLocaleString()}
+              {displayPrice(product).label}
             </span>
           </div>
 
@@ -132,10 +144,16 @@ export default function ProductCard({ product }) {
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
                   : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95"
               }`}
-              title={product.stock <= 0 ? "Out of stock" : "Add to cart"}
+              title={
+                product.stock <= 0
+                  ? "Out of stock"
+                  : product.hasVariants
+                    ? "Select options"
+                    : "Add to cart"
+              }
             >
               <FaShoppingCart className="w-2.5 h-2.5" />
-              <span>Cart</span>
+              <span>{product.hasVariants ? "Options" : "Cart"}</span>
             </button>
 
             <button

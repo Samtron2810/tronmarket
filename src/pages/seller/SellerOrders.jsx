@@ -192,6 +192,7 @@ export default function SellerOrders() {
                       <div className="flex-1">
                         <div className="font-semibold text-sm text-[#101828]">
                           {it.name}
+                          {it.variantLabel ? ` — ${it.variantLabel}` : ""}
                         </div>
                         <div className="text-xs text-[#667085]">
                           Qty: {it.quantity} • ₦
