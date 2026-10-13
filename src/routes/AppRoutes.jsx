@@ -5,6 +5,8 @@ import Cart from "../pages/Cart";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import VerifyOtp from "../pages/VerifyOtp";
+import ForgotPassword from "../pages/ForgotPassword";
+import ApplySeller from "../pages/ApplySeller";
 import ProductDetails from "../pages/ProductDetails";
 import NotFound from "../pages/NotFound";
 import GuestRoute from "../components/GuestRoute";
@@ -21,6 +23,7 @@ import SellerOrders from "../pages/seller/SellerOrders";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminUser from "../pages/admin/AdminUser";
 import AdminOrders from "../pages/admin/AdminOrders";
+import AdminSellerApplications from "../pages/admin/AdminSellerApplications";
 import AdminRoute from "../components/AdminRoute";
 
 export default function AppRoutes() {
@@ -61,6 +64,22 @@ export default function AppRoutes() {
         }
       />
       <Route path="/verify-otp" element={<VerifyOtp />} />
+      <Route
+        path="/forgot-password"
+        element={
+          <GuestRoute>
+            <ForgotPassword />
+          </GuestRoute>
+        }
+      />
+      <Route
+        path="/apply-seller"
+        element={
+          <ProtectedRoute>
+            <ApplySeller />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/product/:id" element={<ProductDetails />} />
       <Route
         path="/profile"
@@ -115,6 +134,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminDashboard />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/seller-applications"
+        element={
+          <AdminRoute>
+            <AdminSellerApplications />
           </AdminRoute>
         }
       />

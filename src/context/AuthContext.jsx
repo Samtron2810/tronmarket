@@ -7,6 +7,7 @@ import {
   setUser,
 } from "../utils/auth";
 import api from "../services/api";
+import { getMe } from "../services/authService";
 
 export const AuthContext = createContext();
 
@@ -42,6 +43,19 @@ export default function AuthProvider({ children }) {
     }
   }, [token]);
 
+  // Re-read the account from the server (e.g. after a seller application
+  // is approved, the stored role must catch up with the new one).
+  const refreshUser = async () => {
+    try {
+      const res = await getMe();
+      setUser(res.data);
+      setUserState(res.data);
+      return res.data;
+    } catch {
+      return null;
+    }
+  };
+
   const handleLogout = async () => {
     try {
       // try server-side logout (if endpoint exists)
@@ -60,6 +74,7 @@ export default function AuthProvider({ children }) {
         token,
         user,
         login,
+        refreshUser,
         handleLogout,
         welcomeModalOpen,
         setWelcomeModalOpen,

@@ -26,8 +26,31 @@ export default function Checkout() {
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
   const [stockErrors, setStockErrors] = useState([]);
+  const [stockErrorMode, setStockErrorMode] = useState("adjusted");
+  const [now, setNow] = useState(() => Date.now());
 
   const [order, setOrder] = useState(location.state?.pendingOrder || null);
+
+  const paymentDeadline = order?.paymentExpiresAt
+    ? new Date(order.paymentExpiresAt).getTime()
+    : null;
+  const secondsLeft =
+    paymentDeadline && order?.status === "pending"
+      ? Math.max(0, Math.floor((paymentDeadline - now) / 1000))
+      : null;
+  const paymentExpired = secondsLeft === 0;
+  const countdownLabel =
+    secondsLeft === null
+      ? null
+      : `${String(Math.floor(secondsLeft / 60)).padStart(2, "0")}:${String(
+          secondsLeft % 60,
+        ).padStart(2, "0")}`;
+
+  useEffect(() => {
+    if (!paymentDeadline || order?.status !== "pending") return undefined;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [paymentDeadline, order?.status]);
 
   // Returning from Paystack's hosted checkout: the reference arrives as a
   // query param and must be verified with the backend (which checks the
@@ -145,16 +168,23 @@ export default function Checkout() {
       const validation = await validateCartBeforeCheckout();
 
       if (!validation.valid) {
-        // Stock issues found — auto-fix what we can, then stop for user review
+        // Stock issues found — auto-fix what we can, then stop for user
+        // review. The variant matters: two variants of one product are
+        // separate cart lines with separate stock.
         for (const err of validation.errors) {
-          if (err.reason === "out_of_stock") {
-            await removeItemLocal(err.productId);
+          if (["out_of_stock", "unavailable", "deleted"].includes(err.reason)) {
+            await removeItemLocal(err.productId, err.variantId || null);
           } else if (err.reason === "insufficient") {
-            await updateQtyLocal(err.productId, err.availableStock);
+            await updateQtyLocal(
+              err.productId,
+              err.availableStock,
+              err.variantId || null,
+            );
           }
         }
 
         // Save errors to show the user what changed
+        setStockErrorMode("adjusted");
         setStockErrors(validation.errors);
         setValidating(false);
         return; // Stop — user must review adjusted cart before placing order
@@ -174,8 +204,17 @@ export default function Checkout() {
       setOrder(res.data);
       fetchCart();
     } catch (err) {
-      setMsg(err.response?.data?.message || "Error placing order");
-      setMsgOpen(true);
+      const details =
+        err.response?.data?.details || err.response?.data?.errors;
+      if (err.response?.status === 409 && Array.isArray(details)) {
+        // Nothing was ordered and the cart was left untouched — show the
+        // exact lines that need attention instead of a generic failure.
+        setStockErrorMode("blocked");
+        setStockErrors(details);
+      } else {
+        setMsg(err.response?.data?.message || "Error placing order");
+        setMsgOpen(true);
+      }
     } finally {
       setLoading(false);
     }
@@ -211,21 +250,37 @@ export default function Checkout() {
             <div className="flex items-center gap-2 mb-2">
               <FiAlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
               <p className="text-sm font-bold text-amber-700">
-                Cart updated — stock availability changed
+                {stockErrorMode === "blocked"
+                  ? "Some items could not be ordered"
+                  : "Cart updated — stock availability changed"}
               </p>
             </div>
             <ul className="space-y-1">
               {stockErrors.map((err) => (
-                <li key={err.productId} className="text-xs text-amber-700">
-                  • <span className="font-semibold">{err.name || "Item"}</span>:{" "}
-                  {err.reason === "out_of_stock"
-                    ? "Removed — now out of stock"
-                    : `Quantity reduced to ${err.availableStock} (only available)`}
+                <li
+                  key={`${err.productId}:${err.variantId || ""}`}
+                  className="text-xs text-amber-700"
+                >
+                  •{" "}
+                  <span className="font-semibold">
+                    {err.name || "Item"}
+                    {err.variantLabel ? ` — ${err.variantLabel}` : ""}
+                  </span>
+                  :{" "}
+                  {err.reason === "insufficient"
+                    ? stockErrorMode === "blocked"
+                      ? `Only ${err.availableStock} available — not ordered`
+                      : `Quantity reduced to ${err.availableStock} (only available)`
+                    : stockErrorMode === "blocked"
+                      ? "Unavailable — not ordered"
+                      : "Removed — no longer available"}
                 </li>
               ))}
             </ul>
             <p className="text-xs text-amber-600 mt-2">
-              Please review your cart and submit again when ready.
+              {stockErrorMode === "blocked"
+                ? "Your cart has been left unchanged. Please adjust these items and try again."
+                : "Please review your cart and submit again when ready."}
             </p>
           </div>
         )}
@@ -365,6 +420,36 @@ export default function Checkout() {
                 </div>
               )}
 
+              {/* Payment deadline — unpaid orders release their stock */}
+              {paymentDeadline && order.status === "pending" && (
+                <div
+                  className={`rounded-lg px-4 py-3 text-sm ${
+                    paymentExpired
+                      ? "bg-red-50 text-red-700"
+                      : "bg-amber-50 text-amber-700"
+                  }`}
+                  role="status"
+                >
+                  {paymentExpired ? (
+                    <>
+                      <span className="font-semibold">
+                        This payment window has expired.
+                      </span>{" "}
+                      The reserved items have been released. Please place a
+                      new order to continue.
+                    </>
+                  ) : (
+                    <>
+                      Pay within{" "}
+                      <span className="font-bold tabular-nums">
+                        {countdownLabel}
+                      </span>{" "}
+                      to keep these items reserved for you.
+                    </>
+                  )}
+                </div>
+              )}
+
               {/* Info text */}
               <p className="text-sm text-[#667085]">
                 Complete payment to confirm your order and notify sellers to
@@ -379,13 +464,30 @@ export default function Checkout() {
                 </span>
               </div>
 
-              <PayButton
-                orderId={order._id}
-                email={user?.email}
-                amount={order.totalPrice}
-                onSuccessCallback={handlePaymentSuccess}
-                onError={handlePaymentError}
-              />
+              {paymentExpired ? (
+                <button
+                  type="button"
+                  onClick={() => setOrder(null)}
+                  className="primary-btn w-full"
+                >
+                  Start a new order
+                </button>
+              ) : (
+                <PayButton
+                  orderId={order._id}
+                  email={user?.email}
+                  amount={order.totalPrice}
+                  onSuccessCallback={handlePaymentSuccess}
+                  onError={handlePaymentError}
+                  onPaymentExpired={() => {
+                    setOrder(null);
+                    setMsg(
+                      "This order's payment window has expired. Your cart items may need to be checked out again.",
+                    );
+                    setMsgOpen(true);
+                  }}
+                />
+              )}
             </div>
           </div>
         )}

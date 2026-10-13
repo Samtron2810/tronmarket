@@ -96,8 +96,8 @@ export default function MyOrders() {
     }
   };
 
-  const initiateDeliver = (orderId) => {
-    setOrderToDeliver(orderId);
+  const initiateDeliver = (orderId, sellerId = null) => {
+    setOrderToDeliver({ orderId, sellerId });
     setDeliverModalOpen(true);
   };
 
@@ -106,11 +106,17 @@ export default function MyOrders() {
 
     try {
       setDeliverModalOpen(false);
-      await confirmDeliveryService(orderToDeliver);
+      const res = await confirmDeliveryService(
+        orderToDeliver.orderId,
+        orderToDeliver.sellerId,
+      );
+      const updatedOrder = res.data?.order;
 
       setOrders((prev) =>
         prev.map((ord) =>
-          ord._id === orderToDeliver ? { ...ord, status: "delivered" } : ord,
+          ord._id === orderToDeliver.orderId
+            ? updatedOrder || { ...ord, status: "delivered" }
+            : ord,
         ),
       );
     } catch (err) {
@@ -297,6 +303,69 @@ export default function MyOrders() {
                           </div>
                         ))}
                       </div>
+
+                      {order.sellerFulfillments?.length > 0 && (
+                        <div className="space-y-2 bg-white px-4 py-3">
+                          <p className="text-xs font-bold uppercase tracking-wide text-[#667085]">
+                            Seller packages
+                          </p>
+                          {order.sellerFulfillments.map((fulfillment) => {
+                            const sellerId =
+                              fulfillment.seller?._id || fulfillment.seller;
+                            const packageStatus =
+                              order.status === "cancelled"
+                                ? "cancelled"
+                                : !order.isPaid
+                                  ? "pending"
+                                  : fulfillment.status === "pending"
+                                    ? "paid"
+                                    : fulfillment.status;
+                            return (
+                              <div
+                                key={String(sellerId)}
+                                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs"
+                              >
+                                <span className="font-semibold text-[#101828]">
+                                  {fulfillment.seller?.name || "Seller"} — ₦
+                                  {Number(
+                                    fulfillment.subtotal || 0,
+                                  ).toLocaleString()}
+                                </span>
+                                <span
+                                  className={`rounded-full border px-2 py-0.5 font-semibold capitalize ${statusColors[packageStatus] || "bg-gray-100 text-gray-800 border-gray-200"}`}
+                                >
+                                  {packageStatus}
+                                </span>
+                                {["shipped", "delivery-claimed"].includes(
+                                  packageStatus,
+                                ) && (
+                                  <button
+                                    onClick={() =>
+                                      initiateDeliver(
+                                        order._id,
+                                        String(sellerId),
+                                      )
+                                    }
+                                    className="rounded-lg bg-green-600 px-2.5 py-1.5 font-semibold text-white hover:bg-green-700"
+                                  >
+                                    Confirm this package
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
+                          {!order.isPaid && order.paymentExpiresAt && (
+                            <p className="text-amber-700">
+                              Payment due by{" "}
+                              {new Date(
+                                order.paymentExpiresAt,
+                              ).toLocaleString()}
+                              . Unpaid orders are cancelled and restocked
+                              after this time.
+                            </p>
+                          )}
+                        </div>
+                      )}
 
                       <div className="px-4 py-3 bg-gray-50/80 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs text-[#667085]">
                         <div className="line-clamp-1 max-w-xs sm:max-w-md">

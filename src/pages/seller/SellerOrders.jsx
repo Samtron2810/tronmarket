@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   getSellerOrders,
   updateOrderStatus,
@@ -24,40 +24,50 @@ const statusColors = {
 export default function SellerOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [shipModalOpen, setShipModalOpen] = useState(false);
   const [orderToShip, setOrderToShip] = useState(null);
   const [deliverModalOpen, setDeliverModalOpen] = useState(false);
   const [orderToDeliver, setOrderToDeliver] = useState(null);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        const res = await getSellerOrders();
-        setOrders(res.data || []);
-      } catch (err) {
-        console.error("Failed to load seller orders", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await getSellerOrders({ page, limit: 20 });
+      const data = res.data || {};
+      // The API returns only this seller's items, subtotal and status for
+      // each order — never the whole multi-seller order.
+      setOrders(Array.isArray(data) ? data : data.orders || []);
+      setTotalPages(data.totalPages || 1);
+    } catch (err) {
+      console.error("Failed to load seller orders", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [page]);
 
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders();
-  }, []);
+  }, [fetchOrders]);
 
   const handleMarkShipped = async () => {
     const orderId = orderToShip;
     if (!orderId) return;
     try {
-      await updateOrderStatus(
+      const res = await updateOrderStatus(
         orderId,
         "shipped",
         "Order has been shipped by seller",
       );
+      const updated = res.data?.order;
       setOrders((prev) =>
         prev.map((ord) =>
-          ord._id === orderId ? { ...ord, status: "shipped" } : ord,
+          ord._id === orderId
+            ? updated || { ...ord, status: "shipped", sellerStatus: "shipped" }
+            : ord,
         ),
       );
       toast.success("Order marked as shipped");
@@ -73,10 +83,17 @@ export default function SellerOrders() {
     const orderId = orderToDeliver;
     if (!orderId) return;
     try {
-      await sellerDeliveryClaim(orderId);
+      const res = await sellerDeliveryClaim(orderId);
+      const updated = res.data?.order;
       setOrders((prev) =>
         prev.map((ord) =>
-          ord._id === orderId ? { ...ord, status: "delivery-claimed" } : ord,
+          ord._id === orderId
+            ? updated || {
+                ...ord,
+                status: "delivery-claimed",
+                sellerStatus: "delivery-claimed",
+              }
+            : ord,
         ),
       );
       toast.success("Delivery claim submitted to Admin for review.");
@@ -161,8 +178,16 @@ export default function SellerOrders() {
                       {new Date(order.createdAt).toLocaleString()}
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-[#B45309]">
-                    ₦{Number(order.totalPrice).toLocaleString()}
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-[#B45309]">
+                      ₦
+                      {Number(
+                        order.sellerSubtotal ?? order.totalPrice,
+                      ).toLocaleString()}
+                    </div>
+                    <div className="text-[11px] text-[#667085]">
+                      Your items only
+                    </div>
                   </div>
                 </div>
 
@@ -180,7 +205,7 @@ export default function SellerOrders() {
                 <div className="space-y-2 mb-3">
                   {order.orderItems.map((it) => (
                     <div
-                      key={it.product}
+                      key={`${it.product}:${it.variant || ""}`}
                       className="flex items-center gap-3 bg-[#ECFDF5] rounded-lg p-2"
                     >
                       <img
@@ -211,16 +236,16 @@ export default function SellerOrders() {
                   <span className="text-sm text-[#667085]">Status</span>
                   <span
                     className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
-                      statusColors[order.status] ||
+                      statusColors[order.sellerStatus || order.status] ||
                       "bg-[#ECFDF5] text-[#101828]"
                     }`}
                   >
-                    {order.status}
+                    {order.sellerStatus || order.status}
                   </span>
                 </div>
                 <div className="text-right gap-2 mt-2">
-                  {(order.status === "paid" ||
-                    order.status === "processing") && (
+                  {((order.sellerStatus || order.status) === "paid" ||
+                    (order.sellerStatus || order.status) === "processing") && (
                     <button
                       onClick={() => {
                         setOrderToShip(order._id);
@@ -232,7 +257,7 @@ export default function SellerOrders() {
                     </button>
                   )}
 
-                  {order.status === "shipped" && (
+                  {(order.sellerStatus || order.status) === "shipped" && (
                     <button
                       onClick={() => {
                         setOrderToDeliver(order._id);
@@ -246,6 +271,32 @@ export default function SellerOrders() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((value) => Math.max(1, value - 1))}
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-[#667085]">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() =>
+                setPage((value) => Math.min(totalPages, value + 1))
+              }
+              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold disabled:opacity-50"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

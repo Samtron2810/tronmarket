@@ -108,6 +108,14 @@ const Login = () => {
               Create account
             </Link>
           </div>
+          <p className="text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-[#047857] hover:underline"
+            >
+              Forgot your password?
+            </Link>
+          </p>
         </form>
 
         <MessageModal

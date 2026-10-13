@@ -9,7 +9,12 @@ const PENDING_PAYMENT_KEY = "tronmarket:pendingPayment";
 // Paystack is involved, then hands us a hosted-checkout URL. The browser
 // never decides what is being charged, and the reference it comes back
 // with can only ever pay for this one order.
-export default function PayButton({ orderId, amount, onError }) {
+export default function PayButton({
+  orderId,
+  amount,
+  onError,
+  onPaymentExpired,
+}) {
   const [redirecting, setRedirecting] = useState(false);
 
   const handlePay = async () => {
@@ -40,11 +45,15 @@ export default function PayButton({ orderId, amount, onError }) {
 
       window.location.assign(authorizationUrl);
     } catch (err) {
-      onError?.(
-        err.response?.data?.message ||
-          err.message ||
-          "Could not start payment. Please try again.",
-      );
+      if (err.response?.status === 410 && onPaymentExpired) {
+        onPaymentExpired(err.response?.data?.order || null);
+      } else {
+        onError?.(
+          err.response?.data?.message ||
+            err.message ||
+            "Could not start payment. Please try again.",
+        );
+      }
       setRedirecting(false);
     }
   };

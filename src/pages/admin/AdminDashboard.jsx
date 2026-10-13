@@ -94,11 +94,21 @@ export default function AdminDashboard() {
           </Link>
         </div>
         {/* Page Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-[#101828]">Admin Dashboard</h1>
-          <p className="text-sm text-[#667085] mt-1">
-            Manage users, roles, and permissions
-          </p>
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-[#101828]">
+              Admin Dashboard
+            </h1>
+            <p className="text-sm text-[#667085] mt-1">
+              Manage users, roles, and permissions
+            </p>
+          </div>
+          <Link
+            to="/admin/seller-applications"
+            className="inline-flex w-fit rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          >
+            Review Seller Applications
+          </Link>
         </div>
 
         {/* Card — toolbar always rendered so input never loses focus */}

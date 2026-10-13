@@ -12,9 +12,10 @@ export const getOrderById = (id) => api.get(`/orders/${id}`);
 // Customer: cancel their own order
 export const cancelMyOrder = (orderId) => api.put(`/orders/${orderId}/cancel`);
 
-// Customer: confirm they received the order
-export const confirmDelivery = (orderId) =>
-  api.put(`/orders/${orderId}/deliver`, {});
+// Customer: confirm they received the order (optionally only one
+// seller's package within a multi-seller order)
+export const confirmDelivery = (orderId, sellerId = null) =>
+  api.put(`/orders/${orderId}/deliver`, sellerId ? { sellerId } : {});
 
 // Seller: update order status (e.g. paid → shipped)
 export const updateOrderStatus = (orderId, status, note) =>
@@ -28,5 +29,7 @@ export const sellerDeliveryClaim = (orderId) =>
 export const completeOrder = (orderId) =>
   api.put(`/orders/${orderId}/complete`, {});
 
-// Seller: get all orders for their products
-export const getSellerOrders = () => api.get("/orders/seller/orders");
+// Seller: get orders containing their products (paginated; each order
+// is filtered server-side to only that seller's items/subtotal)
+export const getSellerOrders = (params) =>
+  api.get("/orders/seller/orders", { params });
