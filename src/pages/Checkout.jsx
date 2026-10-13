@@ -1,13 +1,14 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { createOrder } from "../services/orderService";
+import { createOrder, getOrderById } from "../services/orderService";
+import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import MessageModal from "../components/MessageModal";
 import PayButton from "../components/PayButton";
 import ItemImage from "../components/ItemImage";
 import { FaArrowLeft } from "react-icons/fa";
-import { FiCheckCircle, FiAlertTriangle } from "react-icons/fi";
+import { FiCheckCircle, FiAlertTriangle, FiLoader } from "react-icons/fi";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -27,6 +28,98 @@ export default function Checkout() {
   const [stockErrors, setStockErrors] = useState([]);
 
   const [order, setOrder] = useState(location.state?.pendingOrder || null);
+
+  // Returning from Paystack's hosted checkout: the reference arrives as a
+  // query param and must be verified with the backend (which checks the
+  // amount, currency and order binding) before we show the success page.
+  const [verifyingReturn, setVerifyingReturn] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    return Boolean(params.get("reference") || params.get("trxref"));
+  });
+  const returnHandledRef = useRef(false);
+
+  const handlePaymentSuccess = (updatedOrder) => {
+    setOrder(updatedOrder);
+    fetchCart();
+    navigate("/order-success", {
+      state: { orderId: updatedOrder._id, order: updatedOrder },
+    });
+  };
+
+  const handlePaymentError = (message) => {
+    setMsg(message);
+    setMsgOpen(true);
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const reference = params.get("reference") || params.get("trxref");
+    if (!reference || returnHandledRef.current) return;
+    returnHandledRef.current = true;
+
+    let stored = null;
+    try {
+      stored = JSON.parse(
+        sessionStorage.getItem("tronmarket:pendingPayment") || "null",
+      );
+    } catch {
+      stored = null;
+    }
+
+    let cancelled = false;
+    (async () => {
+      if (stored?.reference && stored.reference !== reference) {
+        if (cancelled) return;
+        setMsg(
+          "That payment does not match the order you started checkout with. If money left your account, please contact support.",
+        );
+        setMsgOpen(true);
+        setVerifyingReturn(false);
+        navigate("/checkout", { replace: true });
+        return;
+      }
+
+      try {
+        const res = await api.post("/payments/verify", {
+          reference,
+          ...(stored?.orderId ? { orderId: stored.orderId } : {}),
+        });
+        if (cancelled) return;
+        try {
+          sessionStorage.removeItem("tronmarket:pendingPayment");
+        } catch {
+          // ignore storage errors
+        }
+        if (res.data.success) {
+          handlePaymentSuccess(res.data.order);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        setMsg(
+          err.response?.data?.message ||
+            "Could not verify payment. Please contact support.",
+        );
+        setMsgOpen(true);
+        // Show the still-pending order again so the buyer can retry.
+        if (stored?.orderId) {
+          try {
+            const orderRes = await getOrderById(stored.orderId);
+            if (!cancelled) setOrder(orderRes.data);
+          } catch {
+            // leave the shipping form hidden behind the payment panel
+          }
+        }
+        setVerifyingReturn(false);
+        navigate("/checkout", { replace: true });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // Runs once on return from Paystack; navigation/state helpers are stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -88,19 +181,6 @@ export default function Checkout() {
     }
   };
 
-  const handlePaymentSuccess = (updatedOrder) => {
-    setOrder(updatedOrder);
-    fetchCart();
-    navigate("/order-success", {
-      state: { orderId: updatedOrder._id, order: updatedOrder },
-    });
-  };
-
-  const handlePaymentError = (message) => {
-    setMsg(message);
-    setMsgOpen(true);
-  };
-
   const inputCls =
     "w-full bg-[#ECFDF5] border border-[#047857]/20 rounded-lg px-3 py-2.5 text-sm text-[#101828] placeholder-[#667085] focus:outline-none focus:ring-2 focus:ring-[#047857]";
 
@@ -150,7 +230,16 @@ export default function Checkout() {
           </div>
         )}
 
-        {!order ? (
+        {verifyingReturn ? (
+          /* ── Returning from Paystack — verifying ── */
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+            <FiLoader className="animate-spin w-8 h-8 text-[#047857] mx-auto mb-3" />
+            <h2 className="font-semibold text-[#101828]">Verifying payment…</h2>
+            <p className="text-sm text-[#667085] mt-1">
+              Please wait while we confirm your payment with Paystack.
+            </p>
+          </div>
+        ) : !order ? (
           /* ── Shipping Form ── */
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="bg-[#ECFDF5] px-5 py-4">

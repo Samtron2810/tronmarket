@@ -1,76 +1,69 @@
 import { useState } from "react";
-import { usePaystackPayment } from "react-paystack";
 import { FiLock, FiLoader } from "react-icons/fi";
 import api from "../services/api";
 
-export default function PayButton({
-  orderId,
-  email,
-  amount,
-  onSuccessCallback,
-  onError,
-}) {
-  const [verifying, setVerifying] = useState(false);
+const PENDING_PAYMENT_KEY = "tronmarket:pendingPayment";
 
-  const config = {
-    reference: `TRON-${orderId}-${Date.now()}`,
-    email,
-    // Paystack expects amount in kobo (lowest currency unit)
-    amount: Math.round(Number(amount) * 100),
-    publicKey: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY,
-    currency: "NGN",
-    metadata: {
-      orderId,
-      custom_fields: [],
-    },
-  };
+// Payment is initialised on the SERVER: the backend fixes the amount,
+// currency, reference and order binding and records the Payment row before
+// Paystack is involved, then hands us a hosted-checkout URL. The browser
+// never decides what is being charged, and the reference it comes back
+// with can only ever pay for this one order.
+export default function PayButton({ orderId, amount, onError }) {
+  const [redirecting, setRedirecting] = useState(false);
 
-  const initializePayment = usePaystackPayment(config);
-
-  const handleSuccess = async (reference) => {
-    setVerifying(true);
+  const handlePay = async () => {
+    setRedirecting(true);
     try {
-      const res = await api.post("/payments/verify", {
-        reference: reference.reference,
+      const res = await api.post("/payments/initialize", {
         orderId,
+        callbackUrl: `${window.location.origin}/checkout`,
       });
 
-      if (res.data.success) {
-        onSuccessCallback?.(res.data.order);
-      } else {
-        onError?.(res.data.message || "Payment verification failed");
+      const { authorization_url: authorizationUrl, reference } = res.data;
+      if (!authorizationUrl || !reference) {
+        throw new Error("Payment could not be initialized");
       }
+
+      // Remember which order this reference belongs to so Checkout can
+      // verify it when Paystack redirects back (the backend can also
+      // derive the order from the reference on its own).
+      try {
+        sessionStorage.setItem(
+          PENDING_PAYMENT_KEY,
+          JSON.stringify({ orderId, reference, createdAt: Date.now() }),
+        );
+      } catch {
+        // Private browsing etc. — verification still works via the
+        // server-side reference binding.
+      }
+
+      window.location.assign(authorizationUrl);
     } catch (err) {
       onError?.(
         err.response?.data?.message ||
-          "Could not verify payment. Please contact support.",
+          err.message ||
+          "Could not start payment. Please try again.",
       );
-    } finally {
-      setVerifying(false);
+      setRedirecting(false);
     }
-  };
-
-  const handleClose = () => {
-    onError?.("Payment window closed. Your order is still pending.");
   };
 
   return (
     <button
       type="button"
-      disabled={verifying}
-      onClick={() =>
-        initializePayment({ onSuccess: handleSuccess, onClose: handleClose })
-      }
+      disabled={redirecting}
+      onClick={handlePay}
       className="primary-btn w-full flex items-center justify-center gap-2"
       style={{
-        opacity: verifying ? 0.7 : 1,
-        cursor: verifying ? "not-allowed" : "pointer",
+        opacity: redirecting ? 0.7 : 1,
+        cursor: redirecting ? "not-allowed" : "pointer",
       }}
     >
-      {verifying ? (
+      {redirecting ? (
         <>
           <FiLoader className="animate-spin" />
-          Verifying payment...
+          Redirecting to Paystack...
         </>
       ) : (
         <>

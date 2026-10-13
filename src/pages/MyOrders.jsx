@@ -76,13 +76,17 @@ export default function MyOrders() {
       setCancelModalOpen(false);
       setCancellingId(orderToCancel);
 
-      await cancelMyOrder(orderToCancel);
+      const res = await cancelMyOrder(orderToCancel);
+      const updatedOrder = res.data?.order;
 
       setOrders((prevOrders) =>
         prevOrders.map((ord) =>
-          ord._id === orderToCancel ? { ...ord, status: "cancelled" } : ord,
+          ord._id === orderToCancel
+            ? updatedOrder || { ...ord, status: "cancelled" }
+            : ord,
         ),
       );
+      toast.success(res.data?.message || "Order cancelled successfully");
     } catch (err) {
       // FIX #2: replaced alert() with toast.error()
       toast.error(err.response?.data?.message || "Failed to cancel order");
@@ -116,6 +120,10 @@ export default function MyOrders() {
       setOrderToDeliver(null);
     }
   };
+
+  const orderBeingCancelled = orders.find(
+    (ord) => ord._id === orderToCancel,
+  );
 
   if (loading) {
     return (
@@ -302,6 +310,12 @@ export default function MyOrders() {
                         </div>
 
                         <div className="flex items-center gap-2 ml-auto sm:ml-0 w-full sm:w-auto justify-end">
+                          {order.refundStatus &&
+                            order.refundStatus !== "none" && (
+                              <span className="inline-flex items-center px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 font-semibold capitalize">
+                                Refund: {order.refundStatus}
+                              </span>
+                            )}
                           {isCancellable && (
                             <button
                               onClick={(e) => initiateCancel(e, order._id)}
@@ -352,7 +366,11 @@ export default function MyOrders() {
       <ConfirmModal
         open={cancelModalOpen}
         title="Cancel Order"
-        description="Are you sure you want to cancel this order? This action cannot be undone."
+        description={
+          orderBeingCancelled?.isPaid
+            ? "Are you sure you want to cancel this paid order? It will be cancelled and a refund requested from Paystack. This action cannot be undone."
+            : "Are you sure you want to cancel this order? This action cannot be undone."
+        }
         confirmLabel="Cancel Order"
         cancelLabel="Keep Order"
         onConfirm={confirmCancelOrder}
