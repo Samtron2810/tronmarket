@@ -1,20 +1,39 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
 import { getWishlist } from "../services/storefrontService";
+import { WishlistContext } from "../context/WishlistContext";
 import { setPageTitle } from "../utils/pageTitle";
 
 export default function Wishlist() {
+  const { ids } = useContext(WishlistContext);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const firstLoad = useRef(true);
 
+  // Refetch whenever the saved ids change, so un-saving a product from
+  // this very page removes its card immediately (the first run also does
+  // the initial load).
   useEffect(() => {
-    setPageTitle("Wishlist");
+    let cancelled = false;
+    if (firstLoad.current) setPageTitle("Wishlist");
     getWishlist()
-      .then((res) => setProducts(res.data.products || []))
-      .catch(() => setProducts([]))
-      .finally(() => setLoading(false));
-  }, []);
+      .then((res) => {
+        if (!cancelled) setProducts(res.data.products || []);
+      })
+      .catch(() => {
+        if (!cancelled) setProducts([]);
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+          firstLoad.current = false;
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [ids]);
 
   return (
     <div className="page-container p-6">

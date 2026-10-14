@@ -20,6 +20,7 @@ export const logout = () => api.post("/auth/logout");
 
 // ── Account management ────────────────────────────────────────────────────
 export const getProfile = () => api.get("/auth/profile");
+export const verifyPassword = (data) => api.post("/auth/verify-password", data);
 export const updateProfile = (data) => api.put("/auth/profile", data);
 export const addAddress = (data) => api.post("/auth/addresses", data);
 export const updateAddress = (id, data) => api.put(`/auth/addresses/${id}`, data);
