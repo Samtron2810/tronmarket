@@ -88,7 +88,20 @@ export default function Profile() {
       setUnlockedUntil(Date.now() + UNLOCK_MS);
       setUnlockSecret("");
     } catch (err) {
-      setUnlockError(err.response?.data?.message || "That password is incorrect.");
+      const status = err.response?.status;
+      const serverMessage = err.response?.data?.message;
+      if (serverMessage) {
+        setUnlockError(serverMessage);
+      } else if (status === 404 || !err.response) {
+        // No JSON error came back at all — almost always the API server is
+        // running older code (this endpoint does not exist yet) rather than
+        // the password being wrong.
+        setUnlockError(
+          "The security check could not reach the API server. Make sure the updated backend is running (apply the latest server files and restart it), then try again.",
+        );
+      } else {
+        setUnlockError("That password is incorrect.");
+      }
     } finally {
       setUnlockBusy(false);
     }
@@ -202,9 +215,7 @@ export default function Profile() {
                     <dt className="text-secondary">Email</dt>
                     <dd className="font-medium">{user.email}</dd>
                   </div>
-                  <button type="button" className="secondary-btn !py-1.5 text-sm" onClick={() => selectTab("security")}>
-                    Change in Security →
-                  </button>
+                  <span className="text-xs text-secondary">Email addresses can't be changed</span>
                 </div>
                 <div>
                   <dt className="text-secondary">Role</dt>
@@ -291,18 +302,6 @@ export default function Profile() {
                         isVerified: session.isVerified,
                       });
                     }
-                  }}
-                  onUserUpdated={(updated) => {
-                    if (updated?.token) {
-                      login(updated.token, {
-                        _id: updated._id,
-                        name: updated.name,
-                        email: updated.email,
-                        role: updated.role,
-                        isVerified: updated.isVerified,
-                      });
-                    }
-                    refreshUser();
                   }}
                 />
               )}

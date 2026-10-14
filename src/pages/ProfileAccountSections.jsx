@@ -5,8 +5,6 @@ import {
   addAddress,
   updateAddress,
   deleteAddress,
-  requestEmailChange,
-  verifyEmailChange,
   twoFactorSetup,
   twoFactorVerify,
   twoFactorDisable,
@@ -205,15 +203,11 @@ export function ProfileAddresses() {
 }
 
 // ── Security tab (rendered only after the step-up unlock in Profile) ────────
-export function ProfileSecurity({ user, onSession, onUserUpdated }) {
+export function ProfileSecurity({ user, onSession }) {
   const status = useStatus();
   const [busy, setBusy] = useState(false);
 
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
-  const [newEmail, setNewEmail] = useState("");
-  const [emailOtp, setEmailOtp] = useState("");
-  const [emailStep, setEmailStep] = useState(0);
-
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(Boolean(user?.twoFactorEnabled));
   const [totp, setTotp] = useState(null);
   const [totpCode, setTotpCode] = useState("");
@@ -251,37 +245,6 @@ export function ProfileSecurity({ user, onSession, onUserUpdated }) {
       status.flash(res.data.message || "Password changed. Your other sessions were signed out.");
     } catch (err) {
       status.fail(err, "Could not change your password.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const startEmailChange = async (event) => {
-    event.preventDefault();
-    setBusy(true);
-    try {
-      await requestEmailChange({ email: newEmail });
-      setEmailStep(1);
-      status.flash(`We sent a 6-digit code to ${newEmail}.`);
-    } catch (err) {
-      status.fail(err, "Could not start the email change.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const confirmEmailChange = async (event) => {
-    event.preventDefault();
-    setBusy(true);
-    try {
-      const res = await verifyEmailChange({ otp: emailOtp });
-      onUserUpdated?.(res.data);
-      setEmailStep(0);
-      setNewEmail("");
-      setEmailOtp("");
-      status.flash("Email updated. Your other sessions were signed out.");
-    } catch (err) {
-      status.fail(err, "That code is invalid or expired.");
     } finally {
       setBusy(false);
     }
@@ -343,22 +306,6 @@ export function ProfileSecurity({ user, onSession, onUserUpdated }) {
           <input type="password" className="input-field" placeholder="Confirm new password" autoComplete="new-password" minLength={6} required value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })} />
           <button type="submit" className="primary-btn" disabled={busy}>{busy ? "Changing…" : "Change password"}</button>
         </form>
-      </section>
-
-      <section className="card p-5 sm:p-6">
-        <h3 className="text-base font-bold">Change email</h3>
-        <p className="mb-4 text-sm text-secondary">Current email: <strong>{user?.email}</strong>. We will send a verification code to the new address; applying it signs out your other sessions.</p>
-        {emailStep === 0 ? (
-          <form onSubmit={startEmailChange} className="flex max-w-md flex-col gap-2 sm:flex-row">
-            <input type="email" className="input-field flex-1" placeholder="New email address" required value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
-            <button type="submit" className="primary-btn" disabled={busy}>Send code</button>
-          </form>
-        ) : (
-          <form onSubmit={confirmEmailChange} className="flex max-w-md flex-col gap-2 sm:flex-row">
-            <input className="input-field flex-1 text-center tracking-[0.4em]" placeholder="6-digit code" inputMode="numeric" required value={emailOtp} onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, "").slice(0, 6))} />
-            <button type="submit" className="primary-btn" disabled={busy || emailOtp.length !== 6}>Confirm new email</button>
-          </form>
-        )}
       </section>
 
       <section className="card p-5 sm:p-6">

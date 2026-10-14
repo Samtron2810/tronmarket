@@ -13,7 +13,7 @@ import { toast } from "react-toastify";
 import { displayPrice, variantHint } from "../utils/variants";
 import WishlistButton from "./WishlistButton";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, compact = false }) {
   const fallbackImage = "https://loremflickr.com/g/320/240/product";
 
   const images =
@@ -62,7 +62,7 @@ export default function ProductCard({ product }) {
     <>
       <div className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-emerald-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out w-full mx-auto">
         {/*  Image  */}
-        <div className="relative w-full aspect-4/3 overflow-hidden bg-emerald-50">
+        <div className={`relative w-full overflow-hidden bg-emerald-50 ${compact ? "aspect-square" : "aspect-4/3"}`}>
           <img
             src={thumbUrl(images[index])}
             alt={product.name}
@@ -110,10 +110,10 @@ export default function ProductCard({ product }) {
         </div>
 
         {/*  Content  */}
-        <div className="flex flex-1 flex-col p-2 lg:p-1.5 gap-1 lg:gap-0.5">
+        <div className={`flex flex-1 flex-col ${compact ? "p-1.5 gap-0.5" : "p-2 lg:p-1.5 gap-1 lg:gap-0.5"}`}>
           {/* Category + Name + Description */}
           <div className="flex-1 min-w-0">
-            <h3 className="mt-0.5 text-md lg:text-sm font-bold text-gray-900 line-clamp-1 leading-snug">
+            <h3 className={`mt-0.5 font-bold text-gray-900 line-clamp-1 leading-snug ${compact ? "text-xs" : "text-md lg:text-sm"}`}>
               {product.name}
             </h3>
             <span className="text-emerald-700 text-xs lg:text-[11px] font-bold uppercase tracking-wider">
@@ -124,10 +124,12 @@ export default function ProductCard({ product }) {
                 Verified seller
               </span>
             )}
-            <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed truncate">
-              {product.description || "No description available."}
-            </p>
-            {product.hasVariants && variantHint(product) && (
+            {!compact && (
+              <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed truncate">
+                {product.description || "No description available."}
+              </p>
+            )}
+            {!compact && product.hasVariants && variantHint(product) && (
               <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
                 {variantHint(product)}
               </span>
@@ -136,10 +138,12 @@ export default function ProductCard({ product }) {
 
           {/* Price */}
           <div className="min-w-0">
-            <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 block">
-              Price
-            </span>
-            <span className="text-sm lg:text-xs font-extrabold text-amber-700 leading-tight block truncate">
+            {!compact && (
+              <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 block">
+                Price
+              </span>
+            )}
+            <span className={`font-extrabold text-amber-700 leading-tight block truncate ${compact ? "text-xs" : "text-sm lg:text-xs"}`}>
               {displayPrice(product).label}
             </span>
           </div>

@@ -25,8 +25,6 @@ export const updateProfile = (data) => api.put("/auth/profile", data);
 export const addAddress = (data) => api.post("/auth/addresses", data);
 export const updateAddress = (id, data) => api.put(`/auth/addresses/${id}`, data);
 export const deleteAddress = (id) => api.delete(`/auth/addresses/${id}`);
-export const requestEmailChange = (data) => api.post("/auth/email-change/request", data);
-export const verifyEmailChange = (data) => api.post("/auth/email-change/verify", data);
 export const deleteMyAccount = (data) => api.delete("/auth/me", { data });
 export const twoFactorSetup = () => api.post("/auth/2fa/setup", {});
 export const twoFactorVerify = (data) => api.post("/auth/2fa/verify", data);

@@ -410,8 +410,8 @@ export default function Home() {
       {featured.length > 0 && !debouncedSearch && !category && (
         <section className="mb-6">
           <h2 className="text-xl font-bold tracking-tight mb-3" style={{ color: "#101828" }}>Featured products</h2>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-            {featured.slice(0, 4).map((p) => <ProductCard key={p._id} product={p} />)}
+          <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5">
+            {featured.slice(0, 5).map((p) => <ProductCard key={p._id} product={p} compact />)}
           </div>
         </section>
       )}
