@@ -24,9 +24,10 @@ export const cancelMyOrder = (orderId) => api.put(`/orders/${orderId}/cancel`);
 export const confirmDelivery = (orderId, sellerId = null) =>
   api.put(`/orders/${orderId}/deliver`, sellerId ? { sellerId } : {});
 
-// Seller: update order status (e.g. paid → shipped)
-export const updateOrderStatus = (orderId, status, note) =>
-  api.put(`/orders/${orderId}/status`, { status, note });
+// Seller: update order status (e.g. paid → shipped); tracking carries
+// carrier/trackingNumber when marking shipped.
+export const updateOrderStatus = (orderId, status, note, tracking = {}) =>
+  api.put(`/orders/${orderId}/status`, { status, note, ...tracking });
 
 // Seller: claim delivery when buyer doesn't confirm
 export const sellerDeliveryClaim = (orderId) =>

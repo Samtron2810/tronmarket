@@ -55,6 +55,7 @@ export default function AddProduct() {
     hasVariants: false,
     options: [],
     variants: [],
+    isDraft: false,
   });
   const [loading, setLoading] = useState(false);
   const [msgOpen, setMsgOpen] = useState(false);
@@ -379,6 +380,16 @@ export default function AddProduct() {
               value={form}
               onChange={(next) => setForm((f) => ({ ...f, ...next }))}
             />
+            <label className="flex items-center gap-2 text-sm font-medium text-[#101828]">
+              <input
+                type="checkbox"
+                checked={form.isDraft}
+                onChange={(e) => setForm({ ...form, isDraft: e.target.checked })}
+              />
+              Save as draft (publish later from your dashboard)
+            </label>
+            <p className="text-xs text-[#667085]">New listings go through a quick moderation review before they appear in the store.</p>
+
             {form.hasVariants && (
               <p className="text-xs" style={{ color: "#667085" }}>
                 The Stock field above is ignored for variant products — stock

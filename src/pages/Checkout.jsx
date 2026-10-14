@@ -1,5 +1,7 @@
 import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getProfile } from "../services/authService";
+import { validateCoupon } from "../services/storefrontService";
 import {
   createOrder,
   getOrderById,
@@ -163,6 +165,55 @@ export default function Checkout() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponBusy, setCouponBusy] = useState(false);
+  const [couponMessage, setCouponMessage] = useState("");
+
+  useEffect(() => {
+    getProfile()
+      .then((res) => {
+        const addresses = res.data.savedAddresses || [];
+        setSavedAddresses(addresses);
+        const preferred = addresses.find((a) => a.isDefault) || addresses[0];
+        if (preferred) {
+          setForm((prev) => ({
+            ...prev,
+            fullName: preferred.fullName || prev.fullName,
+            phone: preferred.phone || prev.phone,
+            address: preferred.address || prev.address,
+            city: preferred.city || prev.city,
+            state: preferred.state || prev.state,
+          }));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const pickSavedAddress = (id) => {
+    const picked = savedAddresses.find((a) => a._id === id);
+    if (!picked) return;
+    setForm({ fullName: picked.fullName, phone: picked.phone, address: picked.address, city: picked.city, state: picked.state });
+  };
+
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setCouponBusy(true);
+    setCouponMessage("");
+    try {
+      const res = await validateCoupon({ code: couponCode.trim(), itemsSubtotal: cartItemsSubtotal });
+      setAppliedCoupon(res.data);
+      setCouponMessage(`Coupon applied: −NGN ${Number(res.data.discount).toLocaleString()}`);
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponMessage(err.response?.data?.message || "That coupon is not valid.");
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+
   const cartItemsSubtotal = (cart?.items || []).reduce((sum, item) => {
     const price = Number(item.variant?.price ?? item.product?.price ?? 0);
     return sum + price * Number(item.quantity || 0);
@@ -245,7 +296,10 @@ export default function Checkout() {
     // ── Step 2: Place order ───────────────────────────────────────────────
     setLoading(true);
     try {
-      const res = await createOrder({ shippingAddress: form });
+      const res = await createOrder({
+        shippingAddress: form,
+        ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
+      });
       setOrder(res.data);
       fetchCart();
     } catch (err) {
@@ -348,6 +402,21 @@ export default function Checkout() {
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="p-5 space-y-3">
+              {savedAddresses.length > 0 && (
+                <select
+                  defaultValue=""
+                  onChange={(e) => pickSavedAddress(e.target.value)}
+                  className={inputCls}
+                  aria-label="Use a saved address"
+                >
+                  <option value="" disabled>Use a saved address…</option>
+                  {savedAddresses.map((a) => (
+                    <option key={a._id} value={a._id}>
+                      {a.label} — {a.address}, {a.city}, {a.state}
+                    </option>
+                  ))}
+                </select>
+              )}
               <input
                 name="fullName"
                 placeholder="Full Name"
@@ -391,11 +460,34 @@ export default function Checkout() {
                 />
               </div>
 
+              <div className="rounded-lg border border-gray-200 px-4 py-3">
+                <div className="flex gap-2">
+                  <input
+                    value={couponCode}
+                    onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setAppliedCoupon(null); setCouponMessage(""); }}
+                    placeholder="Coupon code"
+                    className={inputCls}
+                  />
+                  <button type="button" onClick={applyCoupon} disabled={couponBusy || !couponCode.trim()} className="shrink-0 px-4 rounded-lg bg-[#101828] text-white text-sm font-semibold disabled:opacity-50">
+                    {couponBusy ? "Checking…" : "Apply"}
+                  </button>
+                </div>
+                {couponMessage && (
+                  <p className={`mt-2 text-xs font-semibold ${appliedCoupon ? "text-emerald-700" : "text-red-600"}`}>{couponMessage}</p>
+                )}
+              </div>
+
               <div className="rounded-lg border border-emerald-100 bg-[#ECFDF5] px-4 py-3 text-sm">
                 <div className="flex justify-between py-0.5">
                   <span className="text-[#667085]">Items subtotal</span>
                   <span className="font-semibold">NGN {cartItemsSubtotal.toLocaleString()}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between py-0.5 text-emerald-700">
+                    <span>Discount ({appliedCoupon.code})</span>
+                    <span className="font-semibold">−NGN {Number(appliedCoupon.discount).toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex justify-between py-0.5">
                   <span className="text-[#667085]">
                     Delivery{visibleShippingQuote?.shippingZone ? ` (${visibleShippingQuote.shippingZone})` : ""}
@@ -412,8 +504,9 @@ export default function Checkout() {
                 </div>
                 <div className="mt-2 flex justify-between border-t border-emerald-200 pt-2 font-bold">
                   <span>Total to pay</span>
-                  <span>NGN {Number(visibleShippingQuote?.totalPrice ?? cartItemsSubtotal).toLocaleString()}</span>
+                  <span>NGN {Number((visibleShippingQuote?.totalPrice ?? cartItemsSubtotal) - (appliedCoupon?.discount || 0)).toLocaleString()}</span>
                 </div>
+                {appliedCoupon && <p className="mt-1 text-xs text-[#667085]">Final shipping is confirmed on the order below.</p>}
                 {visibleShippingQuote?.freeShipping && (
                   <p className="mt-1 text-xs text-[#047857]">Your order qualifies for free shipping.</p>
                 )}
@@ -535,6 +628,12 @@ export default function Checkout() {
                   <span className="text-[#667085]">Items subtotal</span>
                   <span>₦{Number(order.itemsSubtotal ?? Math.max(0, order.totalPrice - (order.shippingPrice || 0))).toLocaleString()}</span>
                 </div>
+                {Number(order.discountAmount || 0) > 0 && (
+                  <div className="flex items-center justify-between text-emerald-700">
+                    <span>Discount{order.couponCode ? ` (${order.couponCode})` : ""}</span>
+                    <span>−₦{Number(order.discountAmount).toLocaleString()}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <span className="text-[#667085]">Delivery{order.shippingZone ? ` (${order.shippingZone})` : ""}</span>
                   <span>{Number(order.shippingPrice || 0) === 0 ? "FREE" : `₦${Number(order.shippingPrice).toLocaleString()}`}</span>

@@ -78,6 +78,9 @@ export default function EditProduct() {
           images: res.data.images || [],
           stock: res.data.stock || 0,
           hasVariants: res.data.hasVariants || false,
+          isDraft: res.data.isDraft || false,
+          moderationStatus: res.data.moderationStatus,
+          moderationNote: res.data.moderationNote || "",
           options: res.data.options || [],
           variants: res.data.variants || [],
         });
@@ -325,6 +328,25 @@ export default function EditProduct() {
                   variants below for variant products.
                 </p>
               )}
+
+              {form.moderationStatus === "rejected" && (
+                <p className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  This listing was rejected{form.moderationNote ? `: ${form.moderationNote}` : ""}. Fix the issue and save to send it back for review.
+                </p>
+              )}
+              {form.moderationStatus === "pending" && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                  This listing is waiting for moderation and is not visible in the store yet.
+                </p>
+              )}
+              <label className="flex items-center gap-2 text-sm font-medium text-[#101828]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(form.isDraft)}
+                  onChange={(e) => setForm({ ...form, isDraft: e.target.checked })}
+                />
+                Save as draft (hidden from the store)
+              </label>
 
               {/* Description */}
               <Field label="Description">

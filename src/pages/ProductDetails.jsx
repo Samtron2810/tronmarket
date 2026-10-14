@@ -11,6 +11,10 @@ import {
 } from "react-icons/fa";
 import { largeUrl } from "../utils/cloudinaryUrl";
 import VariantSelector from "../components/VariantSelector";
+import ProductExtras from "../components/ProductExtras";
+import WishlistButton from "../components/WishlistButton";
+import { rememberViewed } from "../utils/recentlyViewed";
+import { setPageTitle } from "../utils/pageTitle";
 import {
   displayPrice,
   findVariant,
@@ -39,6 +43,8 @@ export default function ProductDetails() {
         setLoading(true);
         const res = await api.get(`/products/${id}`);
         setProduct(res.data);
+        rememberViewed(res.data);
+        setPageTitle(res.data.name);
       } catch (err) {
         console.error("Failed to fetch product details:", err);
         setError("Product details could not be loaded.");
@@ -190,9 +196,17 @@ export default function ProductDetails() {
         <div className="flex flex-col justify-between p-5 sm:p-6">
           <div className="space-y-4">
             {/* Category */}
-            <span className="inline-block text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
-              {product.category || "General"}
-            </span>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="inline-block text-xs font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                {product.category || "General"}
+              </span>
+              {product.seller?.sellerVerified && (
+                <span className="inline-block text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-600 text-white">
+                  Verified seller
+                </span>
+              )}
+              <WishlistButton productId={product._id} className="border border-gray-200" />
+            </div>
 
             {/* Title */}
             <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight leading-snug text-gray-900">
@@ -310,6 +324,8 @@ export default function ProductDetails() {
           </div>
         </div>
       </div>
+
+      <ProductExtras productId={product._id} />
     </div>
   );
 }

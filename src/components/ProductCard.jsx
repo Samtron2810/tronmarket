@@ -11,6 +11,7 @@ import { CartContext } from "../context/CartContext";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
 import { displayPrice, variantHint } from "../utils/variants";
+import WishlistButton from "./WishlistButton";
 
 export default function ProductCard({ product }) {
   const fallbackImage = "https://loremflickr.com/g/320/240/product";
@@ -69,6 +70,10 @@ export default function ProductCard({ product }) {
             loading="lazy"
           />
 
+          <div className="absolute left-2 top-2 z-10">
+            <WishlistButton productId={product._id} />
+          </div>
+
           {product.stock <= 0 && (
             <div className="absolute right-2 top-2 rounded-md bg-red-600 text-white text-[10px] font-semibold px-2 py-0.5">
               Out of stock
@@ -114,6 +119,11 @@ export default function ProductCard({ product }) {
             <span className="text-emerald-700 text-xs lg:text-[11px] font-bold uppercase tracking-wider">
               {product.category || "General"}
             </span>
+            {product.seller?.sellerVerified && (
+              <span className="ml-1 inline-block rounded-full bg-emerald-600 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-white align-middle">
+                Verified seller
+              </span>
+            )}
             <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed truncate">
               {product.description || "No description available."}
             </p>

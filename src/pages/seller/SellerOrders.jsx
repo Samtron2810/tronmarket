@@ -53,6 +53,8 @@ export default function SellerOrders() {
     fetchOrders();
   }, [fetchOrders]);
 
+  const [tracking, setTracking] = useState({ carrier: "", trackingNumber: "" });
+
   const handleMarkShipped = async () => {
     const orderId = orderToShip;
     if (!orderId) return;
@@ -61,6 +63,7 @@ export default function SellerOrders() {
         orderId,
         "shipped",
         "Order has been shipped by seller",
+        { carrier: tracking.carrier, trackingNumber: tracking.trackingNumber },
       );
       const updated = res.data?.order;
       setOrders((prev) =>
@@ -76,6 +79,7 @@ export default function SellerOrders() {
     } finally {
       setShipModalOpen(false);
       setOrderToShip(null);
+      setTracking({ carrier: "", trackingNumber: "" });
     }
   };
 
@@ -312,18 +316,31 @@ export default function SellerOrders() {
         )}
       </div>
 
-      <ConfirmModal
-        open={shipModalOpen}
-        title="Mark Order as Shipped"
-        description="Are you sure you want to mark this order as shipped? This will notify the customer that their items are on the way."
-        confirmLabel="Mark as Shipped"
-        cancelLabel="Cancel"
-        onConfirm={handleMarkShipped}
-        onClose={() => {
-          setShipModalOpen(false);
-          setOrderToShip(null);
-        }}
-      />
+      {shipModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/45" onClick={() => setShipModalOpen(false)} />
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold mb-1">Mark order as shipped</h3>
+            <p className="text-sm text-[#667085] mb-4">Add tracking details so the customer can follow the delivery.</p>
+            <input
+              className="input-field w-full mb-2"
+              placeholder="Carrier (e.g. GIG Logistics)"
+              value={tracking.carrier}
+              onChange={(e) => setTracking({ ...tracking, carrier: e.target.value })}
+            />
+            <input
+              className="input-field w-full"
+              placeholder="Tracking number (optional)"
+              value={tracking.trackingNumber}
+              onChange={(e) => setTracking({ ...tracking, trackingNumber: e.target.value })}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button className="secondary-btn" onClick={() => setShipModalOpen(false)}>Cancel</button>
+              <button className="primary-btn" onClick={handleMarkShipped}>Mark as Shipped</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         open={deliverModalOpen}

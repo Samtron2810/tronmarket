@@ -16,6 +16,7 @@ import {
   confirmDelivery as confirmDeliveryService,
 } from "../services/orderService";
 import ConfirmModal from "../components/ConfirmModal";
+import { createReturnRequest, getOrderReturn } from "../services/storefrontService";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import ItemImage from "../components/ItemImage"; // FIX #12
 import { toast } from "react-toastify"; // FIX #2: import toast
@@ -42,6 +43,35 @@ export default function MyOrders() {
 
   const [deliverModalOpen, setDeliverModalOpen] = useState(false);
   const [orderToDeliver, setOrderToDeliver] = useState(null);
+
+  const [returnFor, setReturnFor] = useState(null); // order being returned
+  const [returnForm, setReturnForm] = useState({ reason: "", details: "" });
+  const [returnBusy, setReturnBusy] = useState(false);
+  const [returnByOrder, setReturnByOrder] = useState({});
+
+  const openReturn = async (order) => {
+    setReturnFor(order);
+    setReturnForm({ reason: "", details: "" });
+    try {
+      const res = await getOrderReturn(order._id);
+      if (res.data) setReturnByOrder((prev) => ({ ...prev, [order._id]: res.data }));
+    } catch { /* opening a new request is still fine */ }
+  };
+
+  const submitReturn = async () => {
+    if (!returnFor) return;
+    setReturnBusy(true);
+    try {
+      const res = await createReturnRequest(returnFor._id, returnForm);
+      setReturnByOrder((prev) => ({ ...prev, [returnFor._id]: res.data }));
+      toast.success("Return request sent. Our team will review it shortly.");
+      setReturnFor(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not open the return request");
+    } finally {
+      setReturnBusy(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -336,6 +366,12 @@ export default function MyOrders() {
                                 >
                                   {packageStatus}
                                 </span>
+                                {(fulfillment.carrier || fulfillment.trackingNumber) && (
+                                  <span className="w-full text-[#667085]">
+                                    Tracking: {fulfillment.carrier || "Courier"}
+                                    {fulfillment.trackingNumber ? ` · ${fulfillment.trackingNumber}` : ""}
+                                  </span>
+                                )}
                                 {["shipped", "delivery-claimed"].includes(
                                   packageStatus,
                                 ) && (
@@ -418,6 +454,20 @@ export default function MyOrders() {
                             </button>
                           )}
 
+                          {["paid", "processing", "shipped", "delivered"].includes(order.status) && (
+                            returnByOrder[order._id] ? (
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-xs font-semibold capitalize">
+                                Return: {returnByOrder[order._id].status}
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => openReturn(order)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors text-xs font-semibold shadow-sm"
+                              >
+                                Request return
+                              </button>
+                            )
+                          )}
                           <Link
                             to={`/orders/${order._id}/invoice`}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 transition-colors font-semibold shadow-sm"
@@ -469,6 +519,45 @@ export default function MyOrders() {
           setOrderToCancel(null);
         }}
       />
+
+      {returnFor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/45" onClick={() => setReturnFor(null)} />
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold mb-1">Request a return</h3>
+            <p className="text-sm text-[#667085] mb-4">Tell us what went wrong. Approved returns on paid orders are refunded through Paystack.</p>
+            {returnByOrder[returnFor._id] ? (
+              <p className="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
+                A return is already {returnByOrder[returnFor._id].status} for this order.
+              </p>
+            ) : (
+              <>
+                <input
+                  className="input-field w-full mb-2"
+                  placeholder="Reason (e.g. item arrived damaged)"
+                  value={returnForm.reason}
+                  onChange={(e) => setReturnForm({ ...returnForm, reason: e.target.value })}
+                />
+                <textarea
+                  className="input-field w-full"
+                  rows={3}
+                  placeholder="Details (optional)"
+                  value={returnForm.details}
+                  onChange={(e) => setReturnForm({ ...returnForm, details: e.target.value })}
+                />
+              </>
+            )}
+            <div className="mt-4 flex justify-end gap-2">
+              <button className="secondary-btn" onClick={() => setReturnFor(null)}>Close</button>
+              {!returnByOrder[returnFor._id] && (
+                <button className="primary-btn disabled:opacity-50" disabled={returnBusy || returnForm.reason.trim().length < 3} onClick={submitReturn}>
+                  {returnBusy ? "Sending…" : "Send request"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         open={deliverModalOpen}

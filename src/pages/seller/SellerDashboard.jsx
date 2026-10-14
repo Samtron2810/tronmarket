@@ -6,13 +6,11 @@ import {
   FiPlus,
   FiPackage,
   FiShoppingBag,
-  FiImage,
-  FiEdit2,
-  FiTrash2,
 } from "react-icons/fi";
 import ConfirmModal from "../../components/ConfirmModal";
 import MessageModal from "../../components/MessageModal";
 import { toast } from "react-toastify";
+import { getSellerLowStock, getMyPayouts } from "../../services/storefrontService";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
 
 export default function SellerDashboard() {
@@ -35,9 +33,26 @@ export default function SellerDashboard() {
     }
   };
 
+  const [lowStock, setLowStock] = useState([]);
+  const [payouts, setPayouts] = useState(null);
+
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMyProducts();
+    getSellerLowStock(5).then((res) => setLowStock(res.data.products || [])).catch(() => {});
+    getMyPayouts().then((res) => setPayouts(res.data)).catch(() => {});
   }, []);
+
+  const patchProduct = async (id, patch, message) => {
+    try {
+      const res = await api.put(`/products/${id}`, patch);
+      setProducts((prev) => prev.map((p) => (p._id === id ? { ...p, ...res.data } : p)));
+      toast.success(message);
+      fetchMyProducts();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not update the product");
+    }
+  };
 
   const promptDelete = (id) => {
     setTargetId(id);
@@ -172,6 +187,41 @@ export default function SellerDashboard() {
         </div>
       )}
 
+      {(lowStock.length > 0 || payouts) && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mb-8">
+          <section className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+            <h2 className="font-bold text-amber-800 mb-2">Low-stock alerts ({lowStock.length})</h2>
+            {lowStock.length === 0 ? (
+              <p className="text-sm text-amber-700">Nothing is running low right now.</p>
+            ) : (
+              <ul className="space-y-1 text-sm text-amber-900">
+                {lowStock.slice(0, 6).map((p) => (
+                  <li key={p._id} className="flex justify-between gap-2">
+                    <Link to={`/seller/edit/${p._id}`} className="font-semibold hover:underline">{p.name}</Link>
+                    <span>{p.countInStock ?? p.stock ?? 0} left</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+          <section className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+            <h2 className="font-bold text-emerald-800 mb-2">Payouts</h2>
+            {payouts ? (
+              <div className="text-sm text-emerald-900 space-y-1">
+                <p>Earned from delivered orders: <strong>₦{Number(payouts.balance?.earned || 0).toLocaleString()}</strong></p>
+                <p>Paid out: <strong>₦{Number(payouts.balance?.paidOut || 0).toLocaleString()}</strong></p>
+                <p>Outstanding: <strong>₦{Number(payouts.balance?.outstanding || 0).toLocaleString()}</strong></p>
+                {(payouts.history || []).slice(0, 3).map((h) => (
+                  <p key={h._id} className="text-xs">₦{Number(h.amount).toLocaleString()} · {new Date(h.paidAt || h.createdAt).toLocaleDateString()} · {h.method}</p>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-emerald-700">Payout history will appear here once orders are delivered.</p>
+            )}
+          </section>
+        </div>
+      )}
+
       {/* ── Product grid ── */}
       {!loading && products.length > 0 && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -245,6 +295,54 @@ export default function SellerDashboard() {
                       ? `${p.variantCount ?? 0} variants · ${p.stock ?? 0} total in stock`
                       : `${p.stock ?? 0} in stock`}
                   </p>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {p.isDraft && <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase text-gray-600">Draft</span>}
+                    {p.moderationStatus === "pending" && <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-700">In moderation</span>}
+                    {p.moderationStatus === "rejected" && (
+                      <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase text-red-700" title={p.moderationNote || ""}>
+                        Rejected{p.moderationNote ? `: ${p.moderationNote}` : ""}
+                      </span>
+                    )}
+                    {p.isActive === false && !p.isDraft && p.moderationStatus === "approved" && (
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase text-gray-600">Paused</span>
+                    )}
+                    {(p.stock ?? p.countInStock ?? 99) <= 5 && p.isActive !== false && (
+                      <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase text-red-600">Low stock</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex gap-2">
+                  {p.isDraft ? (
+                    <button
+                      onClick={() => patchProduct(p._id, { isDraft: false, isActive: true }, "Listing submitted for moderation")}
+                      className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white"
+                    >
+                      Publish
+                    </button>
+                  ) : p.isActive === false ? (
+                    <button
+                      onClick={() => patchProduct(p._id, { isActive: true }, "Listing resumed")}
+                      className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white"
+                    >
+                      Resume
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => patchProduct(p._id, { isActive: false }, "Listing paused")}
+                      className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700"
+                    >
+                      Pause
+                    </button>
+                  )}
+                  {!p.isDraft && (
+                    <button
+                      onClick={() => patchProduct(p._id, { isDraft: true, isActive: false }, "Moved to drafts")}
+                      className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700"
+                    >
+                      Draft
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex gap-2">

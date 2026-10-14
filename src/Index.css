@@ -94,6 +94,19 @@ body {
   background: var(--color-brand-800);
 }
 
+.secondary-btn {
+  background: #ffffff;
+  color: var(--color-ink);
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  border: 1px solid #d1d5db;
+}
+
+.secondary-btn:hover {
+  background: #f9fafb;
+}
+
 /* Logo variants */
 .logo-tro {
   color: #ffffff;

@@ -9,17 +9,16 @@ import {
   FiHome,
   FiZap,
 } from "react-icons/fi";
-import {
-  FaTimes,
-  FaBars,
-  FaArrowAltCircleDown,
-  FaArrowAltCircleUp,
-} from "react-icons/fa";
+import { FaTimes, FaBars } from "react-icons/fa";
 import ProductCard from "../components/ProductCard";
+import { fetchProducts as fetchProductsApi } from "../services/productService";
+import { getCategories } from "../services/storefrontService";
+import { getRecentlyViewed } from "../utils/recentlyViewed";
+import { setPageTitle } from "../utils/pageTitle";
 import { AuthContext } from "../context/AuthContext";
 import Skeleton from "../components/Skeleton";
 
-const categories = ["phones", "laptops", "fashion", "home", "electronics"];
+const fallbackCategories = ["phones", "laptops", "fashion", "home", "electronics"];
 
 const catIcons = {
   phones: <FiSmartphone className="w-4 h-4" />,
@@ -47,11 +46,36 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [categories, setCategories] = useState(fallbackCategories);
+  const [brand, setBrand] = useState("");
+  const [brands, setBrands] = useState([]);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [sort, setSort] = useState("newest");
+  const [featured, setFeatured] = useState([]);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const debounceRef = useRef(null);
+
+  useEffect(() => { setPageTitle("Shop"); }, []);
+
+  useEffect(() => {
+    getCategories()
+      .then((res) => {
+        const names = (res.data || []).map((c) => c.name).filter(Boolean);
+        if (names.length) setCategories([...new Set([...names, ...fallbackCategories])]);
+      })
+      .catch(() => {});
+    fetchProductsApi({ featured: 1, limit: 8 })
+      .then((res) => setFeatured(res.data.products || []))
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRecentlyViewed(getRecentlyViewed());
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const urlSearch = params.get("search") || "";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSearch(urlSearch);
     setDebouncedSearch(urlSearch);
     setPage(1);
@@ -89,9 +113,12 @@ export default function Home() {
     try {
       setLoading(true);
       setError(null);
-      const params = { page, limit: 6 };
+      const params = { page, limit: 6, sort };
       if (debouncedSearch) params.search = debouncedSearch;
       if (category) params.category = category;
+      if (brand) params.brand = brand;
+      if (minPrice !== "") params.min = minPrice;
+      if (maxPrice !== "") params.max = maxPrice;
       const res = await api.get("/products", { params });
       setProducts(res.data.products || []);
       setPages(res.data.pages || 1);
@@ -102,7 +129,22 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, category, page]);
+  }, [debouncedSearch, category, brand, minPrice, maxPrice, sort, page]);
+
+  // Brand options follow the catalogue being browsed.
+  useEffect(() => {
+    const names = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (names.length) setBrands((prev) => [...new Set([...prev, ...names])].sort());
+  }, [products]);
+
+  const clearFilters = () => {
+    setBrand("");
+    setMinPrice("");
+    setMaxPrice("");
+    setSort("newest");
+    setPage(1);
+  };
 
   // ── Fetch real-time stock for displayed products ──
   useEffect(() => {
@@ -127,11 +169,12 @@ export default function Home() {
   }, [products]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProducts();
   }, [fetchProducts]);
 
   // Shared category list JSX used in both sidebar and drawer
-  const CategoryList = () => (
+  const renderCategoryList = () => (
     <div className="flex flex-col gap-1.5">
       <button
         onClick={() => handleCategoryChange("")}
@@ -215,7 +258,7 @@ export default function Home() {
               </button>
             </div>
 
-            <CategoryList />
+            {renderCategoryList()}
           </div>
         </div>
       )}
@@ -343,6 +386,18 @@ export default function Home() {
               {total} product{total === 1 ? "" : "s"}
             </span>
           )}
+          <select
+            value={sort}
+            onChange={(e) => { setSort(e.target.value); setPage(1); }}
+            className="bg-white border border-gray-400 rounded-lg px-2 py-2 text-sm text-[#101828]"
+            aria-label="Sort products"
+          >
+            <option value="newest">Newest first</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="name">Name A–Z</option>
+            <option value="rating">Highest rated</option>
+          </select>
           <input
             value={search}
             onChange={handleSearchChange}
@@ -351,6 +406,24 @@ export default function Home() {
           />
         </div>
       </div>
+
+      {featured.length > 0 && !debouncedSearch && !category && (
+        <section className="mb-6">
+          <h2 className="text-xl font-bold tracking-tight mb-3" style={{ color: "#101828" }}>Featured products</h2>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            {featured.slice(0, 4).map((p) => <ProductCard key={p._id} product={p} />)}
+          </div>
+        </section>
+      )}
+
+      {recentlyViewed.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xl font-bold tracking-tight mb-3" style={{ color: "#101828" }}>Recently viewed</h2>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            {recentlyViewed.slice(0, 4).map((p) => <ProductCard key={p._id} product={p} />)}
+          </div>
+        </section>
+      )}
 
       {/* ── Layout: sidebar + grid ── */}
       <div className="flex flex-col sm:flex-row gap-5">
@@ -366,7 +439,29 @@ export default function Home() {
             >
               Categories
             </p>
-            <CategoryList />
+            {renderCategoryList()}
+          </div>
+
+          <div className="rounded-xl p-4 border mt-4" style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#667085" }}>Filters</p>
+            <label className="block text-xs font-semibold mb-1" style={{ color: "#667085" }}>Brand</label>
+            <select
+              value={brand}
+              onChange={(e) => { setBrand(e.target.value); setPage(1); }}
+              className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm mb-3"
+            >
+              <option value="">All brands</option>
+              {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+            <label className="block text-xs font-semibold mb-1" style={{ color: "#667085" }}>Price range (₦)</label>
+            <div className="flex items-center gap-2">
+              <input type="number" min="0" value={minPrice} onChange={(e) => { setMinPrice(e.target.value); setPage(1); }} placeholder="Min" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" />
+              <span className="text-gray-400">–</span>
+              <input type="number" min="0" value={maxPrice} onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }} placeholder="Max" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" />
+            </div>
+            {(brand || minPrice || maxPrice || sort !== "newest") && (
+              <button onClick={clearFilters} className="mt-3 text-xs font-bold text-emerald-700 hover:underline">Clear filters</button>
+            )}
           </div>
         </aside>
 

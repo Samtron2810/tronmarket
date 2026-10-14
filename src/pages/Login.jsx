@@ -1,6 +1,11 @@
 import { useState, useContext } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { login as apiLogin } from "../services/authService";
+import {
+  login as apiLogin,
+  twoFactorLogin,
+  googleLogin,
+} from "../services/authService";
+import GoogleButton from "../components/GoogleButton";
 import { AuthContext } from "../context/AuthContext";
 import MessageModal from "../components/MessageModal";
 
@@ -15,6 +20,53 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [msgOpen, setMsgOpen] = useState(false);
   const [msg, setMsg] = useState("");
+  const [twoFactor, setTwoFactor] = useState(null); // { pendingToken }
+  const [totpCode, setTotpCode] = useState("");
+
+  const finishLogin = (data) => {
+    const { token, _id, name, email, role } = data;
+    if (!token) {
+      setMsg("Login failed");
+      setMsgOpen(true);
+      return;
+    }
+    login(token, { _id, name, email, role: role || "customer" });
+    navigate(from, { replace: true });
+  };
+
+  const handleGoogleCredential = async (idToken) => {
+    try {
+      setLoading(true);
+      const res = await googleLogin({ idToken });
+      if (res.data.requiresTwoFactor) {
+        setTwoFactor({ pendingToken: res.data.pendingToken });
+        return;
+      }
+      finishLogin(res.data);
+    } catch (err) {
+      setMsg(err.response?.data?.message || "Google sign-in failed");
+      setMsgOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTwoFactorSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const res = await twoFactorLogin({
+        pendingToken: twoFactor.pendingToken,
+        code: totpCode,
+      });
+      finishLogin(res.data);
+    } catch (err) {
+      setMsg(err.response?.data?.message || "That code is not valid. Try again.");
+      setMsgOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,17 +76,11 @@ const Login = () => {
     try {
       setLoading(true);
       const res = await apiLogin(form);
-      const { token, _id, name, email, role } = res.data;
-
-      if (!token) {
-        setMsg("Login failed");
-        setMsgOpen(true);
+      if (res.data.requiresTwoFactor) {
+        setTwoFactor({ pendingToken: res.data.pendingToken });
         return;
       }
-
-      const user = { _id, name, email, role: role || "customer" };
-      login(token, user);
-      navigate(from, { replace: true });
+      finishLogin(res.data);
     } catch (err) {
       const data = err.response?.data;
 
@@ -125,6 +171,37 @@ const Login = () => {
             </Link>
           </p>
         </form>
+
+        {twoFactor ? (
+          <form onSubmit={handleTwoFactorSubmit} className="mt-6 space-y-4 border-t border-gray-100 pt-5">
+            <p className="text-sm text-secondary">
+              Enter the 6-digit code from your authenticator app to finish signing in.
+            </p>
+            <input
+              value={totpCode}
+              onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="input-field w-full tracking-[0.5em] text-center text-lg"
+              placeholder="••••••"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              required
+            />
+            <div className="flex gap-3">
+              <button type="submit" className="primary-btn flex-1" disabled={loading || totpCode.length !== 6}>
+                {loading ? "Verifying..." : "Verify & sign in"}
+              </button>
+              <button
+                type="button"
+                className="secondary-btn"
+                onClick={() => { setTwoFactor(null); setTotpCode(""); }}
+              >
+                Back
+              </button>
+            </div>
+          </form>
+        ) : (
+          <GoogleButton onCredential={handleGoogleCredential} onError={(m) => { setMsg(m); setMsgOpen(true); }} />
+        )}
 
         <MessageModal
           open={msgOpen}

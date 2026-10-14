@@ -111,6 +111,30 @@ export default function AdminDashboard() {
               Review Seller Applications
             </Link>
             <Link
+              to="/admin/analytics"
+              className="inline-flex w-fit rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+            >
+              Analytics & Exports
+            </Link>
+            <Link
+              to="/admin/moderation"
+              className="inline-flex w-fit rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+            >
+              Moderation Queue
+            </Link>
+            <Link
+              to="/admin/payouts"
+              className="inline-flex w-fit rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+            >
+              Payouts
+            </Link>
+            <Link
+              to="/admin/returns"
+              className="inline-flex w-fit rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
+            >
+              Returns & Refunds
+            </Link>
+            <Link
               to="/admin/audit-logs"
               className="inline-flex w-fit rounded-xl border border-emerald-700 bg-white px-4 py-2 text-sm font-semibold text-emerald-700 hover:bg-emerald-50"
             >

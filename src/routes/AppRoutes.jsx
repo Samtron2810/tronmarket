@@ -25,6 +25,14 @@ import AdminUser from "../pages/admin/AdminUser";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminSellerApplications from "../pages/admin/AdminSellerApplications";
 import AdminAuditLogs from "../pages/admin/AdminAuditLogs";
+import AdminAnalytics from "../pages/admin/AdminAnalytics";
+import AdminModeration from "../pages/admin/AdminModeration";
+import AdminCoupons from "../pages/admin/AdminCoupons";
+import AdminReturns from "../pages/admin/AdminReturns";
+import AdminPayouts from "../pages/admin/AdminPayouts";
+import AdminCategories from "../pages/admin/AdminCategories";
+import AdminOrderLookup from "../pages/admin/AdminOrderLookup";
+import Wishlist from "../pages/Wishlist";
 import Invoice from "../pages/Invoice";
 import AdminRoute from "../components/AdminRoute";
 
@@ -76,6 +84,14 @@ export default function AppRoutes() {
         }
       />
       <Route path="/product/:id" element={<ProductDetails />} />
+      <Route
+        path="/wishlist"
+        element={
+          <ProtectedRoute>
+            <Wishlist />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/profile"
         element={
@@ -145,6 +161,62 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminSellerApplications />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/analytics"
+        element={
+          <AdminRoute>
+            <AdminAnalytics />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/moderation"
+        element={
+          <AdminRoute>
+            <AdminModeration />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/coupons"
+        element={
+          <AdminRoute>
+            <AdminCoupons />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/returns"
+        element={
+          <AdminRoute>
+            <AdminReturns />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/payouts"
+        element={
+          <AdminRoute>
+            <AdminPayouts />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/categories"
+        element={
+          <AdminRoute>
+            <AdminCategories />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/order-lookup"
+        element={
+          <AdminRoute>
+            <AdminOrderLookup />
           </AdminRoute>
         }
       />

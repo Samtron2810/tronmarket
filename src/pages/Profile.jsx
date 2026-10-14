@@ -3,6 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { FaHome, FaStore } from "react-icons/fa";
 import { changePassword } from "../services/authService";
+import ProfileAccountSections from "./ProfileAccountSections";
 
 export default function Profile() {
   const { user, login, refreshUser, handleLogout } = useContext(AuthContext);
@@ -223,6 +224,25 @@ export default function Profile() {
           </button>
         </div>
       </div>
+      <ProfileAccountSections
+        user={user}
+        onUserUpdated={(updated) => {
+          if (updated?.token) {
+            login(updated.token, {
+              _id: updated._id,
+              name: updated.name,
+              email: updated.email,
+              role: updated.role,
+              isVerified: updated.isVerified,
+            });
+          }
+          refreshUser();
+        }}
+        onDeleted={async () => {
+          await handleLogout();
+          navigate("/", { replace: true });
+        }}
+      />
     </div>
   );
 }
