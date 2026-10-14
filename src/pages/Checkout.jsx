@@ -14,6 +14,7 @@ import MessageModal from "../components/MessageModal";
 import PayButton from "../components/PayButton";
 import ItemImage from "../components/ItemImage";
 import { FaArrowLeft } from "react-icons/fa";
+import { discounted } from "../utils/variants";
 import { FiCheckCircle, FiAlertTriangle, FiLoader } from "react-icons/fi";
 
 export default function Checkout() {
@@ -215,7 +216,7 @@ export default function Checkout() {
 
 
   const cartItemsSubtotal = (cart?.items || []).reduce((sum, item) => {
-    const price = Number(item.variant?.price ?? item.product?.price ?? 0);
+    const price = discounted(item.variant?.price ?? item.product?.price ?? 0, item.product);
     return sum + price * Number(item.quantity || 0);
   }, 0);
   const visibleShippingQuote =

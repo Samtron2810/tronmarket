@@ -56,6 +56,7 @@ export default function AddProduct() {
     options: [],
     variants: [],
     isDraft: false,
+    discountPercent: 0,
   });
   const [loading, setLoading] = useState(false);
   const [msgOpen, setMsgOpen] = useState(false);
@@ -88,6 +89,7 @@ export default function AddProduct() {
       const payload = {
         ...form,
         price: Number(form.price),
+        discountPercent: Math.min(90, Math.max(0, Number(form.discountPercent) || 0)),
         stock: Number(form.stock),
         options: form.hasVariants ? form.options : [],
         variants: form.hasVariants
@@ -245,6 +247,33 @@ export default function AddProduct() {
                   required
                 />
               </div>
+            </Field>
+
+            {/* Discount */}
+            <Field label="Discount % (sale)">
+              <input
+                name="discountPercent"
+                type="number"
+                min="0"
+                max="90"
+                placeholder="0"
+                value={form.discountPercent}
+                onChange={(e) =>
+                  setForm({ ...form, discountPercent: Math.min(90, Math.max(0, Number(e.target.value) || 0)) })
+                }
+                onFocus={focusIn}
+                onBlur={focusOut}
+                style={inputStyle}
+              />
+              {Number(form.discountPercent) > 0 && Number(form.price) > 0 && (
+                <p className="mt-1 text-xs font-semibold text-red-600">
+                  Sale price: ₦{Math.round(Number(form.price) * (100 - Number(form.discountPercent)) / 100).toLocaleString()}{" "}
+                  <span className="text-gray-400">(was ₦{Number(form.price).toLocaleString()})</span>
+                </p>
+              )}
+              <p className="mt-1 text-xs" style={{ color: "#667085" }}>
+                Applies to the price and every variant. Customers are charged the sale price.
+              </p>
             </Field>
 
             {/* Stock */}

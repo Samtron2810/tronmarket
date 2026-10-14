@@ -13,7 +13,10 @@ import { toast } from "react-toastify";
 import { displayPrice, variantHint } from "../utils/variants";
 import WishlistButton from "./WishlistButton";
 
-export default function ProductCard({ product, compact = false }) {
+export default function ProductCard({ product, compact = false, mini = false }) {
+  // mini: half-size tile for secondary rails (featured / recently viewed /
+  // related). Implies compact; the main store grid uses neither flag.
+  const dense = compact || mini;
   const fallbackImage = "https://loremflickr.com/g/320/240/product";
 
   const images =
@@ -62,7 +65,7 @@ export default function ProductCard({ product, compact = false }) {
     <>
       <div className="group relative flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white hover:border-emerald-200 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 ease-out w-full mx-auto">
         {/*  Image  */}
-        <div className={`relative w-full overflow-hidden bg-emerald-50 ${compact ? "aspect-square" : "aspect-4/3"}`}>
+        <div className={`relative w-full overflow-hidden bg-emerald-50 ${dense ? "aspect-square" : "aspect-4/3"}`}>
           <img
             src={thumbUrl(images[index])}
             alt={product.name}
@@ -110,26 +113,28 @@ export default function ProductCard({ product, compact = false }) {
         </div>
 
         {/*  Content  */}
-        <div className={`flex flex-1 flex-col ${compact ? "p-1.5 gap-0.5" : "p-2 lg:p-1.5 gap-1 lg:gap-0.5"}`}>
+        <div className={`flex flex-1 flex-col ${mini ? "p-1 gap-0" : dense ? "p-1.5 gap-0.5" : "p-2 lg:p-1.5 gap-1 lg:gap-0.5"}`}>
           {/* Category + Name + Description */}
           <div className="flex-1 min-w-0">
-            <h3 className={`mt-0.5 font-bold text-gray-900 line-clamp-1 leading-snug ${compact ? "text-xs" : "text-md lg:text-sm"}`}>
+            <h3 className={`mt-0.5 font-bold text-gray-900 line-clamp-1 leading-snug ${mini ? "text-[10px]" : dense ? "text-xs" : "text-md lg:text-sm"}`}>
               {product.name}
             </h3>
-            <span className="text-emerald-700 text-xs lg:text-[11px] font-bold uppercase tracking-wider">
-              {product.category || "General"}
-            </span>
-            {product.seller?.sellerVerified && (
+            {!mini && (
+              <span className="text-emerald-700 text-xs lg:text-[11px] font-bold uppercase tracking-wider">
+                {product.category || "General"}
+              </span>
+            )}
+            {!mini && product.seller?.sellerVerified && (
               <span className="ml-1 inline-block rounded-full bg-emerald-600 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-white align-middle">
                 Verified seller
               </span>
             )}
-            {!compact && (
+            {!dense && (
               <p className="mt-0.5 text-xs lg:text-[11px] text-gray-500 line-clamp-2 leading-relaxed truncate">
                 {product.description || "No description available."}
               </p>
             )}
-            {!compact && product.hasVariants && variantHint(product) && (
+            {!dense && product.hasVariants && variantHint(product) && (
               <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
                 {variantHint(product)}
               </span>
@@ -138,14 +143,22 @@ export default function ProductCard({ product, compact = false }) {
 
           {/* Price */}
           <div className="min-w-0">
-            {!compact && (
+            {!dense && (
               <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 block">
                 Price
               </span>
             )}
-            <span className={`font-extrabold text-amber-700 leading-tight block truncate ${compact ? "text-xs" : "text-sm lg:text-xs"}`}>
+            <span className={`font-extrabold text-amber-700 leading-tight block truncate ${mini ? "text-[10px]" : dense ? "text-xs" : "text-sm lg:text-xs"}`}>
               {displayPrice(product).label}
             </span>
+            {displayPrice(product).compareLabel && (
+              <span className="block text-[11px] font-medium leading-tight text-gray-400">
+                {!mini && <s>{displayPrice(product).compareLabel}</s>}{!mini && " "}
+                <span className="rounded bg-red-600 px-1 py-px text-[9px] font-bold text-white no-underline">
+                  −{displayPrice(product).discountPercent}%
+                </span>
+              </span>
+            )}
           </div>
 
           {/* Actions */}
@@ -153,7 +166,7 @@ export default function ProductCard({ product, compact = false }) {
             <button
               onClick={handleAdd}
               disabled={product.stock <= 0 || isAddingToCart}
-              className={`flex items-center justify-center gap-1 flex-1 py-1.5 lg:py-1.5 rounded-lg text-xs lg:text-[11px] font-semibold transition-all duration-150 ${
+              className={`flex items-center justify-center gap-1 flex-1 ${mini ? "py-1" : "py-1.5 lg:py-1.5"} rounded-lg text-xs lg:text-[11px] font-semibold transition-all duration-150 ${
                 product.stock <= 0 || isAddingToCart
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
                   : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95"
@@ -167,15 +180,15 @@ export default function ProductCard({ product, compact = false }) {
               }
             >
               <FaShoppingCart className="w-2.5 h-2.5" />
-              <span>{product.hasVariants ? "Options" : "Cart"}</span>
+              {!mini && <span>{product.hasVariants ? "Options" : "Cart"}</span>}
             </button>
 
             <button
               onClick={() => setPreviewOpen(true)}
-              className="flex items-center justify-center gap-1 flex-1 py-1.5 lg:py-1.5 rounded-lg text-xs lg:text-[11px] font-semibold bg-emerald-700 text-white hover:bg-emerald-800 active:scale-95 transition-all duration-150"
+              className={`flex items-center justify-center gap-1 flex-1 ${mini ? "py-1" : "py-1.5 lg:py-1.5"} rounded-lg text-xs lg:text-[11px] font-semibold bg-emerald-700 text-white hover:bg-emerald-800 active:scale-95 transition-all duration-150`}
             >
               <FaEye className="w-2.5 h-2.5" />
-              <span>View</span>
+              {!mini && <span>View</span>}
             </button>
           </div>
         </div>

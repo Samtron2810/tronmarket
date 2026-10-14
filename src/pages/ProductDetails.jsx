@@ -17,6 +17,8 @@ import { rememberViewed } from "../utils/recentlyViewed";
 import { setPageTitle } from "../utils/pageTitle";
 import {
   displayPrice,
+  discounted,
+  hasDiscount,
   findVariant,
   isSelectionComplete,
   variantLabel,
@@ -230,9 +232,21 @@ export default function ProductDetails() {
               </span>
               <span className="text-2xl font-black text-amber-700">
                 {selectedVariant
-                  ? `₦${Number(selectedVariant.price).toLocaleString()}`
+                  ? `₦${discounted(selectedVariant.price, product).toLocaleString()}`
                   : displayPrice(product).label}
               </span>
+              {hasDiscount(product) && (
+                <span className="ml-2 text-base font-medium text-gray-400">
+                  <s>
+                    {selectedVariant
+                      ? `₦${Number(selectedVariant.price).toLocaleString()}`
+                      : displayPrice(product).compareLabel}
+                  </s>{" "}
+                  <span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    −{product.discountPercent}% OFF
+                  </span>
+                </span>
+              )}
               {selectedVariant && (
                 <span className="ml-2 text-sm font-semibold text-gray-500">
                   {variantLabel(selectedVariant)}

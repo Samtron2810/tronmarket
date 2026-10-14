@@ -23,6 +23,7 @@ export default function AdminUserProducts({ userId, userRole }) {
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: 0,
+    discountPercent: 0,
     category: "",
     description: "",
     stock: 0,
@@ -113,6 +114,7 @@ export default function AdminUserProducts({ userId, userRole }) {
       setNewProduct({
         name: "",
         price: 0,
+        discountPercent: 0,
         category: "",
         description: "",
         stock: 0,
@@ -231,6 +233,29 @@ export default function AdminUserProducts({ userId, userRole }) {
                   </label>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
+                  <label className="text-sm font-medium text-[#101828] bg-gray-200 p-0.5 rounded-md">
+                    Discount % (0 = no sale)
+                    <input
+                      type="number"
+                      min={0}
+                      max={90}
+                      value={newProduct.discountPercent}
+                      onChange={(e) =>
+                        setNewProduct((n) => ({
+                          ...n,
+                          discountPercent: Math.min(90, Math.max(0, Number(e.target.value) || 0)),
+                        }))
+                      }
+                      className={inputCls}
+                    />
+                  </label>
+                  {Number(newProduct.discountPercent) > 0 && Number(newProduct.price) > 0 && (
+                    <p className="self-end pb-1 text-xs font-semibold text-red-600 col-span-2">
+                      Sale price: ₦{Math.round(Number(newProduct.price) * (100 - Number(newProduct.discountPercent)) / 100).toLocaleString()}
+                    </p>
+                  )}
+                </div>
+                <div className="grid grid-cols-3 gap-2">
                   <select
                     value={newProduct.category}
                     onChange={(e) =>
@@ -343,6 +368,11 @@ export default function AdminUserProducts({ userId, userRole }) {
                   <div className="text-xs text-[#667085] mt-0.5">
                     {p.hasVariants ? "From " : ""}₦
                     {Number(p.price).toLocaleString()}
+                    {Number(p.discountPercent) > 0 && (
+                      <span className="ml-1 rounded bg-red-600 px-1 py-px text-[9px] font-bold text-white">
+                        −{p.discountPercent}%
+                      </span>
+                    )}
                     {p.hasVariants
                       ? ` · ${p.variantCount ?? p.variants?.length ?? 0} variants · ${p.stock ?? 0} in stock`
                       : ` · ${p.stock ?? 0} in stock`}
@@ -452,6 +482,29 @@ export default function AdminUserProducts({ userId, userRole }) {
                   }
                   className={inputCls}
                 />
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <label className="text-xs font-medium text-[#667085]">
+                  Discount % (sale)
+                  <input
+                    type="number"
+                    min={0}
+                    max={90}
+                    value={editProduct.discountPercent ?? 0}
+                    onChange={(e) =>
+                      setEditProduct((s) => ({
+                        ...s,
+                        discountPercent: Math.min(90, Math.max(0, Number(e.target.value) || 0)),
+                      }))
+                    }
+                    className={inputCls}
+                  />
+                </label>
+                {Number(editProduct.discountPercent) > 0 && Number(editProduct.price) > 0 && (
+                  <p className="self-end pb-1 text-xs font-semibold text-red-600 col-span-2">
+                    Sale price: ₦{Math.round(Number(editProduct.price) * (100 - Number(editProduct.discountPercent)) / 100).toLocaleString()} (applies to variants too)
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <select

@@ -79,6 +79,7 @@ export default function EditProduct() {
           stock: res.data.stock || 0,
           hasVariants: res.data.hasVariants || false,
           isDraft: res.data.isDraft || false,
+          discountPercent: res.data.discountPercent || 0,
           moderationStatus: res.data.moderationStatus,
           moderationNote: res.data.moderationNote || "",
           options: res.data.options || [],
@@ -120,6 +121,7 @@ export default function EditProduct() {
       const payload = {
         ...form,
         price: Number(form.price),
+        discountPercent: Math.min(90, Math.max(0, Number(form.discountPercent) || 0)),
         stock: Number(form.stock),
         options: form.hasVariants ? form.options : [],
         variants: form.hasVariants
@@ -347,6 +349,28 @@ export default function EditProduct() {
                 />
                 Save as draft (hidden from the store)
               </label>
+
+              <Field label="Discount % (sale)">
+                <input
+                  name="discountPercent"
+                  type="number"
+                  min="0"
+                  max="90"
+                  value={form.discountPercent ?? 0}
+                  onChange={(e) =>
+                    setForm({ ...form, discountPercent: Math.min(90, Math.max(0, Number(e.target.value) || 0)) })
+                  }
+                  onFocus={focusIn}
+                  onBlur={focusOut}
+                  style={inputStyle}
+                />
+                {Number(form.discountPercent) > 0 && Number(form.price) > 0 && (
+                  <p className="mt-1 text-xs font-semibold text-red-600">
+                    Sale price: ₦{Math.round(Number(form.price) * (100 - Number(form.discountPercent)) / 100).toLocaleString()}{" "}
+                    <span style={{ color: "#667085" }}>(was ₦{Number(form.price).toLocaleString()})</span>
+                  </p>
+                )}
+              </Field>
 
               {/* Description */}
               <Field label="Description">

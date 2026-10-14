@@ -164,8 +164,8 @@ export default function ProductExtras({ productId }) {
       {related.length > 0 && (
         <section>
           <h2 className="text-lg font-extrabold text-gray-900 mb-3">Related products</h2>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
-            {related.slice(0, 4).map((p) => <ProductCard key={p._id} product={p} />)}
+          <div className="grid grid-cols-4 gap-1 sm:grid-cols-6">
+            {related.slice(0, 6).map((p) => <ProductCard key={p._id} product={p} mini />)}
           </div>
         </section>
       )}

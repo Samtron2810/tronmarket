@@ -52,13 +52,41 @@ export function variantPriceRange(product) {
 }
 
 // "From ₦X" when variants span prices, plain price otherwise.
+// Sale discount: product.discountPercent (0–90) applies to the product price
+// and every variant price. Mirrored server-side in purchasablePrice().
+export function discountPercentOf(product) {
+  return Math.min(90, Math.max(0, Number(product?.discountPercent) || 0));
+}
+
+export function hasDiscount(product) {
+  return discountPercentOf(product) > 0;
+}
+
+export function discounted(value, product) {
+  const base = Number(value) || 0;
+  const percent = discountPercentOf(product);
+  if (!percent) return base;
+  return Math.round(base * (100 - percent)) / 100;
+}
+
 export function displayPrice(product) {
+  const percent = discountPercentOf(product);
   const range = product?.hasVariants ? variantPriceRange(product) : null;
   if (range && range.max > range.min) {
-    return { label: `From ₦${range.min.toLocaleString()}`, range };
+    return {
+      label: `From ₦${discounted(range.min, product).toLocaleString()}`,
+      range,
+      compareLabel: percent ? `From ₦${Number(range.min).toLocaleString()}` : null,
+      discountPercent: percent,
+    };
   }
   const price = range ? range.min : product?.price;
-  return { label: `₦${Number(price || 0).toLocaleString()}`, range };
+  return {
+    label: `₦${discounted(price, product).toLocaleString()}`,
+    range,
+    compareLabel: percent ? `₦${Number(price || 0).toLocaleString()}` : null,
+    discountPercent: percent,
+  };
 }
 
 // Short browse hint, e.g. "S–XXL · 4 colours" / "3 sizes".

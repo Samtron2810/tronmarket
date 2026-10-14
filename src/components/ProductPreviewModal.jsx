@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -12,9 +12,12 @@ import { mediumUrl } from "../utils/cloudinaryUrl";
 import VariantSelector from "./VariantSelector";
 import {
   displayPrice,
+  discounted,
+  hasDiscount,
   findVariant,
   isSelectionComplete,
 } from "../utils/variants";
+import { fetchProduct } from "../services/productService";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
   const { setWelcomeModalOpen } = useContext(AuthContext);
@@ -27,11 +30,48 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const [index, setIndex] = useState(0);
   const [qty, setQty] = useState(1);
   const [selection, setSelection] = useState({});
-  const selectedVariant = findVariant(product, selection);
-  const selectionDone = isSelectionComplete(product, selection);
-  const effectiveStock = product?.hasVariants
+
+  // The product handed to this modal often comes from a list (storefront,
+  // recently-viewed, search) where the API does not populate the variants
+  // array — VariantSelector then has nothing selectable and disables every
+  // option. Hydrate the full product (same payload as the details page)
+  // whenever variants are missing.
+  const [fullProduct, setFullProduct] = useState(null);
+  const [hydrating, setHydrating] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setSelection({});
+    setQty(1);
+    setIndex(0);
+    setFullProduct(null);
+    if (!open || !product?._id) return undefined;
+    if (!product.hasVariants || (product.variants && product.variants.length > 0)) {
+      return undefined;
+    }
+    let cancelled = false;
+    setHydrating(true);
+    fetchProduct(product._id)
+      .then((res) => {
+        if (!cancelled) setFullProduct(res.data);
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setHydrating(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, product]);
+
+  const displayProduct =
+    fullProduct && String(fullProduct._id) === String(product?._id)
+      ? fullProduct
+      : product;
+  const selectedVariant = findVariant(displayProduct, selection);
+  const selectionDone = isSelectionComplete(displayProduct, selection);
+  const effectiveStock = displayProduct?.hasVariants
     ? (selectedVariant?.stock ?? 0)
-    : (product?.stock ?? 0);
+    : (displayProduct?.stock ?? 0);
   const displayImage = selectedVariant?.image || images[index];
 
   if (!open || !product) return null;
@@ -42,8 +82,8 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const handleAdd = async () => {
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
-      await addToCartLocal(product._id, qty, selectedVariant?._id ?? null, {
-        product,
+      await addToCartLocal(displayProduct._id, qty, selectedVariant?._id ?? null, {
+        product: displayProduct,
         variant: selectedVariant,
       });
       // Only close modal if add was successful
@@ -152,9 +192,21 @@ export default function ProductPreviewModal({ open, product, onClose }) {
               </span>
               <span className="text-2xl font-black text-amber-700 leading-none">
                 {selectedVariant
-                  ? `₦${Number(selectedVariant.price).toLocaleString()}`
-                  : displayPrice(product).label}
+                  ? `₦${discounted(selectedVariant.price, displayProduct).toLocaleString()}`
+                  : displayPrice(displayProduct).label}
               </span>
+              {hasDiscount(displayProduct) && (
+                <span className="ml-2 text-sm font-medium text-gray-400">
+                  <s>
+                    {selectedVariant
+                      ? `₦${Number(selectedVariant.price).toLocaleString()}`
+                      : displayPrice(displayProduct).compareLabel}
+                  </s>{" "}
+                  <span className="rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    −{displayProduct.discountPercent}%
+                  </span>
+                </span>
+              )}
             </div>
 
             {/* Description */}
@@ -162,9 +214,9 @@ export default function ProductPreviewModal({ open, product, onClose }) {
               {product.description || "No description provided."}
             </p>
 
-            {product.hasVariants && (
+            {displayProduct.hasVariants && (
               <VariantSelector
-                product={product}
+                product={displayProduct}
                 selection={selection}
                 onChange={(next) => {
                   setSelection(next);
@@ -172,10 +224,13 @@ export default function ProductPreviewModal({ open, product, onClose }) {
                 }}
               />
             )}
-            {!selectionDone && product.hasVariants && (
+            {hydrating && displayProduct.hasVariants && (
+              <p className="text-xs font-semibold text-gray-500">Loading options…</p>
+            )}
+            {!selectionDone && displayProduct.hasVariants && (
               <p className="text-xs font-semibold text-amber-700">
                 Select{" "}
-                {(product.options || [])
+                {(displayProduct.options || [])
                   .filter((o) => !selection[o.name])
                   .map((o) => o.name)
                   .join(" and ")}{" "}

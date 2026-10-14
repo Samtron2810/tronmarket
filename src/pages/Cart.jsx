@@ -5,7 +5,7 @@ import { FaStore, FaArrowLeft } from "react-icons/fa";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
 import api from "../services/api";
-import { variantLabel as buildVariantLabel } from "../utils/variants";
+import { variantLabel as buildVariantLabel, discounted } from "../utils/variants";
 
 // Per-line helpers — a line's price/stock come from its variant when one
 // was chosen, otherwise from the product (legacy behaviour).
@@ -14,7 +14,7 @@ const lineVariantId = (item) =>
 const lineKey = (item) =>
   `${(item.product?._id ?? item.product)?.toString()}:${lineVariantId(item) ?? ""}`;
 const linePrice = (item) =>
-  item.variant?.price ?? item.product?.price ?? 0;
+  discounted(item.variant?.price ?? item.product?.price ?? 0, item.product);
 const lineStock = (item) =>
   item.variant && typeof item.variant === "object" && "stock" in item.variant
     ? (item.variant.stock ?? 0)
