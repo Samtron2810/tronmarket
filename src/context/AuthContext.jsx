@@ -7,7 +7,10 @@ import {
   getUser,
   setUser,
 } from "../utils/auth";
-import api, { SESSION_EXPIRED_EVENT } from "../services/api";
+import api, {
+  SESSION_EXPIRED_EVENT,
+  TOKEN_REFRESHED_EVENT,
+} from "../services/api";
 import { getMe } from "../services/authService";
 
 export const AuthContext = createContext();
@@ -55,9 +58,18 @@ export default function AuthProvider({ children }) {
       setTokenState(null);
       setUserState(null);
     };
+    // The API layer silently rotates access tokens; keep React state in
+    // step so nothing re-renders with the stale (expired) token string.
+    const onTokenRefreshed = (event) => {
+      if (event.detail?.token) setTokenState(event.detail.token);
+      if (event.detail?.user) setUserState(event.detail.user);
+    };
     window.addEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
-    return () =>
+    window.addEventListener(TOKEN_REFRESHED_EVENT, onTokenRefreshed);
+    return () => {
       window.removeEventListener(SESSION_EXPIRED_EVENT, onSessionExpired);
+      window.removeEventListener(TOKEN_REFRESHED_EVENT, onTokenRefreshed);
+    };
   }, []);
 
   // Validate/refresh the profile whenever a session starts or the token
