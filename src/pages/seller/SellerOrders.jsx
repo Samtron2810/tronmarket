@@ -22,6 +22,8 @@ const statusColors = {
 };
 
 export default function SellerOrders() {
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [query, setQuery] = useState("");
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -109,6 +111,23 @@ export default function SellerOrders() {
     }
   };
 
+  const visibleOrders = orders.filter((order) => {
+    const status = order.sellerStatus || order.status;
+    if (statusFilter !== "all" && status !== statusFilter) return false;
+    if (query.trim()) {
+      const q = query.trim().toLowerCase();
+      const haystack = [
+        order._id,
+        order.shippingAddress?.fullName,
+        order.user?.name,
+        order.user?.email,
+        ...(order.items || order.orderItems || []).map((i) => i.name),
+      ].filter(Boolean).join(" ").toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
       {/* return home button */}
@@ -127,6 +146,34 @@ export default function SellerOrders() {
           <p className="text-sm text-[#667085] mt-1">
             Orders placed for your products
           </p>
+        </div>
+
+        {/* Status filters + search */}
+        <div className="mb-5 space-y-3">
+          <div className="flex flex-wrap gap-2">
+            {[["all", "All"], ["paid", "Paid"], ["processing", "Processing"], ["shipped", "Shipped"], ["delivered", "Delivered"], ["cancelled", "Cancelled"]].map(([id, label]) => {
+              const count = id === "all" ? orders.length : orders.filter((o) => (o.sellerStatus || o.status) === id).length;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setStatusFilter(id)}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${statusFilter === id ? "bg-emerald-700 text-white" : "border border-gray-300 bg-white text-gray-600 hover:border-emerald-300"}`}
+                >
+                  {label}{count > 0 ? ` (${count})` : ""}
+                </button>
+              );
+            })}
+          </div>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by order ID, customer, or product…"
+            aria-label="Search orders"
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          {!loading && orders.length > 0 && visibleOrders.length === 0 && (
+            <p className="text-sm text-[#667085]">No orders match this filter on this page.</p>
+          )}
         </div>
 
         {loading ? (
@@ -167,7 +214,7 @@ export default function SellerOrders() {
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order) => (
+            {visibleOrders.map((order) => (
               <div
                 key={order._id}
                 className="bg-white rounded-xl border border-gray-200 p-5"

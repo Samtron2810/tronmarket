@@ -18,7 +18,6 @@ export const AuthContext = createContext();
 export default function AuthProvider({ children }) {
   const [token, setTokenState] = useState(() => getToken());
   const [user, setUserState] = useState(() => getUser());
-  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
 
   const clearSession = useCallback(() => {
     doLogout();
@@ -114,8 +113,6 @@ export default function AuthProvider({ children }) {
         login,
         refreshUser,
         handleLogout,
-        welcomeModalOpen,
-        setWelcomeModalOpen,
       }}
     >
       {children}

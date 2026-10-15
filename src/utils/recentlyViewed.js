@@ -31,3 +31,11 @@ export function getRecentlyViewed() {
     return [];
   }
 }
+
+export function clearRecentlyViewed() {
+  try {
+    localStorage.removeItem(KEY);
+  } catch {
+    // storage unavailable
+  }
+}

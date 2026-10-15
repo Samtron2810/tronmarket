@@ -1,10 +1,11 @@
 import { useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
+import noImageLogo from "../assets/no-image-logo.png";
 import {
   FaEye,
   FaShoppingCart,
   FaChevronLeft,
   FaChevronRight,
+  FaStar,
 } from "react-icons/fa";
 import ProductPreviewModal from "./ProductPreviewModal";
 import { CartContext } from "../context/CartContext";
@@ -17,7 +18,7 @@ export default function ProductCard({ product, compact = false, mini = false }) 
   // mini: half-size tile for secondary rails (featured / recently viewed /
   // related). Implies compact; the main store grid uses neither flag.
   const dense = compact || mini;
-  const fallbackImage = "https://loremflickr.com/g/320/240/product";
+  const fallbackImage = noImageLogo;
 
   const images =
     product.images && product.images.length > 0
@@ -26,7 +27,6 @@ export default function ProductCard({ product, compact = false, mini = false }) 
 
   const [index, setIndex] = useState(0);
   const { addToCartLocal, isAddingToCart } = useContext(CartContext);
-  const { setWelcomeModalOpen } = useContext(AuthContext);
   const [previewOpen, setPreviewOpen] = useState(false);
 
   const next = (e) => {
@@ -54,10 +54,8 @@ export default function ProductCard({ product, compact = false, mini = false }) 
     try {
       // Wait for real API response — toast is handled inside addToCartLocal
       await addToCartLocal(product._id, 1, null, { product, variant: null });
-    } catch (err) {
-      if (err.response?.status === 401) {
-        setWelcomeModalOpen(true);
-      }
+    } catch {
+      // Toast is already shown by addToCartLocal
     }
   };
 
@@ -87,13 +85,15 @@ export default function ProductCard({ product, compact = false, mini = false }) 
             <>
               <button
                 onClick={prev}
-                className="absolute left-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full bg-white/80 hover:bg-white transition-colors duration-150"
+                aria-label="Previous image"
+                className="absolute left-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full bg-white/80 hover:bg-white transition-all duration-150 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
               >
                 <FaChevronLeft className="w-2.5 h-2.5 text-gray-800" />
               </button>
               <button
                 onClick={next}
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full bg-white/80 hover:bg-white transition-colors duration-150"
+                aria-label="Next image"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded-full bg-white/80 hover:bg-white transition-all duration-150 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100"
               >
                 <FaChevronRight className="w-2.5 h-2.5 text-gray-800" />
               </button>
@@ -141,6 +141,14 @@ export default function ProductCard({ product, compact = false, mini = false }) 
             )}
           </div>
 
+          {!mini && Number(product.numReviews) > 0 && (
+            <div className="flex items-center gap-1" aria-label={`Rated ${Number(product.rating || 0).toFixed(1)} of 5 from ${product.numReviews} reviews`}>
+              <FaStar className="h-3 w-3 text-amber-500" />
+              <span className="text-[11px] font-bold text-gray-800">{Number(product.rating || 0).toFixed(1)}</span>
+              <span className="text-[11px] text-gray-400">({product.numReviews} review{Number(product.numReviews) === 1 ? "" : "s"})</span>
+            </div>
+          )}
+
           {/* Price */}
           <div className="min-w-0">
             {!dense && (
@@ -171,6 +179,7 @@ export default function ProductCard({ product, compact = false, mini = false }) 
                   ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-70"
                   : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:scale-95"
               }`}
+              aria-label={product.hasVariants ? "Select options" : "Add to cart"}
               title={
                 product.stock <= 0
                   ? "Out of stock"
@@ -185,6 +194,7 @@ export default function ProductCard({ product, compact = false, mini = false }) 
 
             <button
               onClick={() => setPreviewOpen(true)}
+              aria-label="Quick view"
               className={`flex items-center justify-center gap-1 flex-1 ${mini ? "py-1" : "py-1.5 lg:py-1.5"} rounded-lg text-xs lg:text-[11px] font-semibold bg-emerald-700 text-white hover:bg-emerald-800 active:scale-95 transition-all duration-150`}
             >
               <FaEye className="w-2.5 h-2.5" />

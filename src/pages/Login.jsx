@@ -7,7 +7,7 @@ import {
 } from "../services/authService";
 import GoogleButton from "../components/GoogleButton";
 import { AuthContext } from "../context/AuthContext";
-import MessageModal from "../components/MessageModal";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -18,16 +18,13 @@ const Login = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [msgOpen, setMsgOpen] = useState(false);
-  const [msg, setMsg] = useState("");
   const [twoFactor, setTwoFactor] = useState(null); // { pendingToken }
   const [totpCode, setTotpCode] = useState("");
 
   const finishLogin = (data) => {
     const { token, _id, name, email, role } = data;
     if (!token) {
-      setMsg("Login failed");
-      setMsgOpen(true);
+      toast.error("Login failed");
       return;
     }
     login(token, { _id, name, email, role: role || "customer" });
@@ -44,8 +41,7 @@ const Login = () => {
       }
       finishLogin(res.data);
     } catch (err) {
-      setMsg(err.response?.data?.message || "Google sign-in failed");
-      setMsgOpen(true);
+      toast.error(err.response?.data?.message || "Google sign-in failed");
     } finally {
       setLoading(false);
     }
@@ -61,8 +57,7 @@ const Login = () => {
       });
       finishLogin(res.data);
     } catch (err) {
-      setMsg(err.response?.data?.message || "That code is not valid. Try again.");
-      setMsgOpen(true);
+      toast.error(err.response?.data?.message || "That code is not valid. Try again.");
     } finally {
       setLoading(false);
     }
@@ -99,8 +94,7 @@ const Login = () => {
       }
 
       const fieldError = data?.errors?.[0]?.message;
-      setMsg(fieldError || data?.message || "Error logging in");
-      setMsgOpen(true);
+      toast.error(fieldError || data?.message || "Error logging in");
     } finally {
       setLoading(false);
     }
@@ -200,14 +194,9 @@ const Login = () => {
             </div>
           </form>
         ) : (
-          <GoogleButton onCredential={handleGoogleCredential} onError={(m) => { setMsg(m); setMsgOpen(true); }} />
+          <GoogleButton onCredential={handleGoogleCredential} onError={(m) => toast.error(m)} />
         )}
 
-        <MessageModal
-          open={msgOpen}
-          message={msg}
-          onClose={() => setMsgOpen(false)}
-        />
       </div>
     </main>
   );

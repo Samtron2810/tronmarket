@@ -7,7 +7,7 @@ import {
   applyForSeller,
   getMySellerApplication,
 } from "../services/sellerApplicationService";
-import MessageModal from "../components/MessageModal";
+import { toast } from "react-toastify";
 
 const statusStyles = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
@@ -25,8 +25,6 @@ export default function ApplySeller() {
     businessDescription: "",
     contactPhone: "",
   });
-  const [msgOpen, setMsgOpen] = useState(false);
-  const [msg, setMsg] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -60,20 +58,18 @@ export default function ApplySeller() {
       setSubmitting(true);
       const res = await applyForSeller(form);
       setApplication(res.data.application || null);
-      setMsg(
+      toast.success(
         res.data.message ||
           "Application submitted. Our team will review it shortly.",
       );
-      setMsgOpen(true);
     } catch (error) {
       const data = error.response?.data;
       if (data?.application) setApplication(data.application);
-      setMsg(
+      toast.error(
         data?.errors?.[0]?.message ||
           data?.message ||
           "Could not submit your application. Please try again.",
       );
-      setMsgOpen(true);
     } finally {
       setSubmitting(false);
     }
@@ -255,11 +251,6 @@ export default function ApplySeller() {
         )}
       </div>
 
-      <MessageModal
-        open={msgOpen}
-        message={msg}
-        onClose={() => setMsgOpen(false)}
-      />
     </div>
   );
 }

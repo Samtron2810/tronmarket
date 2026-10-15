@@ -9,6 +9,8 @@ import ForgotPassword from "../pages/ForgotPassword";
 import ApplySeller from "../pages/ApplySeller";
 import ProductDetails from "../pages/ProductDetails";
 import NotFound from "../pages/NotFound";
+import About from "../pages/About";
+import Contact from "../pages/Contact";
 import GuestRoute from "../components/GuestRoute";
 import Checkout from "../pages/Checkout";
 import OrderSuccess from "../pages/OrderSuccess";
@@ -21,6 +23,7 @@ import EditProduct from "../pages/seller/EditProduct";
 import MyOrders from "../pages/MyOrders";
 import SellerOrders from "../pages/seller/SellerOrders";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminUsers from "../pages/admin/AdminUsers";
 import AdminUser from "../pages/admin/AdminUser";
 import AdminOrders from "../pages/admin/AdminOrders";
 import AdminSellerApplications from "../pages/admin/AdminSellerApplications";
@@ -157,6 +160,14 @@ export default function AppRoutes() {
         }
       />
       <Route
+        path="/admin/users"
+        element={
+          <AdminRoute>
+            <AdminUsers />
+          </AdminRoute>
+        }
+      />
+      <Route
         path="/admin/seller-applications"
         element={
           <AdminRoute>
@@ -244,6 +255,8 @@ export default function AppRoutes() {
           </AdminRoute>
         }
       />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { verifyOtp, resendOtp } from "../services/authService";
 import { AuthContext } from "../context/AuthContext";
-import MessageModal from "../components/MessageModal";
+import { toast } from "react-toastify";
 import { FaEnvelope } from "react-icons/fa";
 
 const RESEND_COOLDOWN = 60;
@@ -35,8 +35,6 @@ export default function VerifyOtp() {
   const [countdown, setCountdown] = useState(() =>
     location.state?.email ? RESEND_COOLDOWN : 0,
   );
-  const [msgOpen, setMsgOpen] = useState(false);
-  const [msg, setMsg] = useState("");
 
   const inputRefs = useRef([]);
 
@@ -73,6 +71,8 @@ export default function VerifyOtp() {
     if (cleaned && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
+    // Auto-submit as soon as the code is complete.
+    if (next.join("").length === 6) submitCode(next.join(""));
   };
 
   const handleKeyDown = (index, e) => {
@@ -95,23 +95,21 @@ export default function VerifyOtp() {
     setDigits(next);
     const lastIdx = Math.min(pasted.length - 1, 5);
     inputRefs.current[lastIdx]?.focus();
+    if (pasted.length === 6) submitCode(pasted);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const submitCode = async (code) => {
     if (!emailIsValid) {
-      setMsg("Please enter the email address you registered with.");
-      setMsgOpen(true);
+      toast.error("Please enter the email address you registered with.");
       return;
     }
-    if (otp.length < 6) {
-      setMsg("Please enter all 6 digits.");
-      setMsgOpen(true);
+    if (!code || code.length < 6) {
+      toast.error("Please enter all 6 digits.");
       return;
     }
     try {
       setLoading(true);
-      const res = await verifyOtp({ email: normalizedEmail, otp });
+      const res = await verifyOtp({ email: normalizedEmail, otp: code });
       const { token, _id, name, email: resEmail, role } = res.data;
       try {
         sessionStorage.removeItem(PENDING_EMAIL_KEY);
@@ -122,30 +120,31 @@ export default function VerifyOtp() {
       navigate("/", { replace: true });
     } catch (err) {
       const data = err.response?.data;
-      setMsg(data?.message || "Verification failed. Please try again.");
-      setMsgOpen(true);
+      toast.error(data?.message || "Verification failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSubmit = (e) => {
+    e?.preventDefault();
+    submitCode(otp);
+  };
+
   const handleResend = async () => {
     if (countdown > 0 || resending) return;
     if (!emailIsValid) {
-      setMsg("Please enter the email address you registered with first.");
-      setMsgOpen(true);
+      toast.error("Please enter the email address you registered with first.");
       return;
     }
     try {
       setResending(true);
       await resendOtp({ email: normalizedEmail });
       setCountdown(RESEND_COOLDOWN);
-      setMsg("A new code has been sent to your email.");
-      setMsgOpen(true);
+      toast.success("A new code has been sent to your email.");
     } catch (err) {
       const data = err.response?.data;
-      setMsg(data?.message || "Failed to resend code.");
-      setMsgOpen(true);
+      toast.error(data?.message || "Failed to resend code.");
     } finally {
       setResending(false);
     }
@@ -236,11 +235,6 @@ export default function VerifyOtp() {
         </div>
       </div>
 
-      <MessageModal
-        open={msgOpen}
-        message={msg}
-        onClose={() => setMsgOpen(false)}
-      />
     </main>
   );
 }

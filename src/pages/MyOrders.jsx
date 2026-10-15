@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { CartContext } from "../context/CartContext";
 import {
   FiArrowLeft,
   FiChevronDown,
@@ -16,7 +18,7 @@ import {
   confirmDelivery as confirmDeliveryService,
 } from "../services/orderService";
 import ConfirmModal from "../components/ConfirmModal";
-import { createReturnRequest, getOrderReturn } from "../services/storefrontService";
+import { createReturnRequest, getOrderReturn, getMyReturns } from "../services/storefrontService";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import ItemImage from "../components/ItemImage"; // FIX #12
 import { toast } from "react-toastify"; // FIX #2: import toast
@@ -32,7 +34,56 @@ const statusColors = {
   cancelled: "bg-rose-100 text-rose-800 border border-rose-200",
 };
 
+const TABS = [
+  { id: "all", label: "All" },
+  { id: "topay", label: "To pay" },
+  { id: "transit", label: "In transit" },
+  { id: "delivered", label: "Delivered" },
+  { id: "returns", label: "Returns" },
+  { id: "cancelled", label: "Cancelled" },
+];
+
+function orderTab(order, returnsByOrderId) {
+  if (returnsByOrderId[order._id]) return "returns";
+  switch (order.status) {
+    case "pending": return "topay";
+    case "paid":
+    case "processing":
+    case "shipped":
+    case "delivery-claimed": return "transit";
+    case "delivered":
+    case "completed": return "delivered";
+    case "cancelled": return "cancelled";
+    default: return "all";
+  }
+}
+
+function OrderTimeline({ status }) {
+  const steps = ["Placed", "Paid", "Shipped", "Delivered"];
+  const current = { pending: 0, paid: 1, processing: 1, shipped: 2, "delivery-claimed": 2, delivered: 3, completed: 3 }[status] ?? 0;
+  if (status === "cancelled") {
+    return <p className="text-xs font-semibold text-rose-600">This order was cancelled.</p>;
+  }
+  return (
+    <ol className="flex items-center" aria-label="Order progress">
+      {steps.map((label, i) => (
+        <li key={label} className="flex flex-1 items-center last:flex-none">
+          <span className="flex flex-col items-center gap-1">
+            <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold ${i <= current ? "bg-emerald-600 text-white" : "bg-gray-200 text-gray-500"}`}>{i < current ? "✓" : i + 1}</span>
+            <span className={`text-[10px] font-semibold ${i <= current ? "text-emerald-700" : "text-gray-400"}`}>{label}</span>
+          </span>
+          {i < steps.length - 1 && <span className={`mx-1 mb-4 h-0.5 flex-1 rounded ${i < current ? "bg-emerald-600" : "bg-gray-200"}`} />}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export default function MyOrders() {
+  const navigate = useNavigate();
+  const { addToCartLocal } = useContext(CartContext);
+  const [tab, setTab] = useState("all");
+  const [returnsByOrderId, setReturnsByOrderId] = useState({});
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrders, setExpandedOrders] = useState({});
@@ -48,6 +99,20 @@ export default function MyOrders() {
   const [returnForm, setReturnForm] = useState({ reason: "", details: "" });
   const [returnBusy, setReturnBusy] = useState(false);
   const [returnByOrder, setReturnByOrder] = useState({});
+
+  useEffect(() => {
+    getMyReturns()
+      .then((res) => {
+        const map = {};
+        (res.data || []).forEach((r) => {
+          const oid = r.order?._id || r.order;
+          if (oid) map[oid] = r;
+        });
+        setReturnsByOrderId(map);
+        setReturnByOrder((prev) => ({ ...map, ...prev }));
+      })
+      .catch(() => {});
+  }, []);
 
   const openReturn = async (order) => {
     setReturnFor(order);
@@ -91,6 +156,26 @@ export default function MyOrders() {
 
   const toggleOrderExpand = (orderId) => {
     setExpandedOrders((prev) => ({ ...prev, [orderId]: !prev[orderId] }));
+  };
+
+  const buyAgain = async (order) => {
+    let added = 0;
+    for (const item of order.orderItems || []) {
+      const productId = item.product?._id || item.product;
+      if (!productId) continue;
+      try {
+        await addToCartLocal(productId, item.quantity || 1, item.variant || null, {
+          product: { _id: productId, name: item.name, price: item.price, image: item.image, stock: 999 },
+          variant: item.variant ? { _id: item.variant, stock: 999 } : null,
+          variantLabel: item.variantLabel || "",
+        });
+        added += 1;
+      } catch { /* per-item failures toast inside the cart context */ }
+    }
+    if (added > 0) {
+      toast.success("Items added back to your cart");
+      navigate("/cart");
+    }
   };
 
   const initiateCancel = (e, orderId) => {
@@ -210,6 +295,30 @@ export default function MyOrders() {
           </p>
         </div>
 
+        {orders.length > 0 && (
+          <div className="mb-5 flex flex-wrap gap-2" role="tablist" aria-label="Filter orders">
+            {TABS.map((t) => {
+              const count = t.id === "all" ? orders.length : orders.filter((o) => orderTab(o, returnsByOrderId) === t.id).length;
+              return (
+                <button
+                  key={t.id}
+                  role="tab"
+                  aria-selected={tab === t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${tab === t.id ? "bg-emerald-700 text-white" : "border border-gray-300 bg-white text-gray-600 hover:border-emerald-300"}`}
+                >
+                  {t.label}{count > 0 ? ` (${count})` : ""}
+                </button>
+              );
+            })}
+            {tab !== "all" && orders.filter((o) => orderTab(o, returnsByOrderId) === tab).length === 0 && (
+              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center shadow-sm">
+                <p className="text-sm text-[#667085]">No orders in this group yet.</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {orders.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-10 text-center shadow-sm">
             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4 text-gray-400">
@@ -230,7 +339,7 @@ export default function MyOrders() {
           </div>
         ) : (
           <div className="space-y-3">
-            {orders.map((order) => {
+            {(tab === "all" ? orders : orders.filter((o) => orderTab(o, returnsByOrderId) === tab)).map((order) => {
               const isExpanded = !!expandedOrders[order._id];
               const totalItemsCount =
                 order.orderItems?.reduce(
@@ -301,6 +410,9 @@ export default function MyOrders() {
 
                   {isExpanded && (
                     <div className="border-t border-gray-200 bg-gray-50/30 divide-y divide-gray-100">
+                      <div className="px-4 pt-4 bg-white">
+                        <OrderTimeline status={order.status} />
+                      </div>
                       <div className="p-4 space-y-3 bg-white">
                         {order.orderItems?.map((item, index) => (
                           <div
@@ -467,6 +579,14 @@ export default function MyOrders() {
                                 Request return
                               </button>
                             )
+                          )}
+                          {["delivered", "completed"].includes(order.status) && (
+                            <button
+                              onClick={() => buyAgain(order)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#101828] text-white hover:opacity-90 transition-opacity text-xs font-semibold shadow-sm"
+                            >
+                              Buy again
+                            </button>
                           )}
                           <Link
                             to={`/orders/${order._id}/invoice`}

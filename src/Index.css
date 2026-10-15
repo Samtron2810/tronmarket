@@ -166,3 +166,10 @@ body {
     visibility: hidden !important;
   }
 }
+
+/* Visible keyboard focus everywhere */
+:focus-visible {
+  outline: 2px solid #047857;
+  outline-offset: 2px;
+  border-radius: 4px;
+}

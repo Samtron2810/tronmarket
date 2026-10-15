@@ -10,7 +10,8 @@ import {
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
-import MessageModal from "../components/MessageModal";
+import { toast } from "react-toastify";
+import { NIGERIAN_STATES } from "../utils/nigerianStates";
 import PayButton from "../components/PayButton";
 import ItemImage from "../components/ItemImage";
 import { FaArrowLeft } from "react-icons/fa";
@@ -29,8 +30,6 @@ export default function Checkout() {
     updateQtyLocal,
   } = useContext(CartContext);
 
-  const [msgOpen, setMsgOpen] = useState(false);
-  const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
   const [stockErrors, setStockErrors] = useState([]);
@@ -80,8 +79,7 @@ export default function Checkout() {
   };
 
   const handlePaymentError = (message) => {
-    setMsg(message);
-    setMsgOpen(true);
+    toast.error(message);
   };
 
   useEffect(() => {
@@ -103,10 +101,9 @@ export default function Checkout() {
     (async () => {
       if (stored?.reference && stored.reference !== reference) {
         if (cancelled) return;
-        setMsg(
+        toast.error(
           "That payment does not match the order you started checkout with. If money left your account, please contact support.",
         );
-        setMsgOpen(true);
         setVerifyingReturn(false);
         navigate("/checkout", { replace: true });
         return;
@@ -128,11 +125,10 @@ export default function Checkout() {
         }
       } catch (err) {
         if (cancelled) return;
-        setMsg(
+        toast.error(
           err.response?.data?.message ||
             "Could not verify payment. Please contact support.",
         );
-        setMsgOpen(true);
         // Show the still-pending order again so the buyer can retry.
         if (stored?.orderId) {
           try {
@@ -205,6 +201,7 @@ export default function Checkout() {
     try {
       const res = await validateCoupon({ code: couponCode.trim(), itemsSubtotal: cartItemsSubtotal });
       setAppliedCoupon(res.data);
+      try { localStorage.setItem("tronmarket:coupon", JSON.stringify({ code: res.data.code || couponCode.trim(), discount: Number(res.data.discount || 0) })); } catch { /* ignore */ }
       setCouponMessage(`Coupon applied: −NGN ${Number(res.data.discount).toLocaleString()}`);
     } catch (err) {
       setAppliedCoupon(null);
@@ -219,6 +216,27 @@ export default function Checkout() {
     const price = discounted(item.variant?.price ?? item.product?.price ?? 0, item.product);
     return sum + price * Number(item.quantity || 0);
   }, 0);
+
+  // A coupon applied in the cart carries over and validates automatically.
+  const storedCouponTried = useRef(false);
+  useEffect(() => {
+    if (storedCouponTried.current || appliedCoupon || cartItemsSubtotal <= 0) return;
+    let stored = null;
+    try { stored = JSON.parse(localStorage.getItem("tronmarket:coupon") || "null"); } catch { /* no stored coupon */ }
+    if (!stored?.code) { storedCouponTried.current = true; return; }
+    storedCouponTried.current = true;
+    setCouponCode(stored.code);
+    validateCoupon({ code: stored.code, itemsSubtotal: cartItemsSubtotal })
+      .then((res) => {
+        setAppliedCoupon(res.data);
+        setCouponMessage(`Coupon from your cart applied: −NGN ${Number(res.data.discount).toLocaleString()}`);
+      })
+      .catch(() => {
+        try { localStorage.removeItem("tronmarket:coupon"); } catch { /* ignore */ }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartItemsSubtotal]);
+
   const visibleShippingQuote =
     shippingQuote?.state?.trim().toLowerCase() ===
     form.state.trim().toLowerCase()
@@ -312,8 +330,7 @@ export default function Checkout() {
         setStockErrorMode("blocked");
         setStockErrors(details);
       } else {
-        setMsg(err.response?.data?.message || "Error placing order");
-        setMsgOpen(true);
+        toast.error(err.response?.data?.message || "Error placing order");
       }
     } finally {
       setLoading(false);
@@ -326,14 +343,14 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
       <div
-        className="flex items-center gap-2 max-w-3xl mx-auto mb-6 cursor-pointer text-black hover:gap-3 transition-all duration-200"
+        className="flex items-center gap-2 max-w-5xl mx-auto mb-6 cursor-pointer text-black hover:gap-3 transition-all duration-200"
         onClick={() => navigate(-1)}
       >
         <FaArrowLeft />
         <span>Back</span>
       </div>
 
-      <div className="max-w-xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         {/* Page Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#101828]">Checkout</h1>
@@ -343,6 +360,19 @@ export default function Checkout() {
               : "Fill in your delivery details to place your order"}
           </p>
         </div>
+
+        {/* Step indicator */}
+        <ol className="mb-6 flex items-center gap-2 text-sm font-semibold" aria-label="Checkout progress">
+          <li className={`flex items-center gap-2 ${order ? "text-emerald-700" : "text-[#101828]"}`}>
+            <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${order ? "bg-emerald-600 text-white" : "bg-[#101828] text-white"}`}>{order ? "✓" : "1"}</span>
+            Delivery details
+          </li>
+          <li className="h-px flex-1 bg-gray-300" aria-hidden="true" />
+          <li className={`flex items-center gap-2 ${order ? "text-[#101828]" : "text-gray-400"}`}>
+            <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${order ? "bg-[#101828] text-white" : "bg-gray-200 text-gray-500"}`}>2</span>
+            Payment
+          </li>
+        </ol>
 
         {/* ── Stock error banner — shown after auto-adjustment ── */}
         {stockErrors.length > 0 && (
@@ -385,6 +415,8 @@ export default function Checkout() {
           </div>
         )}
 
+        <div className="grid items-start gap-6 lg:grid-cols-[1fr_340px]">
+        <div className="min-w-0">
         {verifyingReturn ? (
           /* ── Returning from Paystack — verifying ── */
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
@@ -451,14 +483,22 @@ export default function Checkout() {
                   className={inputCls}
                   required
                 />
-                <input
+                <select
                   name="state"
-                  placeholder="State"
                   value={form.state}
                   onChange={handleChange}
                   className={inputCls}
                   required
-                />
+                  aria-label="Delivery state"
+                >
+                  <option value="" disabled>Select state</option>
+                  {form.state && !NIGERIAN_STATES.includes(form.state) && (
+                    <option value={form.state}>{form.state}</option>
+                  )}
+                  {NIGERIAN_STATES.map((st) => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="rounded-lg border border-gray-200 px-4 py-3">
@@ -664,23 +704,64 @@ export default function Checkout() {
                   onError={handlePaymentError}
                   onPaymentExpired={() => {
                     setOrder(null);
-                    setMsg(
+                    toast.error(
                       "This order's payment window has expired. Your cart items may need to be checked out again.",
                     );
-                    setMsgOpen(true);
                   }}
                 />
               )}
             </div>
           </div>
         )}
-      </div>
+        </div>
 
-      <MessageModal
-        open={msgOpen}
-        message={msg}
-        onClose={() => setMsgOpen(false)}
-      />
+        {/* ── Sticky order summary ── */}
+        <aside className="h-fit rounded-xl border border-gray-200 bg-white p-5 lg:sticky lg:top-24" aria-label="Order summary">
+          <h2 className="mb-3 font-semibold text-[#101828]">Order summary</h2>
+          {(order ? (order.orderItems || []) : (cart?.items || [])).length === 0 ? (
+            <p className="text-sm text-[#667085]">No items.</p>
+          ) : (
+            <div className="space-y-2">
+              {(order ? order.orderItems : cart.items).map((item, i) => {
+                const name = order ? item.name : item.product?.name;
+                const qty = item.quantity || 1;
+                const price = order ? Number(item.price || 0) : discounted(item.variant?.price ?? item.product?.price ?? 0, item.product);
+                return (
+                  <div key={item._id || i} className="flex justify-between gap-3 text-sm">
+                    <span className="min-w-0 truncate text-[#667085]">{name}{item.variantLabel ? ` — ${item.variantLabel}` : ""} ×{qty}</span>
+                    <span className="shrink-0 font-medium text-[#101828]">₦{(price * qty).toLocaleString()}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <div className="mt-4 space-y-1.5 border-t border-gray-100 pt-3 text-sm">
+            {order ? (
+              <>
+                <div className="flex justify-between"><span className="text-[#667085]">Delivery</span><span>{Number(order.shippingPrice || 0) === 0 ? "FREE" : `₦${Number(order.shippingPrice).toLocaleString()}`}</span></div>
+                <div className="flex justify-between border-t border-gray-100 pt-2 font-bold"><span>Total</span><span className="text-[#B45309]">₦{Number(order.totalPrice).toLocaleString()}</span></div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between"><span className="text-[#667085]">Items subtotal</span><span className="font-semibold">₦{cartItemsSubtotal.toLocaleString()}</span></div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-emerald-700"><span>Discount ({appliedCoupon.code})</span><span>−₦{Number(appliedCoupon.discount).toLocaleString()}</span></div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-[#667085]">Delivery</span>
+                  <span className="font-semibold">{visibleShippingQuote ? (visibleShippingQuote.freeShipping ? "FREE" : `₦${Number(visibleShippingQuote.shippingPrice).toLocaleString()}`) : "Select state"}</span>
+                </div>
+                <div className="flex justify-between border-t border-gray-100 pt-2 font-bold">
+                  <span>Total to pay</span>
+                  <span className="text-[#B45309]">₦{Number((visibleShippingQuote?.totalPrice ?? cartItemsSubtotal) - (appliedCoupon?.discount || 0)).toLocaleString()}</span>
+                </div>
+              </>
+            )}
+          </div>
+          <p className="mt-3 text-xs text-[#667085]">Secure payment via Paystack. You can cancel free before your order ships.</p>
+        </aside>
+        </div>
+      </div>
     </div>
   );
 }

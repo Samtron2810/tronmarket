@@ -1,7 +1,7 @@
 export function getToken() {
   try {
     return localStorage.getItem("token");
-  } catch (err) {
+  } catch {
     return null;
   }
 }
@@ -9,14 +9,14 @@ export function getToken() {
 export function setToken(token) {
   try {
     localStorage.setItem("token", token);
-  } catch (err) {}
+  } catch { /* storage unavailable */ }
 }
 
 export function getUser() {
   try {
     const raw = localStorage.getItem("user");
     return raw ? JSON.parse(raw) : null;
-  } catch (err) {
+  } catch {
     return null;
   }
 }
@@ -24,12 +24,12 @@ export function getUser() {
 export function setUser(user) {
   try {
     localStorage.setItem("user", JSON.stringify(user));
-  } catch (err) {}
+  } catch { /* storage unavailable */ }
 }
 
 export function logout() {
   try {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-  } catch (err) {}
+  } catch { /* storage unavailable */ }
 }

@@ -1,7 +1,23 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { register as apiRegister } from "../services/authService";
-import MessageModal from "../components/MessageModal";
+import { toast } from "react-toastify";
+
+function passwordStrength(password) {
+  let score = 0;
+  if (password.length >= 8) score += 1;
+  if (password.length >= 12) score += 1;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+  if (/\d/.test(password) && /[^A-Za-z0-9]/.test(password)) score += 1;
+  const meta = [
+    { label: "Weak", color: "bg-red-500" },
+    { label: "Weak", color: "bg-red-500" },
+    { label: "Fair", color: "bg-amber-500" },
+    { label: "Good", color: "bg-emerald-500" },
+    { label: "Strong", color: "bg-emerald-600" },
+  ][score];
+  return { score, ...meta };
+}
 
 const Register = () => {
   const navigate = useNavigate();
@@ -9,11 +25,11 @@ const Register = () => {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [msgOpen, setMsgOpen] = useState(false);
-  const [msg, setMsg] = useState("");
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
+  const strength = passwordStrength(form.password);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,8 +52,7 @@ const Register = () => {
     } catch (err) {
       const data = err.response?.data;
       const fieldError = data?.errors?.[0]?.message;
-      setMsg(fieldError || data?.message || "Registration failed");
-      setMsgOpen(true);
+      toast.error(fieldError || data?.message || "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -85,6 +100,20 @@ const Register = () => {
               placeholder="Password"
               required
             />
+            {form.password && (
+              <div className="mt-2">
+                <div className="h-1.5 overflow-hidden rounded-full bg-gray-200" role="progressbar" aria-valuenow={strength.score} aria-valuemin={0} aria-valuemax={4} aria-label="Password strength">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
+                    style={{ width: `${(strength.score / 4) * 100}%` }}
+                  />
+                </div>
+                <p className="mt-1 text-xs font-semibold text-gray-500">
+                  Password strength: <span className="text-gray-700">{strength.label}</span>
+                  {strength.score < 3 && <span className="font-normal"> — mix length, cases, numbers and symbols.</span>}
+                </p>
+              </div>
+            )}
             <div className="mt-2 flex items-center gap-2 text-sm">
               <input
                 id="show-password"
@@ -112,11 +141,6 @@ const Register = () => {
           </div>
         </form>
 
-        <MessageModal
-          open={msgOpen}
-          message={msg}
-          onClose={() => setMsgOpen(false)}
-        />
       </div>
     </main>
   );

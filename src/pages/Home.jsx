@@ -1,24 +1,27 @@
-import { useEffect, useState, useContext, useCallback, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import {
   FiSmartphone,
   FiMonitor,
   FiShoppingBag,
-  FiShoppingCart,
   FiHome,
   FiZap,
+  FiTag,
+  FiSearch,
+  FiShield,
+  FiTruck,
+  FiXCircle,
+  FiSliders,
 } from "react-icons/fi";
 import { FaTimes, FaBars } from "react-icons/fa";
 import ProductCard from "../components/ProductCard";
 import { fetchProducts as fetchProductsApi } from "../services/productService";
-import { getCategories } from "../services/storefrontService";
-import { getRecentlyViewed } from "../utils/recentlyViewed";
+import { getCategories, getStorefrontMeta } from "../services/storefrontService";
+import { getRecentlyViewed, clearRecentlyViewed } from "../utils/recentlyViewed";
 import { setPageTitle } from "../utils/pageTitle";
-import { AuthContext } from "../context/AuthContext";
+import { displayPrice } from "../utils/variants";
 import Skeleton from "../components/Skeleton";
-
-const fallbackCategories = ["phones", "laptops", "fashion", "home", "electronics"];
 
 const catIcons = {
   phones: <FiSmartphone className="w-4 h-4" />,
@@ -27,34 +30,57 @@ const catIcons = {
   home: <FiHome className="w-4 h-4" />,
   electronics: <FiZap className="w-4 h-4" />,
 };
+const iconFor = (name) => catIcons[String(name || "").toLowerCase()] || <FiTag className="w-4 h-4" />;
+
+// Categories come from two places: the admin-managed Category collection and
+// the category values actually used by live products. The managed spelling
+// wins when both exist; product-only categories ensure the list is never
+// empty just because the managed collection has not been populated yet.
+function mergeCategoryNames(priorityNames = [], otherNames = []) {
+  const byLowerCase = new Map();
+  [...priorityNames, ...otherNames].forEach((name) => {
+    const label = String(name || "").trim();
+    const key = label.toLowerCase();
+    if (label && !byLowerCase.has(key)) byLowerCase.set(key, label);
+  });
+  return [...byLowerCase.values()].sort((a, b) => a.localeCompare(b));
+}
+
+const PAGE_SIZE = 12;
 
 export default function Home() {
-  const { user } = useContext(AuthContext);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
-  const [liveStock, setLiveStock] = useState({}); // { productId: stock }
+  const [liveStock, setLiveStock] = useState({});
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [total, setTotal] = useState(0);
 
-  const [bannerVisible, setBannerVisible] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [heroQuery, setHeroQuery] = useState("");
   const [category, setCategory] = useState("");
-  const [categories, setCategories] = useState(fallbackCategories);
+  const [categories, setCategories] = useState([]);
   const [brand, setBrand] = useState("");
   const [brands, setBrands] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState("newest");
+  const [featuredOnly, setFeaturedOnly] = useState(false);
+  const [sellerId, setSellerId] = useState("");
+  const [sellerName, setSellerName] = useState("");
+
   const [featured, setFeatured] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [bestRated, setBestRated] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
-  const debounceRef = useRef(null);
+  const [showAllRecent, setShowAllRecent] = useState(false);
 
   useEffect(() => { setPageTitle("Shop"); }, []);
 
@@ -62,45 +88,59 @@ export default function Home() {
     getCategories()
       .then((res) => {
         const names = (res.data || []).map((c) => c.name).filter(Boolean);
-        if (names.length) setCategories([...new Set([...names, ...fallbackCategories])]);
+        if (names.length) setCategories((prev) => mergeCategoryNames(names, prev));
+      })
+      .catch(() => {});
+    getStorefrontMeta()
+      .then((res) => {
+        if (res.data?.brands?.length) setBrands(res.data.brands);
+        if (res.data?.categories?.length) {
+          setCategories((prev) => mergeCategoryNames(prev, res.data.categories));
+        }
       })
       .catch(() => {});
     fetchProductsApi({ featured: 1, limit: 8 })
       .then((res) => setFeatured(res.data.products || []))
       .catch(() => {});
+    fetchProductsApi({ sort: "newest", limit: 8 })
+      .then((res) => setNewArrivals(res.data.products || []))
+      .catch(() => {});
+    fetchProductsApi({ sort: "rating", limit: 8 })
+      .then((res) => setBestRated(res.data.products || []))
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecentlyViewed(getRecentlyViewed());
   }, []);
 
+  // URL is the single source of truth for search / featured / seller views
+  // (navbar search, hero search, product-page seller links all land here).
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const urlSearch = params.get("search") || "";
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSearch(urlSearch);
     setDebouncedSearch(urlSearch);
+    setHeroQuery(urlSearch);
+    setFeaturedOnly(params.get("featured") === "1");
+    setCategory(params.get("category") || "");
+    setSellerId(params.get("seller") || "");
+    setSellerName(params.get("sellerName") || "");
     setPage(1);
   }, [location.search]);
 
-  // Lock body scroll when mobile sidebar is open
   useEffect(() => {
-    if (isSidebarOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    document.body.style.overflow = isSidebarOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
   }, [isSidebarOpen]);
 
-  const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearch(val);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(val);
-      setPage(1);
-    }, 500);
+  const scrollToShop = useCallback(() => {
+    requestAnimationFrame(() => document.getElementById("shop")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, []);
+
+  const submitHeroSearch = (e) => {
+    e.preventDefault();
+    const q = heroQuery.trim();
+    navigate(q ? `/?search=${encodeURIComponent(q)}` : "/");
+    scrollToShop();
   };
 
   const handleCategoryChange = (cat) => {
@@ -111,16 +151,19 @@ export default function Home() {
 
   const fetchProducts = useCallback(async () => {
     try {
-      setLoading(true);
+      if (page === 1) setLoading(true); else setLoadingMore(true);
       setError(null);
-      const params = { page, limit: 6, sort };
+      const params = { page, limit: PAGE_SIZE, sort };
       if (debouncedSearch) params.search = debouncedSearch;
       if (category) params.category = category;
       if (brand) params.brand = brand;
       if (minPrice !== "") params.min = minPrice;
       if (maxPrice !== "") params.max = maxPrice;
+      if (featuredOnly) params.featured = 1;
+      if (sellerId) params.seller = sellerId;
       const res = await api.get("/products", { params });
-      setProducts(res.data.products || []);
+      const incoming = res.data.products || [];
+      setProducts((prev) => (page === 1 ? incoming : [...prev, ...incoming.filter((p) => !prev.some((x) => x._id === p._id))]));
       setPages(res.data.pages || 1);
       setTotal(res.data.total || 0);
     } catch (err) {
@@ -128,421 +171,383 @@ export default function Home() {
       setError("Could not retrieve products at this time.");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
-  }, [debouncedSearch, category, brand, minPrice, maxPrice, sort, page]);
-
-  // Brand options follow the catalogue being browsed.
-  useEffect(() => {
-    const names = [...new Set(products.map((p) => p.brand).filter(Boolean))].sort();
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (names.length) setBrands((prev) => [...new Set([...prev, ...names])].sort());
-  }, [products]);
-
-  const clearFilters = () => {
-    setBrand("");
-    setMinPrice("");
-    setMaxPrice("");
-    setSort("newest");
-    setPage(1);
-  };
-
-  // ── Fetch real-time stock for displayed products ──
-  useEffect(() => {
-    const fetchLiveStock = async () => {
-      if (!products || products.length === 0) {
-        setLiveStock({});
-        return;
-      }
-
-      try {
-        const productIds = products.map((p) => p._id);
-        const res = await api.post("/products/stock-check", { productIds });
-        setLiveStock(res.data.stocks || {});
-      } catch (err) {
-        console.error("Failed to fetch live stock:", err);
-        // Silently fail — product cards will show cached stock as fallback
-        setLiveStock({});
-      }
-    };
-
-    fetchLiveStock();
-  }, [products]);
+  }, [debouncedSearch, category, brand, minPrice, maxPrice, sort, page, featuredOnly, sellerId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchProducts();
   }, [fetchProducts]);
 
-  // Shared category list JSX used in both sidebar and drawer
+  // Final fallback: if the metadata endpoint is unavailable, learn category
+  // names from products already rendered on the page.
+  useEffect(() => {
+    if (!products.length) return;
+    const names = [...new Set(products.map((p) => p.category).filter(Boolean))];
+    if (names.length) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCategories((prev) => mergeCategoryNames(prev, names));
+    }
+  }, [products]);
+
+  useEffect(() => {
+    const fetchLiveStock = async () => {
+      if (!products.length) { setLiveStock({}); return; }
+      try {
+        const res = await api.post("/products/stock-check", { productIds: products.slice(-50).map((p) => p._id) });
+        setLiveStock((prev) => ({ ...prev, ...(res.data.stocks || {}) }));
+      } catch {
+        // cached stock on the cards is the fallback
+      }
+    };
+    fetchLiveStock();
+  }, [products]);
+
+  const clearFilters = () => {
+    setBrand(""); setMinPrice(""); setMaxPrice(""); setSort("newest"); setPage(1);
+  };
+
+  const shopTitle = sellerId
+    ? `Products by ${sellerName || "seller"}`
+    : featuredOnly
+      ? "Featured products"
+      : debouncedSearch
+        ? `Results for “${debouncedSearch}”`
+        : "Explore Products";
+
   const renderCategoryList = () => (
     <div className="flex flex-col gap-1.5">
       <button
         onClick={() => handleCategoryChange("")}
-        className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-        style={
-          !category
-            ? { backgroundColor: "#047857", color: "#fff" }
-            : { backgroundColor: "#f3f4f6", color: "#101828" }
-        }
-        onMouseEnter={(e) => {
-          if (category) e.currentTarget.style.backgroundColor = "#ECFDF5";
-        }}
-        onMouseLeave={(e) => {
-          if (category) e.currentTarget.style.backgroundColor = "#f3f4f6";
-        }}
+        className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${!category ? "bg-emerald-700 text-white" : "bg-gray-100 text-[#101828] hover:bg-emerald-50"}`}
       >
-        <FaBars className="w-4 h-4" />
-        All
+        <FaBars className="w-4 h-4" /> All
       </button>
-
       {categories.map((cat) => {
         const isActive = category === cat;
         return (
           <button
             key={cat}
             onClick={() => handleCategoryChange(cat)}
-            className="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all duration-150"
-            style={
-              isActive
-                ? { backgroundColor: "#047857", color: "#fff" }
-                : { backgroundColor: "#f3f4f6", color: "#101828" }
-            }
-            onMouseEnter={(e) => {
-              if (!isActive) e.currentTarget.style.backgroundColor = "#ECFDF5";
-            }}
-            onMouseLeave={(e) => {
-              if (!isActive) e.currentTarget.style.backgroundColor = "#f3f4f6";
-            }}
+            className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${isActive ? "bg-emerald-700 text-white" : "bg-gray-100 text-[#101828] hover:bg-emerald-50"}`}
           >
-            {catIcons[cat]}
-            {cat}
+            {iconFor(cat)} {cat}
           </button>
         );
       })}
     </div>
   );
 
+  const renderFilters = (idPrefix) => (
+    <div>
+      <label htmlFor={`${idPrefix}-brand`} className="block text-xs font-semibold mb-1 text-[#667085]">Brand</label>
+      <select
+        id={`${idPrefix}-brand`}
+        value={brand}
+        onChange={(e) => { setBrand(e.target.value); setPage(1); }}
+        className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm mb-3 bg-white"
+      >
+        <option value="">All brands</option>
+        {brands.map((b) => <option key={b} value={b}>{b}</option>)}
+      </select>
+      <label className="block text-xs font-semibold mb-1 text-[#667085]">Price range (₦)</label>
+      <div className="flex items-center gap-2">
+        <input type="number" min="0" value={minPrice} onChange={(e) => { setMinPrice(e.target.value); setPage(1); }} placeholder="Min" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" aria-label="Minimum price" />
+        <span className="text-gray-400">–</span>
+        <input type="number" min="0" value={maxPrice} onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }} placeholder="Max" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" aria-label="Maximum price" />
+      </div>
+      {(brand || minPrice || maxPrice || sort !== "newest") && (
+        <button onClick={clearFilters} className="mt-3 text-xs font-bold text-emerald-700 hover:underline">Clear filters</button>
+      )}
+    </div>
+  );
+
+  const sortSelect = (id) => (
+    <select
+      id={id}
+      value={sort}
+      onChange={(e) => { setSort(e.target.value); setPage(1); }}
+      className="bg-white border border-gray-300 rounded-lg px-2 py-2 text-sm text-[#101828]"
+      aria-label="Sort products"
+    >
+      <option value="newest">Newest first</option>
+      <option value="price-asc">Price: low to high</option>
+      <option value="price-desc">Price: high to low</option>
+      <option value="name">Name A–Z</option>
+      <option value="rating">Highest rated</option>
+    </select>
+  );
+
+  const rail = (title, items, seeAll) => items.length > 0 && (
+    <section className="mb-6">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <h2 className="text-xl font-bold tracking-tight text-[#101828]">{title}</h2>
+        {seeAll}
+      </div>
+      <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 lg:grid-cols-8">
+        {items.slice(0, 8).map((p) => <ProductCard key={p._id} product={p} mini />)}
+      </div>
+    </section>
+  );
+
+  const seeAllBtn = (onClick) => (
+    <button onClick={onClick} className="shrink-0 text-sm font-semibold text-emerald-700 hover:underline">See all →</button>
+  );
+
+  const heroProduct = featured[0];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-2 sm:px-4 lg:px-4">
-      {/* ── Mobile Drawer Overlay ── */}
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 sm:hidden"
-          style={{ top: "56px" }} // sits below navbar
-        >
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-
-          {/* Drawer panel sliding from left */}
-          <div
-            className="absolute left-0 top-0 h-full w-64 shadow-2xl p-5 flex flex-col gap-4 overflow-y-auto"
-            style={{ backgroundColor: "#fff" }}
-          >
-            {/* Drawer header */}
-            <div className="flex items-center justify-between">
-              <p
-                className="text-xs font-bold uppercase tracking-widest"
-                style={{ color: "#667085" }}
-              >
-                Categories
-              </p>
-              <button
-                onClick={() => setIsSidebarOpen(false)}
-                className="text-gray-400 hover:text-red-500 transition-colors"
-                aria-label="Close categories"
-              >
-                <FaTimes size={16} />
-              </button>
-            </div>
-
-            {renderCategoryList()}
-          </div>
-        </div>
-      )}
-
       {/* ── Hero ── */}
-      <div
-        className="relative mb-2 rounded-2xl overflow-hidden px-8 py-1 sm:px-12 sm:py-1"
-        style={{ backgroundColor: "#101828" }}
-      >
-        <div
-          className="absolute -top-16 -right-16 w-72 h-72 rounded-full opacity-20"
-          style={{ backgroundColor: "#047857" }}
-        />
-        <div
-          className="absolute -bottom-10 right-20 w-40 h-40 rounded-full opacity-10"
-          style={{ backgroundColor: "#fff" }}
-        />
-
-        <div
-          className={`relative z-10 max-w-2xl ${bannerVisible ? "" : "hidden"}`}
-        >
-          <span
-            className="inline-block text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full mb-4"
-            style={{
-              backgroundColor: "rgba(255,255,255,0.22)",
-              color: "#FFFFFF",
-            }}
-          >
-            Featured Platform
-          </span>
-          <button
-            onClick={() => setBannerVisible(false)}
-            aria-label="Close element"
-            className=" text-red-600 rounded-full cursor-pointer absolute top-0 right-0 hover:scale-120 transition-all duration-150"
-          >
-            <FaTimes size={15} />
-          </button>
-          <h1
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight"
-            style={{ color: "#FFFFFF" }}
-          >
-            Welcome to <span style={{ color: "#34D399" }}>TronMarket</span>
-          </h1>
-          <p
-            className="mt-4 text-base sm:text-lg leading-relaxed"
-            style={{ color: "#D0D5DD" }}
-          >
-            Explore a diverse catalog of high-quality goods curated from
-            verified sellers. Enjoy secure authentication and quick shipping.
-          </p>
-
-          {user?.role === "seller" && (
-            <div className="mt-6">
-              <Link
-                to="/seller"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: "#047857", color: "#fff" }}
-              >
-                Go to Seller Dashboard
-              </Link>
-            </div>
-          )}
-          {user?.role === "admin" && (
-            <div className="mt-6">
-              <Link
-                to="/admin"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: "#047857", color: "#fff" }}
-              >
-                Go to Admin Dashboard
-              </Link>
-            </div>
-          )}
-          {user?.role === "customer" && (
-            <div className="mt-6">
-              <Link
-                to="/cart"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-                style={{ backgroundColor: "#101828", color: "#fff" }}
-              >
-                <FiShoppingCart className="w-4 h-4" />
-                <span>View my Cart</span>
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Section header (sticky) ── */}
-      <div className="sticky top-14 z-30 bg-white/0 backdrop-blur-md py-1 mb-4 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-1 flex-wrap border-b sm:border-none shadow-sm sm:shadow-none transition-all md:px-4 lg:px-8 rounded-lg">
-        <div className="flex items-center gap-3">
-          {/* Mobile categories toggle — only visible on small screens */}
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="sm:hidden flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-semibold shadow-sm transition-all duration-150"
-            style={{
-              backgroundColor: category ? "#047857" : "#fff",
-              borderColor: category ? "#047857" : "#e5e7eb",
-              color: category ? "#fff" : "#101828",
-            }}
-            aria-label="Open categories"
-          >
-            <FaBars className="w-4 h-4" />
-            <span>
-              {category
-                ? category.charAt(0).toUpperCase() + category.slice(1)
-                : "Categories"}
+      <div className="relative mb-4 overflow-hidden rounded-2xl bg-[#101828] px-6 py-8 sm:px-10">
+        <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-emerald-700 opacity-20" />
+        <div className="absolute -bottom-10 right-24 h-40 w-40 rounded-full bg-white opacity-10" />
+        <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <span className="mb-4 inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
+              Verified Nigerian sellers
             </span>
-          </button>
-
-          <h2
-            className="text-2xl font-bold tracking-tight"
-            style={{ color: "#101828" }}
-          >
-            Explore Products
-          </h2>
-        </div>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          {!loading && (
-            <span
-              className="text-sm font-medium hidden"
-              style={{ color: "#667085" }}
-            >
-              {total} product{total === 1 ? "" : "s"}
-            </span>
-          )}
-          <select
-            value={sort}
-            onChange={(e) => { setSort(e.target.value); setPage(1); }}
-            className="bg-white border border-gray-400 rounded-lg px-2 py-2 text-sm text-[#101828]"
-            aria-label="Sort products"
-          >
-            <option value="newest">Newest first</option>
-            <option value="price-asc">Price: low to high</option>
-            <option value="price-desc">Price: high to low</option>
-            <option value="name">Name A–Z</option>
-            <option value="rating">Highest rated</option>
-          </select>
-          <input
-            value={search}
-            onChange={handleSearchChange}
-            placeholder="Search products…"
-            className="bg-white border border-gray-400 rounded-lg px-3 py-2 text-sm text-[#101828] placeholder-[#667085] focus:outline-none focus:ring-2 focus:ring-[#047857] w-80 sm:w-50 lg:w-90 transition-all duration-150"
-          />
-        </div>
-      </div>
-
-      {featured.length > 0 && !debouncedSearch && !category && (
-        <section className="mb-6">
-          <h2 className="text-xl font-bold tracking-tight mb-3" style={{ color: "#101828" }}>Featured products</h2>
-          <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 lg:grid-cols-8">
-            {featured.slice(0, 8).map((p) => <ProductCard key={p._id} product={p} mini />)}
-          </div>
-        </section>
-      )}
-
-      {recentlyViewed.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-xl font-bold tracking-tight mb-3" style={{ color: "#101828" }}>Recently viewed</h2>
-          <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 lg:grid-cols-8">
-            {recentlyViewed.slice(0, 8).map((p) => <ProductCard key={p._id} product={p} mini />)}
-          </div>
-        </section>
-      )}
-
-      {/* ── Layout: sidebar + grid ── */}
-      <div className="flex flex-col sm:flex-row gap-5">
-        {/* ── Desktop Sidebar (hidden on mobile) ── */}
-        <aside className="hidden sm:block w-48 shrink-0 self-start sticky top-28 z-20">
-          <div
-            className="rounded-xl p-4 border"
-            style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
-          >
-            <p
-              className="text-xs font-bold uppercase tracking-widest mb-3"
-              style={{ color: "#667085" }}
-            >
-              Categories
+            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Quality goods from <span className="text-emerald-400">verified sellers</span>
+            </h1>
+            <p className="mt-3 max-w-xl text-base leading-relaxed text-[#D0D5DD]">
+              Phones, laptops, fashion and more — pay securely with Paystack and get it delivered anywhere in Nigeria.
             </p>
-            {renderCategoryList()}
-          </div>
-
-          <div className="rounded-xl p-4 border mt-4" style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#667085" }}>Filters</p>
-            <label className="block text-xs font-semibold mb-1" style={{ color: "#667085" }}>Brand</label>
-            <select
-              value={brand}
-              onChange={(e) => { setBrand(e.target.value); setPage(1); }}
-              className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm mb-3"
-            >
-              <option value="">All brands</option>
-              {brands.map((b) => <option key={b} value={b}>{b}</option>)}
-            </select>
-            <label className="block text-xs font-semibold mb-1" style={{ color: "#667085" }}>Price range (₦)</label>
-            <div className="flex items-center gap-2">
-              <input type="number" min="0" value={minPrice} onChange={(e) => { setMinPrice(e.target.value); setPage(1); }} placeholder="Min" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" />
-              <span className="text-gray-400">–</span>
-              <input type="number" min="0" value={maxPrice} onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }} placeholder="Max" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" />
-            </div>
-            {(brand || minPrice || maxPrice || sort !== "newest") && (
-              <button onClick={clearFilters} className="mt-3 text-xs font-bold text-emerald-700 hover:underline">Clear filters</button>
+            <form onSubmit={submitHeroSearch} className="mt-5 flex max-w-xl gap-2" role="search">
+              <div className="relative flex-1">
+                <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <input
+                  value={heroQuery}
+                  onChange={(e) => setHeroQuery(e.target.value)}
+                  placeholder="Search products, brands…"
+                  aria-label="Search products"
+                  className="w-full rounded-xl border border-white/20 bg-white py-3 pl-10 pr-3 text-sm text-[#101828] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+              <button type="submit" className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-500 active:scale-95">
+                Search
+              </button>
+            </form>
+            {categories.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {categories.slice(0, 5).map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => { handleCategoryChange(cat); scrollToShop(); }}
+                    className="rounded-full border border-white/25 px-3 py-1.5 text-xs font-semibold capitalize text-white transition hover:bg-white/15"
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
             )}
           </div>
-        </aside>
 
-        {/* ── Products area ── */}
-        <div className="flex-1 min-w-0">
-          {loading && (
-            <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} variant="card" />
-              ))}
-            </div>
+          {heroProduct && (
+            <Link to={`/product/${heroProduct._id}`} className="group relative hidden overflow-hidden rounded-2xl bg-white/5 lg:block">
+              <img
+                src={heroProduct.image || (heroProduct.images && heroProduct.images[0])}
+                alt={heroProduct.name}
+                className="h-64 w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-4 pt-10">
+                <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Featured</p>
+                <p className="truncate text-base font-bold text-white">{heroProduct.name}</p>
+                <p className="text-sm font-extrabold text-amber-400">{displayPrice(heroProduct).label}</p>
+              </div>
+            </Link>
           )}
+        </div>
+      </div>
 
-          {error && !loading && (
-            <div
-              className="rounded-xl border p-6 text-center text-sm font-medium"
-              style={{
-                backgroundColor: "#FEF2F2",
-                borderColor: "#DC2626",
-                color: "#DC2626",
-              }}
+      {/* ── Trust strip ── */}
+      <div className="mb-6 grid grid-cols-1 gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 sm:grid-cols-3">
+        <span className="flex items-center gap-2"><FiShield className="h-4 w-4 shrink-0" /> Secure Paystack payments</span>
+        <span className="flex items-center gap-2"><FiTruck className="h-4 w-4 shrink-0" /> Delivery across all 36 states</span>
+        <span className="flex items-center gap-2"><FiXCircle className="h-4 w-4 shrink-0" /> Easy cancel before shipping</span>
+      </div>
+
+      {/* ── Category tiles ── */}
+      {categories.length > 0 && (
+        <section className="mb-6" aria-label="Shop by category">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => { handleCategoryChange(cat); scrollToShop(); }}
+                className={`flex shrink-0 items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold capitalize transition ${category === cat ? "border-emerald-600 bg-emerald-600 text-white" : "border-gray-200 bg-white text-[#101828] hover:border-emerald-300"}`}
+              >
+                {iconFor(cat)} {cat}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {!debouncedSearch && !category && !sellerId && (
+        <>
+          {rail("Featured products", featured, seeAllBtn(() => { navigate("/?featured=1"); scrollToShop(); }))}
+
+          {/* Promo banner */}
+          <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-emerald-700 px-5 py-4 text-white">
+            <div>
+              <p className="font-bold">Have a coupon code?</p>
+              <p className="text-sm text-emerald-100">Apply it in your cart or at checkout and watch the price drop.</p>
+            </div>
+            <Link to="/cart" className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-emerald-800 transition hover:bg-emerald-50 active:scale-95">
+              Go to cart
+            </Link>
+          </section>
+        </>
+      )}
+
+      {recentlyViewed.length > 0 && !debouncedSearch && !category && (
+        <section className="mb-6">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-bold tracking-tight text-[#101828]">Recently viewed</h2>
+            <div className="flex shrink-0 items-center gap-4">
+              {recentlyViewed.length > 8 && (
+                <button onClick={() => setShowAllRecent((v) => !v)} className="text-sm font-semibold text-emerald-700 hover:underline">
+                  {showAllRecent ? "Show less" : "See all →"}
+                </button>
+              )}
+              <button
+                onClick={() => { clearRecentlyViewed(); setRecentlyViewed([]); }}
+                className="text-sm font-semibold text-gray-400 hover:text-red-600"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 lg:grid-cols-8">
+            {(showAllRecent ? recentlyViewed : recentlyViewed.slice(0, 8)).map((p) => <ProductCard key={p._id} product={p} mini />)}
+          </div>
+        </section>
+      )}
+
+      {!debouncedSearch && !category && !sellerId && (
+        <>
+          {rail("New arrivals", newArrivals, seeAllBtn(scrollToShop))}
+          {rail("Best rated", bestRated, seeAllBtn(() => { setSort("rating"); setPage(1); scrollToShop(); }))}
+        </>
+      )}
+
+      {/* ── Shop ── */}
+      <div id="shop" className="scroll-mt-20">
+        <div className="sticky top-14 z-30 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border-b bg-[#F6F7F4]/90 py-2 backdrop-blur-md sm:border-none">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm sm:hidden ${category ? "border-emerald-700 bg-emerald-700 text-white" : "border-gray-200 bg-white text-[#101828]"}`}
+              aria-label="Open categories and filters"
             >
-              {error}
-            </div>
-          )}
+              <FaBars className="h-4 w-4" />
+              <span>{category || "Categories"}</span>
+            </button>
+            <h2 className="text-2xl font-bold tracking-tight text-[#101828]">{shopTitle}</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            {!loading && <span className="hidden text-sm font-medium text-[#667085] sm:inline">{total} product{total === 1 ? "" : "s"}</span>}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-[#101828] sm:hidden"
+              aria-label="Open filters"
+            >
+              <FiSliders className="h-4 w-4" /> Filters
+            </button>
+            <span className="hidden sm:block">{sortSelect("sort-desktop")}</span>
+          </div>
+        </div>
 
-          {!loading && !error && (
-            <>
-              {products.length === 0 ? (
-                <div
-                  className="rounded-xl border p-12 text-center"
-                  style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
-                >
-                  <p className="text-base" style={{ color: "#667085" }}>
-                    No products available at the moment.
-                  </p>
+        {(sellerId || featuredOnly) && (
+          <div className="mb-4">
+            <Link to="/" className="text-sm font-semibold text-emerald-700 hover:underline">← View all products</Link>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-5 sm:flex-row">
+          <aside className="sticky top-28 z-20 hidden w-48 shrink-0 self-start sm:block">
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Categories</p>
+              {renderCategoryList()}
+            </div>
+            <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Filters</p>
+              {renderFilters("side")}
+            </div>
+          </aside>
+
+          <div className="min-w-0 flex-1">
+            {loading && (
+              <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
+                {[...Array(8)].map((_, i) => <Skeleton key={i} variant="card" />)}
+              </div>
+            )}
+
+            {error && !loading && (
+              <div className="rounded-xl border border-red-600 bg-red-50 p-6 text-center text-sm font-medium text-red-600">{error}</div>
+            )}
+
+            {!loading && !error && (
+              products.length === 0 ? (
+                <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
+                  <p className="text-base text-[#667085]">No products match your filters right now.</p>
+                  {(brand || minPrice || maxPrice || category || debouncedSearch) && (
+                    <button onClick={() => { clearFilters(); handleCategoryChange(""); }} className="mt-3 text-sm font-bold text-emerald-700 hover:underline">Clear all filters</button>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4">
                   {products.map((p) => (
                     <ProductCard
                       key={p._id}
-                      product={{
-                        ...p,
-                        // Use live stock if available, fallback to cached stock
-                        stock:
-                          liveStock[p._id] !== undefined
-                            ? liveStock[p._id]
-                            : p.stock,
-                      }}
+                      product={{ ...p, stock: liveStock[p._id] !== undefined ? liveStock[p._id] : p.stock }}
                     />
                   ))}
                 </div>
-              )}
-            </>
-          )}
+              )
+            )}
 
-          {/* Pagination */}
-          {!loading && !error && pages > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-8">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
-              >
-                ← Prev
-              </button>
-              <span className="text-sm font-medium text-[#667085]">
-                Page {page} of {pages}
-              </span>
-              <button
-                disabled={page >= pages}
-                onClick={() => setPage((p) => Math.min(pages, p + 1))}
-                className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-[#101828] disabled:opacity-40 hover:bg-[#ECFDF5] transition-colors"
-              >
-                Next →
-              </button>
-            </div>
-          )}
+            {!loading && !error && page < pages && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={loadingMore}
+                  className="rounded-xl border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-[#101828] transition hover:border-emerald-400 disabled:opacity-50"
+                >
+                  {loadingMore ? "Loading…" : `Load more (${products.length} of ${total})`}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* ── Mobile drawer: categories + filters ── */}
+      {isSidebarOpen && (
+        <div className="fixed inset-0 z-40 sm:hidden" style={{ top: "56px" }}>
+          <div className="absolute inset-0 bg-black/50" onClick={() => setIsSidebarOpen(false)} />
+          <div className="absolute left-0 top-0 flex h-full w-72 flex-col gap-5 overflow-y-auto bg-white p-5 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-widest text-[#667085]">Categories & filters</p>
+              <button onClick={() => setIsSidebarOpen(false)} className="text-gray-400 transition-colors hover:text-red-500" aria-label="Close categories and filters">
+                <FaTimes size={16} />
+              </button>
+            </div>
+            {renderCategoryList()}
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Sort</p>
+              {sortSelect("sort-mobile")}
+            </div>
+            <div>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Filters</p>
+              {renderFilters("drawer")}
+            </div>
+            <button onClick={() => setIsSidebarOpen(false)} className="primary-btn mt-auto w-full">Show results</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

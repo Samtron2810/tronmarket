@@ -5,7 +5,8 @@ import {
   resetPassword,
 } from "../services/authService";
 import { AuthContext } from "../context/AuthContext";
-import MessageModal from "../components/MessageModal";
+import OtpInput from "../components/OtpInput";
+import { toast } from "react-toastify";
 
 export default function ForgotPassword() {
   const navigate = useNavigate();
@@ -18,13 +19,10 @@ export default function ForgotPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState("");
-  const [msgOpen, setMsgOpen] = useState(false);
-  const [msg, setMsg] = useState("");
 
   const showError = (error, fallback) => {
     const data = error.response?.data;
-    setMsg(data?.errors?.[0]?.message || data?.message || fallback);
-    setMsgOpen(true);
+    toast.error(data?.errors?.[0]?.message || data?.message || fallback);
   };
 
   const requestCode = async (event) => {
@@ -49,8 +47,7 @@ export default function ForgotPassword() {
   const submitReset = async (event) => {
     event.preventDefault();
     if (password !== confirmPassword) {
-      setMsg("The new passwords do not match.");
-      setMsgOpen(true);
+      toast.error("The new passwords do not match.");
       return;
     }
 
@@ -122,17 +119,7 @@ export default function ForgotPassword() {
               autoComplete="email"
               required
             />
-            <input
-              value={otp}
-              onChange={(event) =>
-                setOtp(event.target.value.replace(/\D/g, "").slice(0, 6))
-              }
-              className="input-field w-full tracking-[0.4em]"
-              placeholder="6-digit code"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              required
-            />
+            <OtpInput value={otp} onChange={setOtp} />
             <input
               type="password"
               value={password}
@@ -177,12 +164,6 @@ export default function ForgotPassword() {
             Back to sign in
           </Link>
         </p>
-
-        <MessageModal
-          open={msgOpen}
-          message={msg}
-          onClose={() => setMsgOpen(false)}
-        />
       </div>
     </main>
   );

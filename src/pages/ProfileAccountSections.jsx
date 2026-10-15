@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { NIGERIAN_STATES } from "../utils/nigerianStates";
 import {
   getProfile,
   updateProfile,
@@ -185,7 +186,11 @@ export function ProfileAddresses() {
           <input className="input-field" placeholder="Phone" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           <input className="input-field" placeholder="City" required value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           <input className="input-field sm:col-span-2" placeholder="Street address" required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-          <input className="input-field" placeholder="State" required value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+          <select className="input-field" required value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} aria-label="State">
+            <option value="" disabled>Select state</option>
+            {form.state && !NIGERIAN_STATES.includes(form.state) && <option value={form.state}>{form.state}</option>}
+            {NIGERIAN_STATES.map((st) => <option key={st} value={st}>{st}</option>)}
+          </select>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} />
             Use as my default address

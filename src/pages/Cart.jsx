@@ -1,11 +1,13 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { CartContext } from "../context/CartContext";
-import { FaStore, FaArrowLeft } from "react-icons/fa";
+import { FaStore, FaArrowLeft, FaHeart } from "react-icons/fa";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import { toast } from "react-toastify";
 import api from "../services/api";
 import { variantLabel as buildVariantLabel, discounted } from "../utils/variants";
+import { getStorefrontMeta, validateCoupon } from "../services/storefrontService";
+import { WishlistContext } from "../context/WishlistContext";
 
 // Per-line helpers — a line's price/stock come from its variant when one
 // was chosen, otherwise from the product (legacy behaviour).
@@ -34,6 +36,25 @@ export default function Cart() {
 
   // Track previous warnings to prevent duplicate toasts
   const previousWarningsRef = useRef({});
+
+  // Free-shipping progress + coupon (persisted so Checkout picks it up)
+  const { toggle: wishlistToggle, isSaved } = useContext(WishlistContext);
+  const [freeThreshold, setFreeThreshold] = useState(0);
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState(null); // { code, discount }
+  const [couponBusy, setCouponBusy] = useState(false);
+  const [couponMessage, setCouponMessage] = useState("");
+
+  useEffect(() => {
+    getStorefrontMeta()
+      .then((res) => setFreeThreshold(Number(res.data?.freeShippingThreshold) || 0))
+      .catch(() => {});
+    try {
+      const saved = JSON.parse(localStorage.getItem("tronmarket:coupon") || "null");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (saved?.code) { setCoupon(saved); setCouponInput(saved.code); }
+    } catch { /* ignore */ }
+  }, []);
 
   // ── Refresh stock levels whenever the cart changes ──────────────────────
   // This catches the scenario where another user bought the last item while
@@ -153,6 +174,44 @@ export default function Cart() {
     removeItemLocal(productId, lineVariantId(item));
   };
 
+  const saveForLater = async (item) => {
+    const productId = item.product?._id ?? item.product;
+    try {
+      if (!isSaved(productId)) await wishlistToggle(productId);
+      removeItem(item);
+      toast.success("Saved to your wishlist");
+    } catch {
+      toast.error("Could not save this item for later");
+    }
+  };
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase();
+    if (!code) return;
+    setCouponBusy(true);
+    setCouponMessage("");
+    try {
+      const res = await validateCoupon({ code, itemsSubtotal: total });
+      const applied = { code: res.data.code || code, discount: Number(res.data.discount || 0) };
+      setCoupon(applied);
+      setCouponMessage(`Coupon applied: −₦${applied.discount.toLocaleString()}`);
+      try { localStorage.setItem("tronmarket:coupon", JSON.stringify(applied)); } catch { /* ignore */ }
+    } catch (err) {
+      setCoupon(null);
+      setCouponMessage(err.response?.data?.message || "That coupon is not valid.");
+      try { localStorage.removeItem("tronmarket:coupon"); } catch { /* ignore */ }
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCoupon(null);
+    setCouponInput("");
+    setCouponMessage("");
+    try { localStorage.removeItem("tronmarket:coupon"); } catch { /* ignore */ }
+  };
+
   const total = cart.items.reduce((acc, item) => {
     if (!item.product || lineStock(item) <= 0) return acc;
     return acc + linePrice(item) * item.quantity;
@@ -206,6 +265,24 @@ export default function Cart() {
           )}
         </div>
 
+        <div className="flex flex-wrap items-center gap-2">
+        {!isGuestCart && (
+          <Link
+            to="/wishlist"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-emerald-700 text-sm font-medium transition-all duration-150"
+            style={{ color: "#FFFFFF" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.5)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
+          >
+            <FaHeart className="w-3.5 h-3.5" />
+            <span>My Wishlist</span>
+          </Link>
+        )}
+
         <Link
           to="/my-orders"
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg border-2 border-emerald-700 text-sm font-medium transition-all duration-150"
@@ -220,6 +297,7 @@ export default function Cart() {
           <FaStore className="w-3.5 h-3.5" />
           <span>View my Orders</span>
         </Link>
+        </div>
       </div>
 
       {isGuestCart && cart.items.length > 0 && (
@@ -340,6 +418,15 @@ export default function Cart() {
                         <span className="inline-block mt-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5">
                           {lineLabel(item)}
                         </span>
+                      )}
+                      {!isGuestCart && (
+                        <button
+                          type="button"
+                          onClick={() => saveForLater(item)}
+                          className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 hover:underline"
+                        >
+                          <FaHeart className="h-3 w-3" /> Save for later
+                        </button>
                       )}
                       {lineStock(item) > 0 ? (
                         <>
@@ -503,6 +590,51 @@ export default function Cart() {
                 )}
               </div>
 
+              {/* Free-shipping progress */}
+              {freeThreshold > 0 && (
+                <div className="mb-4 rounded-xl bg-[#ECFDF5] px-4 py-3">
+                  {total >= freeThreshold ? (
+                    <p className="text-xs font-bold text-emerald-700">🎉 You've unlocked FREE delivery!</p>
+                  ) : (
+                    <>
+                      <p className="text-xs font-semibold text-emerald-900">
+                        Add <span className="font-extrabold">₦{(freeThreshold - total).toLocaleString()}</span> more for FREE delivery
+                      </p>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-emerald-100">
+                        <div
+                          className="h-full rounded-full bg-emerald-600 transition-all duration-500"
+                          style={{ width: `${Math.min(100, Math.round((total / freeThreshold) * 100))}%` }}
+                        />
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Coupon */}
+              <div className="mb-4 rounded-xl border border-gray-200 px-4 py-3">
+                <div className="flex gap-2">
+                  <input
+                    value={couponInput}
+                    onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder="Coupon code"
+                    aria-label="Coupon code"
+                    className="w-full min-w-0 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                  {coupon ? (
+                    <button type="button" onClick={removeCoupon} className="shrink-0 rounded-lg border border-gray-300 px-3 text-sm font-semibold">Remove</button>
+                  ) : (
+                    <button type="button" onClick={applyCoupon} disabled={couponBusy || !couponInput.trim()} className="shrink-0 rounded-lg bg-[#101828] px-3 text-sm font-semibold text-white disabled:opacity-50">
+                      {couponBusy ? "Checking…" : "Apply"}
+                    </button>
+                  )}
+                </div>
+                {couponMessage && (
+                  <p className={`mt-2 text-xs font-semibold ${coupon ? "text-emerald-700" : "text-red-600"}`}>{couponMessage}</p>
+                )}
+                {coupon && <p className="mt-1 text-xs text-gray-500">Discount will be confirmed at checkout.</p>}
+              </div>
+
               <div
                 className="flex justify-between items-center pt-4 border-t"
                 style={{ borderColor: "#e5e7eb" }}
@@ -520,6 +652,13 @@ export default function Cart() {
                   ₦{total.toLocaleString()}
                 </span>
               </div>
+
+              {coupon && (
+                <div className="mt-2 flex justify-between text-sm font-semibold text-emerald-700">
+                  <span>Coupon ({coupon.code})</span>
+                  <span>−₦{Number(coupon.discount || 0).toLocaleString()}</span>
+                </div>
+              )}
 
               <p className="mt-2 text-xs" style={{ color: "#667085" }}>
                 Delivery is calculated at checkout from your delivery state.

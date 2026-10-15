@@ -13,6 +13,7 @@ export const toggleWishlistItem = (productId) => api.post(`/wishlist/${productId
 
 // Catalog meta
 export const getCategories = () => api.get("/categories");
+export const getStorefrontMeta = () => api.get("/products/meta");
 
 // Coupons
 export const validateCoupon = (data) => api.post("/coupons/validate", data);

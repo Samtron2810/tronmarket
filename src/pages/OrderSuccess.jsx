@@ -171,6 +171,28 @@ export default function OrderSuccess() {
           </p>
         </div>
 
+        {/* What happens next */}
+        <div className="no-print bg-white rounded-2xl p-6 border border-gray-200 shadow-md">
+          <h2 className="mb-4 font-bold text-[#101828]">What happens next</h2>
+          <ol className="space-y-3 text-sm">
+            <li className="flex gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">1</span>
+              <p className="text-[#667085]"><span className="font-semibold text-[#101828]">Sellers prepare your items.</span> Each seller packs their part of your order.</p>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">2</span>
+              <p className="text-[#667085]"><span className="font-semibold text-[#101828]">Your order ships.</span> Status updates appear in My Orders as it moves to you.</p>
+            </li>
+            <li className="flex gap-3">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-xs font-bold text-white">3</span>
+              <p className="text-[#667085]"><span className="font-semibold text-[#101828]">Delivery & easy cancel.</span> Cancel free any time before shipping from My Orders.</p>
+            </li>
+          </ol>
+          <Link to="/my-orders" className="primary-btn mt-5 flex w-full items-center justify-center">
+            Track my order
+          </Link>
+        </div>
+
         {/* Printable Receipt Area */}
         <div
           id="receipt-print-area"

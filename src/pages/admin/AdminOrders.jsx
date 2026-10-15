@@ -33,7 +33,7 @@ export default function AdminOrders() {
         // Handle both paginated { orders: [] } and plain array responses
         const data = res.data;
         setOrders(Array.isArray(data) ? data : data.orders || []);
-      } catch (err) {
+      } catch {
         toast.error("Failed to load orders");
       } finally {
         setLoading(false);

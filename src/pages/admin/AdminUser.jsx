@@ -14,6 +14,7 @@ import AdminUserProducts from "./user/AdminUserProducts";
 export default function AdminUser() {
   const { id } = useParams();
   const [user, setUser] = useState(null);
+  const [tab, setTab] = useState("details");
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [ordersTotal, setOrdersTotal] = useState(0);
@@ -59,7 +60,7 @@ export default function AdminUser() {
     try {
       await api.delete(`/admin/users/${id}`);
       toast.success("User deleted");
-      window.location.href = "/admin";
+      window.location.href = "/admin/users";
     } catch (err) {
       toast.error(err.response?.data?.message || "Could not delete user");
     } finally {
@@ -98,6 +99,11 @@ export default function AdminUser() {
     );
 
   const isSeller = user?.role === "seller";
+  const tabs = [
+    { id: "details", label: "Details" },
+    { id: "orders", label: "Customer orders" },
+    ...(isSeller ? [{ id: "sales", label: "Seller sales" }, { id: "products", label: "Products" }] : []),
+  ];
 
   return (
     <div className="min-h-screen bg-[#F6F7F4] px-4 py-10 sm:px-6 lg:px-8">
@@ -117,7 +123,7 @@ export default function AdminUser() {
           </div>
           <div className="flex gap-2">
             <Link
-              to="/admin"
+              to="/admin/users"
               className="px-3 py-1.5 rounded-lg border border-white/30 text-sm text-white hover:bg-white/10 transition-colors"
             >
               ← Back
@@ -131,10 +137,23 @@ export default function AdminUser() {
           </div>
         </div>
 
-        {/* ── Edit User + Customer Orders ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Edit User */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
+        {/* ── Tabs ── */}
+        <div className="flex flex-wrap gap-2" role="tablist" aria-label="User sections">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => setTab(t.id)}
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${tab === t.id ? "bg-emerald-700 text-white" : "border border-gray-300 bg-white text-gray-600 hover:border-emerald-300"}`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {tab === "details" && (
+          <div className="bg-white rounded-xl border border-gray-200 p-5 max-w-xl">
             <h3 className="font-semibold text-[#101828] mb-4">Edit User</h3>
             <div className="space-y-3">
               <input
@@ -179,25 +198,21 @@ export default function AdminUser() {
               </button>
             </div>
           </div>
+        )}
 
-          {/* Customer purchase orders */}
+        {tab === "orders" && (
           <AdminUserOrders
             orders={orders}
             ordersTotal={ordersTotal}
             isSeller={isSeller}
             userId={id}
           />
-        </div>
+        )}
 
-        {/* ── Seller-only sections ── */}
-        {isSeller && (
-          <>
-            {/* Seller Sales (orders from customers who bought their products) */}
-            <AdminUserSales userId={id} />
+        {isSeller && tab === "sales" && <AdminUserSales userId={id} />}
 
-            {/* Products */}
-            <AdminUserProducts userId={id} userRole={user?.role} />
-          </>
+        {isSeller && tab === "products" && (
+          <AdminUserProducts userId={id} userRole={user?.role} />
         )}
       </div>
 

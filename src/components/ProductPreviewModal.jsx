@@ -1,4 +1,5 @@
 import { useEffect, useState, useContext } from "react";
+import noImageLogo from "../assets/no-image-logo.png";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -6,7 +7,6 @@ import {
   FaShoppingCart,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import { mediumUrl } from "../utils/cloudinaryUrl";
 import VariantSelector from "./VariantSelector";
@@ -20,9 +20,8 @@ import {
 import { fetchProduct } from "../services/productService";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
-  const { setWelcomeModalOpen } = useContext(AuthContext);
   const { addToCartLocal, isAddingToCart } = useContext(CartContext);
-  const fallback = "https://loremflickr.com/g/640/480/product";
+  const fallback = noImageLogo;
   const images =
     product?.images && product.images.length > 0
       ? product.images
@@ -88,10 +87,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
       });
       // Only close modal if add was successful
       onClose();
-    } catch (err) {
-      if (err.response?.status === 401) {
-        setWelcomeModalOpen(true);
-      }
+    } catch {
       // Toast is already shown by addToCartLocal
     }
   };

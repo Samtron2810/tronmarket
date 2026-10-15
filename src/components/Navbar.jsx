@@ -5,7 +5,6 @@ import {
   FaSearch,
   FaShoppingCart,
   FaUser,
-  FaHeart,
   FaStore,
   FaSignOutAlt,
   FaBars,
@@ -186,14 +185,6 @@ export default function Navbar() {
 
             {token ? (
               <>
-                <Link
-                  to="/wishlist"
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-150"
-                  style={{ color: "#EAECF0" }}
-                >
-                  <FaHeart className="w-4 h-4" />
-                  Wishlist
-                </Link>
                 {/* Profile */}
                 <Link
                   to="/profile"
@@ -387,18 +378,6 @@ export default function Navbar() {
               Go
             </button>
           </form>
-
-          {token && (
-            <Link
-              to="/wishlist"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition"
-              style={{ backgroundColor: "rgba(255,255,255,0.22)", color: "#FFFFFF" }}
-            >
-              <FaHeart className="w-4 h-4" />
-              Wishlist
-            </Link>
-          )}
 
           {token && (
             <Link

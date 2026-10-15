@@ -8,7 +8,6 @@ import {
   FiShoppingBag,
 } from "react-icons/fi";
 import ConfirmModal from "../../components/ConfirmModal";
-import MessageModal from "../../components/MessageModal";
 import { toast } from "react-toastify";
 import { getSellerLowStock, getMyPayouts } from "../../services/storefrontService";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
@@ -18,8 +17,6 @@ export default function SellerDashboard() {
   const [loading, setLoading] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [targetId, setTargetId] = useState(null);
-  const [messageOpen, setMessageOpen] = useState(false);
-  const [messageText, setMessageText] = useState("");
 
   const fetchMyProducts = async () => {
     try {
@@ -69,10 +66,7 @@ export default function SellerDashboard() {
       fetchMyProducts();
     } catch (err) {
       console.error("Failed to delete product", err);
-      const msg = err.response?.data?.message || "Delete failed";
-      setMessageText(msg);
-      setMessageOpen(true);
-      toast.error(msg);
+      toast.error(err.response?.data?.message || "Delete failed");
     }
   };
 
@@ -126,12 +120,6 @@ export default function SellerDashboard() {
             to="/seller/add"
             className="inline-flex items-center gap-2 px-2 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm self-start sm:self-auto"
             style={{ backgroundColor: "#047857", color: "#fff" }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundColor = "#065F46")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundColor = "#047857")
-            }
           >
             <FiPlus className="w-4 h-4" />
             Add New Product
@@ -228,19 +216,7 @@ export default function SellerDashboard() {
           {products.map((p) => (
             <div
               key={p._id}
-              className="rounded-xl border overflow-hidden flex flex-col transition-all duration-200"
-              style={{ backgroundColor: "#fff", borderColor: "#e5e7eb" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow =
-                  "0 8px 24px rgba(4,120,87,0.12), 0 2px 6px rgba(0,0,0,0.06)";
-                e.currentTarget.style.borderColor = "#A7F3D0";
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.borderColor = "#e5e7eb";
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
+              className="flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_8px_24px_rgba(4,120,87,0.12),0_2px_6px_rgba(0,0,0,0.06)]"
             >
               {/* Product image */}
               <div
@@ -350,12 +326,6 @@ export default function SellerDashboard() {
                     to={`/seller/edit/${p._id}`}
                     className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 active:scale-95"
                     style={{ backgroundColor: "#ECFDF5", color: "#047857" }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#A7F3D0")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#ECFDF5")
-                    }
                   >
                     <svg
                       className="w-3 h-3"
@@ -377,12 +347,6 @@ export default function SellerDashboard() {
                     onClick={() => promptDelete(p._id)}
                     className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-150 active:scale-95"
                     style={{ backgroundColor: "#FEF2F2", color: "#DC2626" }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#FECACA")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#FEF2F2")
-                    }
                   >
                     <svg
                       className="w-3 h-3"
@@ -416,11 +380,6 @@ export default function SellerDashboard() {
         confirmLabel="Delete"
       />
 
-      <MessageModal
-        open={messageOpen}
-        message={messageText}
-        onClose={() => setMessageOpen(false)}
-      />
     </div>
   );
 }

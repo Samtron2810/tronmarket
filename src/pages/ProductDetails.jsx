@@ -1,14 +1,18 @@
 import { useEffect, useState, useContext } from "react";
+import noImageLogo from "../assets/no-image-logo.png";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { CartContext } from "../context/CartContext";
-import { AuthContext } from "../context/AuthContext";
 import {
   FaShoppingCart,
   FaChevronLeft,
   FaChevronRight,
   FaArrowLeft,
+  FaStar,
+  FaShareAlt,
+  FaCheckCircle,
 } from "react-icons/fa";
+import { toast } from "react-toastify";
 import { largeUrl } from "../utils/cloudinaryUrl";
 import VariantSelector from "../components/VariantSelector";
 import ProductExtras from "../components/ProductExtras";
@@ -33,11 +37,10 @@ export default function ProductDetails() {
   const [imgIndex, setImgIndex] = useState(0);
   const [selection, setSelection] = useState({});
   const { addToCartLocal, isAddingToCart } = useContext(CartContext);
-  const { setWelcomeModalOpen } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
-  const fallbackImage = "https://loremflickr.com/g/320/240/product";
+  const fallbackImage = noImageLogo;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -71,17 +74,29 @@ export default function ProductDetails() {
         variant: selectedVariant,
         variantLabel: selectedVariant ? variantLabel(selectedVariant) : "",
       });
-    } catch (err) {
-      if (err.response?.status === 401) {
-        setWelcomeModalOpen(true);
+    } catch {
+      // Toast is already shown by addToCartLocal
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: product.name, text: `Check out ${product.name} on TronMarket`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Product link copied");
       }
+    } catch {
+      // user dismissed the share sheet
     }
   };
 
   /* ── Loading ── */
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-4xl px-4 pt-8 pb-24 sm:px-6 lg:px-8 sm:pb-8">
         <div className="animate-pulse h-4 w-20 bg-gray-200 rounded mb-6" />
         <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden lg:grid lg:grid-cols-2">
           <div className="h-64 sm:h-80 lg:h-full bg-gray-200 animate-pulse" />
@@ -142,6 +157,19 @@ export default function ProductDetails() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+      {/* Breadcrumbs */}
+      <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap items-center gap-1.5 text-sm text-gray-500">
+        <Link to="/" className="font-semibold text-emerald-700 hover:underline">Home</Link>
+        <span aria-hidden="true">/</span>
+        {product.category ? (
+          <Link to={`/?category=${encodeURIComponent(product.category)}`} className="capitalize hover:underline">{product.category}</Link>
+        ) : (
+          <span>General</span>
+        )}
+        <span aria-hidden="true">/</span>
+        <span className="max-w-56 truncate font-medium text-gray-800">{product.name}</span>
+      </nav>
+
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
@@ -208,12 +236,32 @@ export default function ProductDetails() {
                 </span>
               )}
               <WishlistButton productId={product._id} className="border border-gray-200" />
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Share this product"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-emerald-300 hover:text-emerald-700"
+              >
+                <FaShareAlt className="h-3.5 w-3.5" />
+              </button>
             </div>
 
             {/* Title */}
             <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight leading-snug text-gray-900">
               {product.name}
             </h1>
+
+            {/* Rating */}
+            <div className="flex items-center gap-1.5" aria-label={Number(product.numReviews) > 0 ? `Rated ${Number(product.rating || 0).toFixed(1)} of 5` : "No reviews yet"}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <FaStar key={star} className={`h-4 w-4 ${star <= Math.round(Number(product.rating || 0)) ? "text-amber-500" : "text-gray-300"}`} />
+              ))}
+              <span className="text-xs font-semibold text-gray-600">
+                {Number(product.numReviews) > 0
+                  ? `${Number(product.rating || 0).toFixed(1)} · ${product.numReviews} review${Number(product.numReviews) === 1 ? "" : "s"}`
+                  : "No reviews yet"}
+              </span>
+            </div>
 
             {/* Brand */}
             {product.brand && (
@@ -264,6 +312,37 @@ export default function ProductDetails() {
                 {product.description || "No product description provided."}
               </p>
             </div>
+            {/* Seller card */}
+            {product.seller && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-semibold text-gray-800">Sold by {product.seller.name || "TronMarket seller"}</span>
+                  {product.seller.sellerVerified && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                      <FaCheckCircle className="h-3 w-3" /> Verified
+                    </span>
+                  )}
+                </div>
+                {product.seller._id && (
+                  <Link
+                    to={`/?seller=${product.seller._id}&sellerName=${encodeURIComponent(product.seller.name || "seller")}`}
+                    className="text-sm font-semibold text-emerald-700 hover:underline"
+                  >
+                    More from this seller →
+                  </Link>
+                )}
+              </div>
+            )}
+
+            {/* Delivery & returns info */}
+            <details className="group rounded-xl border border-gray-200 bg-white px-4 py-3">
+              <summary className="cursor-pointer text-sm font-semibold text-gray-800">Delivery, cancellation & returns</summary>
+              <div className="mt-2 space-y-1.5 text-sm leading-relaxed text-gray-500">
+                <p>Delivery fees are calculated from your delivery state at checkout, and qualifying orders ship free.</p>
+                <p>You can cancel free of charge any time before your order ships.</p>
+                <p>Changed your mind after delivery? Open a return request from <Link to="/my-orders" className="font-semibold text-emerald-700 hover:underline">My Orders</Link> and our team will review it.</p>
+              </div>
+            </details>
           </div>
 
           {product.hasVariants && (
@@ -340,6 +419,23 @@ export default function ProductDetails() {
       </div>
 
       <ProductExtras productId={product._id} />
+
+      {/* Sticky buy bar (mobile) */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-2px_10px_rgba(0,0,0,0.06)] sm:hidden">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs text-gray-500">{product.name}</p>
+          <p className="text-base font-extrabold text-amber-700">
+            {selectedVariant ? `₦${discounted(selectedVariant.price, product).toLocaleString()}` : displayPrice(product).label}
+          </p>
+        </div>
+        <button
+          disabled={!inStock || isAddingToCart}
+          onClick={handleAddToCart}
+          className="flex shrink-0 items-center gap-2 rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white transition active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <FaShoppingCart className="h-4 w-4" /> Add to Cart
+        </button>
+      </div>
     </div>
   );
 }
