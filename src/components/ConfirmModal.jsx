@@ -6,10 +6,15 @@ export default function ConfirmModal({
   description,
   onConfirm,
   onClose,
+  onCancel,
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
 }) {
   if (!open) return null;
+
+  // onCancel is accepted as an alias so callers using either prop name get a
+  // working Cancel/backdrop close.
+  const handleClose = onClose || onCancel;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -17,7 +22,7 @@ export default function ConfirmModal({
       <div
         className="absolute inset-0 backdrop-blur-sm"
         style={{ backgroundColor: "rgba(0,0,0,0.45)" }}
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Dialog */}
@@ -60,7 +65,8 @@ export default function ConfirmModal({
             {/* Actions */}
             <div className="flex justify-end gap-2 mt-5">
               <button
-                onClick={onClose}
+                type="button"
+                onClick={handleClose}
                 className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
                 style={{ backgroundColor: "#f3f4f6", color: "#101828" }}
                 onMouseEnter={(e) =>
@@ -74,6 +80,7 @@ export default function ConfirmModal({
               </button>
 
               <button
+                type="button"
                 onClick={onConfirm}
                 className="px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-150 active:scale-95"
                 style={{ backgroundColor: "#DC2626", color: "#fff" }}

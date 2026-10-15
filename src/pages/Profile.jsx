@@ -337,7 +337,7 @@ export default function Profile() {
         title="Log out of TronMarket?"
         description="You will be signed out on this device and will need to log in again to access your account."
         confirmLabel="Log out"
-        onCancel={() => setLogoutOpen(false)}
+        onClose={() => setLogoutOpen(false)}
         onConfirm={confirmLogout}
       />
     </div>
