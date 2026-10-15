@@ -6,7 +6,6 @@ import {
   FaShoppingCart,
   FaUser,
   FaStore,
-  FaSignOutAlt,
   FaBars,
   FaTimes,
   FaUserShield,
@@ -26,7 +25,7 @@ import { AuthContext } from "../context/AuthContext";
 
 export default function Navbar() {
   const { cart } = useContext(CartContext);
-  const { token, handleLogout, user } = useContext(AuthContext);
+  const { token, user } = useContext(AuthContext);
 
   const navigate = useNavigate();
 
@@ -63,12 +62,6 @@ export default function Navbar() {
     e.preventDefault();
     if (!search.trim()) return;
     navigate(`/?search=${encodeURIComponent(search.trim())}`);
-    setOpen(false);
-  };
-
-  const onLogout = () => {
-    handleLogout();
-    navigate("/", { replace: true });
     setOpen(false);
   };
 
@@ -254,21 +247,6 @@ export default function Navbar() {
                   </Link>
                 )}
 
-                {/* Logout */}
-                <button
-                  onClick={onLogout}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-95 shadow-sm"
-                  style={{ backgroundColor: "#DC2626", color: "#ffffff" }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#B91C1C")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#DC2626")
-                  }
-                >
-                  <FaSignOutAlt className="w-3.5 h-3.5" />
-                  Logout
-                </button>
               </>
             ) : (
               <Link
@@ -432,16 +410,7 @@ export default function Navbar() {
             </Link>
           )}
 
-          {token ? (
-            <button
-              onClick={onLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition active:scale-95"
-              style={{ backgroundColor: "#DC2626", color: "#ffffff" }}
-            >
-              <FaSignOutAlt className="w-4 h-4" />
-              Logout
-            </button>
-          ) : (
+          {!token && (
             <Link
               to="/login"
               onClick={() => setOpen(false)}

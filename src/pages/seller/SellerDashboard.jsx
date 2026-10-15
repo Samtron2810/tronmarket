@@ -11,6 +11,7 @@ import ConfirmModal from "../../components/ConfirmModal";
 import { toast } from "react-toastify";
 import { getSellerLowStock, getMyPayouts } from "../../services/storefrontService";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
+import { firstProductImage } from "../../utils/productImages";
 
 export default function SellerDashboard() {
   const [products, setProducts] = useState([]);
@@ -223,31 +224,12 @@ export default function SellerDashboard() {
                 className="relative h-32 w-full overflow-hidden"
                 style={{ backgroundColor: "#ECFDF5" }}
               >
-                {p.image ? (
-                  <img
-                    src={thumbUrl(p.image)}
-                    alt={p.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <svg
-                      className="w-8 h-8"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      style={{ color: "#047857", opacity: 0.35 }}
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M14 8h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                  </div>
-                )}
+                <img
+                  src={thumbUrl(firstProductImage(p))}
+                  alt={p.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
               </div>
 
               {/* Info + actions */}

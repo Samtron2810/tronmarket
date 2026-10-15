@@ -5,6 +5,7 @@ import uploadService from "../../../services/uploadService";
 import { toast } from "react-toastify";
 import ConfirmModal from "../../../components/ConfirmModal";
 import { thumbUrl } from "../../../utils/cloudinaryUrl";
+import { firstProductImage } from "../../../utils/productImages";
 import VariantEditor from "../../../components/VariantEditor";
 import { categories, inputCls } from "./adminUserShared";
 
@@ -36,6 +37,7 @@ export default function AdminUserProducts({ userId, userRole }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editOpen, setEditOpen] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
+  const [editSaving, setEditSaving] = useState(false);
 
   // Debounce: only fire request 500ms after user stops typing
   const debounceRef = useRef(null);
@@ -132,8 +134,16 @@ export default function AdminUserProducts({ userId, userRole }) {
     }
   };
 
+  const closeEdit = () => {
+    if (editSaving) return;
+    setEditOpen(false);
+    setEditProduct(null);
+  };
+
   const handleEditSave = async (e) => {
     e.preventDefault();
+    if (!editProduct || editSaving) return;
+    setEditSaving(true);
     try {
       const payload = { ...editProduct };
       if (payload.images?.length > 0 && payload.images[0] instanceof File) {
@@ -151,6 +161,8 @@ export default function AdminUserProducts({ userId, userRole }) {
       setEditProduct(null);
     } catch (err) {
       toast.error(err.response?.data?.message || "Could not update product");
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -356,7 +368,7 @@ export default function AdminUserProducts({ userId, userRole }) {
                 className="border border-gray-200 rounded-xl overflow-hidden"
               >
                 <img
-                  src={thumbUrl(p.image)}
+                  src={thumbUrl(firstProductImage(p))}
                   alt={p.name}
                   className="w-full h-32 object-cover"
                   loading="lazy"
@@ -448,136 +460,235 @@ export default function AdminUserProducts({ userId, userRole }) {
         }}
       />
 
-      {/* Edit product modal */}
+      {/* Edit product modal: the header and action bar stay fixed while
+          only the fields scroll, so Save/Cancel remain reachable no matter
+          how many variants the product has. */}
       {editOpen && editProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-edit-product-title"
+        >
           <div
-            className="absolute inset-0 backdrop-blur-sm bg-black/40"
-            onClick={() => setEditOpen(false)}
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={closeEdit}
           />
-          <div className="relative w-full max-w-2xl bg-white rounded-xl overflow-hidden shadow-xl">
-            <div className="bg-[#ECFDF5] px-5 py-4">
-              <h3 className="font-bold text-[#101828]">Edit Product</h3>
-            </div>
-            <form onSubmit={handleEditSave} className="p-5 space-y-3">
-              <div className="grid grid-cols-3 gap-2">
-                <input
-                  placeholder="Name"
-                  value={editProduct.name}
-                  onChange={(e) =>
-                    setEditProduct((s) => ({ ...s, name: e.target.value }))
-                  }
-                  className={`${inputCls} col-span-2`}
+          <div className="relative flex max-h-[calc(100dvh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-h-[calc(100dvh-2.5rem)]">
+            <form onSubmit={handleEditSave} className="flex min-h-0 flex-1 flex-col">
+              {/* Fixed dialog header */}
+              <div className="flex flex-none items-center gap-3 border-b border-emerald-100 bg-[#ECFDF5] px-4 py-3 sm:px-6 sm:py-4">
+                <img
+                  src={thumbUrl(firstProductImage(editProduct))}
+                  alt=""
+                  className="h-11 w-11 flex-none rounded-xl border border-white object-cover shadow-sm"
                 />
-                <input
-                  placeholder="Price"
-                  type="number"
-                  min={0}
-                  value={editProduct.price}
-                  onChange={(e) =>
-                    setEditProduct((s) => ({
-                      ...s,
-                      price: Math.max(0, Number(e.target.value)),
-                    }))
-                  }
-                  className={inputCls}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <label className="text-xs font-medium text-[#667085]">
-                  Discount % (sale)
-                  <input
-                    type="number"
-                    min={0}
-                    max={90}
-                    value={editProduct.discountPercent ?? 0}
-                    onChange={(e) =>
-                      setEditProduct((s) => ({
-                        ...s,
-                        discountPercent: Math.min(90, Math.max(0, Number(e.target.value) || 0)),
-                      }))
-                    }
-                    className={inputCls}
-                  />
-                </label>
-                {Number(editProduct.discountPercent) > 0 && Number(editProduct.price) > 0 && (
-                  <p className="self-end pb-1 text-xs font-semibold text-red-600 col-span-2">
-                    Sale price: ₦{Math.round(Number(editProduct.price) * (100 - Number(editProduct.discountPercent)) / 100).toLocaleString()} (applies to variants too)
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-emerald-700">
+                    Edit product
                   </p>
-                )}
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <select
-                  value={editProduct.category || ""}
-                  onChange={(e) =>
-                    setEditProduct((s) => ({ ...s, category: e.target.value }))
-                  }
-                  className={inputCls}
-                >
-                  <option value="">Category</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  placeholder="Stock"
-                  type="number"
-                  min={0}
-                  value={editProduct.stock || 0}
-                  onChange={(e) =>
-                    setEditProduct((s) => ({
-                      ...s,
-                      stock: Math.max(0, Number(e.target.value)),
-                    }))
-                  }
-                  className={inputCls}
-                />
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  multiple
-                  onChange={(e) =>
-                    setEditProduct((s) => ({
-                      ...s,
-                      images: Array.from(e.target.files),
-                    }))
-                  }
-                  className="text-sm text-[#667085] file:mr-2 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#047857] file:text-white file:text-xs file:font-medium file:cursor-pointer"
-                />
-              </div>
-              <textarea
-                placeholder="Description"
-                rows={3}
-                value={editProduct.description || ""}
-                onChange={(e) =>
-                  setEditProduct((s) => ({ ...s, description: e.target.value }))
-                }
-                className={inputCls}
-              />
-              <VariantEditor
-                category={editProduct.category}
-                basePrice={Number(editProduct.price) || 0}
-                value={editProduct}
-                onChange={(next) =>
-                  setEditProduct((s) => ({ ...s, ...next }))
-                }
-              />
-              <div className="flex gap-2 justify-end pt-1">
+                  <h3
+                    id="admin-edit-product-title"
+                    className="truncate text-base font-bold text-[#101828] sm:text-lg"
+                  >
+                    {editProduct.name || "Untitled product"}
+                  </h3>
+                  <p className="truncate text-xs text-[#667085]">
+                    {editProduct.category || "No category"} · Update the listing details below
+                  </p>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setEditOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-[#101828] hover:bg-[#ECFDF5] transition-colors"
+                  onClick={closeEdit}
+                  disabled={editSaving}
+                  aria-label="Close edit product"
+                  className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white text-xl leading-none text-gray-500 shadow-sm transition hover:text-gray-900 disabled:cursor-wait disabled:opacity-50"
                 >
-                  Cancel
+                  ×
                 </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity"
-                >
-                  Save Changes
-                </button>
+              </div>
+
+              {/* Scrollable fields */}
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[#F6F7F4] px-4 py-4 sm:px-6 sm:py-5">
+                <div className="space-y-4">
+                  <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-[#101828]">Product details</h4>
+                      <p className="mt-0.5 text-xs text-[#667085]">
+                        The name, category, images and description customers see.
+                      </p>
+                    </div>
+
+                    <label className="block text-xs font-semibold text-[#475467]">
+                      Product name
+                      <input
+                        value={editProduct.name || ""}
+                        onChange={(e) =>
+                          setEditProduct((s) => ({ ...s, name: e.target.value }))
+                        }
+                        className={`${inputCls} mt-1`}
+                      />
+                    </label>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <label className="block text-xs font-semibold text-[#475467]">
+                        Category
+                        <select
+                          value={editProduct.category || ""}
+                          onChange={(e) =>
+                            setEditProduct((s) => ({ ...s, category: e.target.value }))
+                          }
+                          className={`${inputCls} mt-1`}
+                        >
+                          <option value="">Select category</option>
+                          {categories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="block text-xs font-semibold text-[#475467]">
+                        Replace product images
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          multiple
+                          onChange={(e) =>
+                            setEditProduct((s) => ({
+                              ...s,
+                              images: Array.from(e.target.files),
+                            }))
+                          }
+                          className="mt-1 block w-full text-xs text-[#667085] file:mr-2 file:rounded-lg file:border-0 file:bg-[#047857] file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white"
+                        />
+                      </label>
+                    </div>
+                    <p className="mt-2 text-[11px] leading-relaxed text-gray-400">
+                      Leave the image picker untouched to keep the current images. No image is required — the branded placeholder is used when a product has none.
+                    </p>
+
+                    <label className="mt-4 block text-xs font-semibold text-[#475467]">
+                      Description
+                      <textarea
+                        rows={4}
+                        value={editProduct.description || ""}
+                        onChange={(e) =>
+                          setEditProduct((s) => ({ ...s, description: e.target.value }))
+                        }
+                        className={`${inputCls} mt-1 resize-y`}
+                      />
+                    </label>
+                  </section>
+
+                  <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5">
+                    <div className="mb-4">
+                      <h4 className="text-sm font-bold text-[#101828]">Pricing & stock</h4>
+                      <p className="mt-0.5 text-xs text-[#667085]">
+                        Discount applies to the base product and its variants.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <label className="block text-xs font-semibold text-[#475467]">
+                        Price (₦)
+                        <input
+                          type="number"
+                          min={0}
+                          value={editProduct.price ?? 0}
+                          onChange={(e) =>
+                            setEditProduct((s) => ({
+                              ...s,
+                              price: Math.max(0, Number(e.target.value)),
+                            }))
+                          }
+                          className={`${inputCls} mt-1`}
+                        />
+                      </label>
+
+                      <label className="block text-xs font-semibold text-[#475467]">
+                        Discount % (sale)
+                        <input
+                          type="number"
+                          min={0}
+                          max={90}
+                          value={editProduct.discountPercent ?? 0}
+                          onChange={(e) =>
+                            setEditProduct((s) => ({
+                              ...s,
+                              discountPercent: Math.min(90, Math.max(0, Number(e.target.value) || 0)),
+                            }))
+                          }
+                          className={`${inputCls} mt-1`}
+                        />
+                      </label>
+
+                      <label className="block text-xs font-semibold text-[#475467]">
+                        Stock
+                        <input
+                          type="number"
+                          min={0}
+                          value={editProduct.stock || 0}
+                          onChange={(e) =>
+                            setEditProduct((s) => ({
+                              ...s,
+                              stock: Math.max(0, Number(e.target.value)),
+                            }))
+                          }
+                          className={`${inputCls} mt-1`}
+                        />
+                      </label>
+                    </div>
+
+                    {Number(editProduct.discountPercent) > 0 && Number(editProduct.price) > 0 && (
+                      <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                        Sale price: ₦{Math.round(Number(editProduct.price) * (100 - Number(editProduct.discountPercent)) / 100).toLocaleString()} (applies to variants too)
+                      </p>
+                    )}
+                  </section>
+
+                  <section>
+                    <div className="mb-2 px-1">
+                      <h4 className="text-sm font-bold text-[#101828]">Variants</h4>
+                      <p className="mt-0.5 text-xs text-[#667085]">
+                        Variant combinations stay inside the scrolling area; the Save bar below is always reachable.
+                      </p>
+                    </div>
+                    <VariantEditor
+                      category={editProduct.category}
+                      basePrice={Number(editProduct.price) || 0}
+                      value={editProduct}
+                      onChange={(next) =>
+                        setEditProduct((s) => ({ ...s, ...next }))
+                      }
+                    />
+                  </section>
+                </div>
+              </div>
+
+              {/* Always-visible action bar */}
+              <div className="flex flex-none flex-col gap-3 border-t border-gray-200 bg-white px-4 py-3 shadow-[0_-8px_24px_rgba(16,24,40,0.07)] sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-4">
+                <p className="hidden text-xs text-[#667085] sm:block">
+                  Review the changes, then save. This bar stays visible while you scroll.
+                </p>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closeEdit}
+                    disabled={editSaving}
+                    className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-[#101828] transition-colors hover:bg-[#ECFDF5] disabled:cursor-wait disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editSaving}
+                    className="rounded-lg bg-[#047857] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {editSaving ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

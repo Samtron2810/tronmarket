@@ -20,7 +20,6 @@ import { fetchProducts as fetchProductsApi } from "../services/productService";
 import { getCategories, getStorefrontMeta } from "../services/storefrontService";
 import { getRecentlyViewed, clearRecentlyViewed } from "../utils/recentlyViewed";
 import { setPageTitle } from "../utils/pageTitle";
-import { displayPrice } from "../utils/variants";
 import Skeleton from "../components/Skeleton";
 
 const catIcons = {
@@ -295,71 +294,36 @@ export default function Home() {
     <button onClick={onClick} className="shrink-0 text-sm font-semibold text-emerald-700 hover:underline">See all →</button>
   );
 
-  const heroProduct = featured[0];
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-2 sm:px-4 lg:px-4">
       {/* ── Hero ── */}
-      <div className="relative mb-4 overflow-hidden rounded-2xl bg-[#101828] px-6 py-8 sm:px-10">
-        <div className="absolute -top-16 -right-16 h-72 w-72 rounded-full bg-emerald-700 opacity-20" />
-        <div className="absolute -bottom-10 right-24 h-40 w-40 rounded-full bg-white opacity-10" />
-        <div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1.4fr_1fr]">
-          <div>
-            <span className="mb-4 inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white">
-              Verified Nigerian sellers
-            </span>
-            <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Quality goods from <span className="text-emerald-400">verified sellers</span>
+      <section className="mb-4 overflow-hidden rounded-2xl bg-emerald-900 text-white shadow-sm">
+        <div className="px-5 py-6 sm:px-8 sm:py-7">
+          <div className="max-w-2xl">
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
+              Quality products, delivered across Nigeria.
             </h1>
-            <p className="mt-3 max-w-xl text-base leading-relaxed text-[#D0D5DD]">
-              Phones, laptops, fashion and more — pay securely with Paystack and get it delivered anywhere in Nigeria.
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-emerald-100 sm:text-base">
+              Shop trusted sellers with secure checkout and clear delivery updates.
             </p>
-            <form onSubmit={submitHeroSearch} className="mt-5 flex max-w-xl gap-2" role="search">
-              <div className="relative flex-1">
-                <FiSearch className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                <input
-                  value={heroQuery}
-                  onChange={(e) => setHeroQuery(e.target.value)}
-                  placeholder="Search products, brands…"
-                  aria-label="Search products"
-                  className="w-full rounded-xl border border-white/20 bg-white py-3 pl-10 pr-3 text-sm text-[#101828] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              <button type="submit" className="rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-emerald-500 active:scale-95">
-                Search
+            <form onSubmit={submitHeroSearch} className="mt-5 flex max-w-xl overflow-hidden rounded-full bg-white p-1 shadow-lg">
+              <input
+                name="q"
+                type="search"
+                value={heroQuery}
+                onChange={(e) => setHeroQuery(e.target.value)}
+                placeholder="Search products, brands and categories"
+                aria-label="Search products"
+                className="min-w-0 flex-1 bg-transparent px-4 text-sm text-gray-900 outline-none placeholder:text-gray-400"
+              />
+              <button type="submit" className="inline-flex shrink-0 items-center gap-2 rounded-full bg-emerald-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-800">
+                <FiSearch aria-hidden="true" />
+                <span className="hidden sm:inline">Search</span>
               </button>
             </form>
-            {categories.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                {categories.slice(0, 5).map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => { handleCategoryChange(cat); scrollToShop(); }}
-                    className="rounded-full border border-white/25 px-3 py-1.5 text-xs font-semibold capitalize text-white transition hover:bg-white/15"
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
-
-          {heroProduct && (
-            <Link to={`/product/${heroProduct._id}`} className="group relative hidden overflow-hidden rounded-2xl bg-white/5 lg:block">
-              <img
-                src={heroProduct.image || (heroProduct.images && heroProduct.images[0])}
-                alt={heroProduct.name}
-                className="h-64 w-full object-cover transition duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent p-4 pt-10">
-                <p className="text-xs font-bold uppercase tracking-widest text-emerald-300">Featured</p>
-                <p className="truncate text-base font-bold text-white">{heroProduct.name}</p>
-                <p className="text-sm font-extrabold text-amber-400">{displayPrice(heroProduct).label}</p>
-              </div>
-            </Link>
-          )}
         </div>
-      </div>
+      </section>
 
       {/* ── Trust strip ── */}
       <div className="mb-6 grid grid-cols-1 gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 sm:grid-cols-3">

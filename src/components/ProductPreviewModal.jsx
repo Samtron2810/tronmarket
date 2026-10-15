@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import noImageLogo from "../assets/no-image-logo.png";
+import { NO_IMAGE_LOGO, productImageList } from "../utils/productImages";
 import {
   FaChevronLeft,
   FaChevronRight,
@@ -21,11 +21,8 @@ import { fetchProduct } from "../services/productService";
 
 export default function ProductPreviewModal({ open, product, onClose }) {
   const { addToCartLocal, isAddingToCart } = useContext(CartContext);
-  const fallback = noImageLogo;
-  const images =
-    product?.images && product.images.length > 0
-      ? product.images
-      : [product?.image || fallback];
+  const fallback = NO_IMAGE_LOGO;
+  const images = productImageList(product);
   const [index, setIndex] = useState(0);
   const [qty, setQty] = useState(1);
   const [selection, setSelection] = useState({});
@@ -71,7 +68,7 @@ export default function ProductPreviewModal({ open, product, onClose }) {
   const effectiveStock = displayProduct?.hasVariants
     ? (selectedVariant?.stock ?? 0)
     : (displayProduct?.stock ?? 0);
-  const displayImage = selectedVariant?.image || images[index];
+  const displayImage = selectedVariant?.image || images[index] || fallback;
 
   if (!open || !product) return null;
 
@@ -133,6 +130,10 @@ export default function ProductPreviewModal({ open, product, onClose }) {
               alt={product.name}
               className="max-w-full max-h-64 object-contain p-4"
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = fallback;
+              }}
             />
 
             {images.length > 1 && (

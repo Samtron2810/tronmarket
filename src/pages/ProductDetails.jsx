@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import noImageLogo from "../assets/no-image-logo.png";
+import { NO_IMAGE_LOGO, productImageList } from "../utils/productImages";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { CartContext } from "../context/CartContext";
@@ -40,7 +40,7 @@ export default function ProductDetails() {
 
   const navigate = useNavigate();
 
-  const fallbackImage = noImageLogo;
+  const fallbackImage = NO_IMAGE_LOGO;
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -149,11 +149,8 @@ export default function ProductDetails() {
   const inStock = product.hasVariants
     ? selectionDone && effectiveStock > 0
     : product.stock && product.stock > 0;
-  const images =
-    product.images && product.images.length > 0
-      ? product.images
-      : [product.image || fallbackImage];
-  const displayImage = selectedVariant?.image || images[imgIndex];
+  const images = productImageList(product);
+  const displayImage = selectedVariant?.image || images[imgIndex] || fallbackImage;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -188,6 +185,10 @@ export default function ProductDetails() {
             alt={product.name}
             className="w-full h-full object-contain p-6"
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = fallbackImage;
+            }}
           />
 
           {images.length > 1 && (

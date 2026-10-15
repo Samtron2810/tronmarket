@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- context and provider are intentionally co-located. */
-import { createContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect, useCallback, useRef } from "react";
 import {
   getToken,
   logout as doLogout,
@@ -18,6 +18,8 @@ export const AuthContext = createContext();
 export default function AuthProvider({ children }) {
   const [token, setTokenState] = useState(() => getToken());
   const [user, setUserState] = useState(() => getUser());
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const logoutPromiseRef = useRef(null);
 
   const clearSession = useCallback(() => {
     doLogout();
@@ -95,15 +97,49 @@ export default function AuthProvider({ children }) {
     };
   }, [token, refreshUser]);
 
-  const handleLogout = async () => {
-    try {
-      // try server-side logout (if endpoint exists)
-      await api.post("/auth/logout");
-    } catch {
-      // ignore network errors
-    }
+  const handleLogout = useCallback(async () => {
+    // Capture the access token before clearing local storage. The server
+    // needs it to blacklist that exact token; the refresh cookie is sent
+    // automatically by the credential-enabled API client so the server can
+    // revoke the refresh session too.
+    const accessToken = getToken();
+    const inFlight = logoutPromiseRef.current;
+    if (inFlight?.token === accessToken) return inFlight.promise;
+
+    setIsLoggingOut(true);
+
+    // Clear the local session first so the UI signs out immediately and no
+    // later render can use the old credentials. Server revocation still runs
+    // to completion in the background (callers may await it when appropriate).
     clearSession();
-  };
+
+    const request = (async () => {
+      try {
+        await api.post(
+          "/auth/logout",
+          {},
+          {
+            headers: accessToken
+              ? { Authorization: `Bearer ${accessToken}` }
+              : undefined,
+            timeout: 5000,
+          },
+        );
+      } catch {
+        // The local session is already gone. If the network/API is down the
+        // short-lived access token will expire on its own; we never keep the
+        // user trapped on a spinner waiting for logout.
+      } finally {
+        if (logoutPromiseRef.current?.token === accessToken) {
+          logoutPromiseRef.current = null;
+          setIsLoggingOut(false);
+        }
+      }
+    })();
+
+    logoutPromiseRef.current = { token: accessToken, promise: request };
+    return request;
+  }, [clearSession]);
 
   return (
     <AuthContext.Provider
@@ -113,6 +149,7 @@ export default function AuthProvider({ children }) {
         login,
         refreshUser,
         handleLogout,
+        isLoggingOut,
       }}
     >
       {children}

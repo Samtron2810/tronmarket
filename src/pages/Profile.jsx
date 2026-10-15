@@ -9,8 +9,11 @@ import {
   FaShieldAlt,
   FaExclamationTriangle,
   FaLock,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { verifyPassword } from "../services/authService";
+import ConfirmModal from "../components/ConfirmModal";
+import { toast } from "react-toastify";
 import {
   ProfileNameEditor,
   ProfileAddresses,
@@ -31,7 +34,7 @@ const TABS = [
 ];
 
 export default function Profile() {
-  const { user, login, refreshUser, handleLogout } = useContext(AuthContext);
+  const { user, login, refreshUser, handleLogout, isLoggingOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = TABS.some((t) => t.id === searchParams.get("tab"))
@@ -45,6 +48,7 @@ export default function Profile() {
   const [unlockSecret, setUnlockSecret] = useState("");
   const [unlockError, setUnlockError] = useState("");
   const [unlockBusy, setUnlockBusy] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   useEffect(() => {
     refreshUser();
@@ -107,6 +111,16 @@ export default function Profile() {
     }
   };
 
+  const confirmLogout = () => {
+    setLogoutOpen(false);
+    // handleLogout clears local credentials synchronously, then completes
+    // server-side token blacklisting/refresh-session revocation without
+    // making the user wait on the network.
+    void handleLogout();
+    toast.success("You have been logged out.");
+    navigate("/", { replace: true });
+  };
+
   const lockNow = () => {
     setUnlockedUntil(0);
     setUnlocked(false);
@@ -143,13 +157,13 @@ export default function Profile() {
           </span>
         </div>
         <button
-          onClick={async () => {
-            await handleLogout();
-            navigate("/", { replace: true });
-          }}
-          className="rounded-xl bg-red-500 px-5 py-2 font-semibold text-white transition-colors hover:bg-red-600"
+          type="button"
+          onClick={() => setLogoutOpen(true)}
+          disabled={isLoggingOut}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-500 px-5 py-2 font-semibold text-white transition-colors hover:bg-red-600 disabled:cursor-wait disabled:opacity-70"
         >
-          Logout
+          <FaSignOutAlt aria-hidden="true" />
+          {isLoggingOut ? "Logging out..." : "Logout"}
         </button>
       </div>
 
@@ -307,8 +321,8 @@ export default function Profile() {
               )}
               {tab === "danger" && (
                 <ProfileDanger
-                  onDeleted={async () => {
-                    await handleLogout();
+                  onDeleted={() => {
+                    void handleLogout();
                     navigate("/", { replace: true });
                   }}
                 />
@@ -317,6 +331,15 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        open={logoutOpen}
+        title="Log out of TronMarket?"
+        description="You will be signed out on this device and will need to log in again to access your account."
+        confirmLabel="Log out"
+        onCancel={() => setLogoutOpen(false)}
+        onConfirm={confirmLogout}
+      />
     </div>
   );
 }

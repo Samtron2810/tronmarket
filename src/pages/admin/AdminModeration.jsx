@@ -3,6 +3,7 @@ import { AdminShell } from "./AdminOpsShared";
 import { money } from "./adminMoney";
 import { getModerationQueue, moderateProduct, bulkProducts, downloadAdminCsv } from "../../services/storefrontService";
 import { toast } from "react-toastify";
+import { firstProductImage } from "../../utils/productImages";
 
 export default function AdminModeration() {
   const [products, setProducts] = useState([]);
@@ -71,7 +72,7 @@ export default function AdminModeration() {
         {products.map((p) => (
           <article key={p._id} className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 sm:flex-row sm:items-center">
             <input type="checkbox" checked={selected.includes(p._id)} onChange={() => toggleSelected(p._id)} aria-label={`Select ${p.name}`} />
-            {p.image && <img src={p.image} alt="" className="h-16 w-16 rounded-lg object-cover" />}
+            <img src={firstProductImage(p)} alt={p.name || "Product"} className="h-16 w-16 shrink-0 rounded-lg object-cover" />
             <div className="flex-1 text-sm">
               <p className="font-bold">{p.name}</p>
               <p className="text-[#667085]">{p.brand || "No brand"} · {p.category || "General"} · {money(p.price)} · {p.countInStock ?? p.stock ?? 0} in stock</p>

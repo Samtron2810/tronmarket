@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import noImageLogo from "../assets/no-image-logo.png";
+import { NO_IMAGE_LOGO, productImageList } from "../utils/productImages";
 import {
   FaEye,
   FaShoppingCart,
@@ -18,12 +18,8 @@ export default function ProductCard({ product, compact = false, mini = false }) 
   // mini: half-size tile for secondary rails (featured / recently viewed /
   // related). Implies compact; the main store grid uses neither flag.
   const dense = compact || mini;
-  const fallbackImage = noImageLogo;
-
-  const images =
-    product.images && product.images.length > 0
-      ? product.images
-      : [product.image || fallbackImage];
+  const fallbackImage = NO_IMAGE_LOGO;
+  const images = productImageList(product);
 
   const [index, setIndex] = useState(0);
   const { addToCartLocal, isAddingToCart } = useContext(CartContext);
@@ -69,6 +65,10 @@ export default function ProductCard({ product, compact = false, mini = false }) 
             alt={product.name}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = fallbackImage;
+            }}
           />
 
           <div className="absolute left-2 top-2 z-10">
