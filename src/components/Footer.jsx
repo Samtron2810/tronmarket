@@ -40,7 +40,7 @@ export default function Footer() {
             </p>
             <p className="mt-2 max-w-xs text-sm leading-relaxed text-[#98A2B3]">
               Quality goods from verified Nigerian sellers — secure Paystack
-              payments, delivery across all 36 states, and easy cancel before shipping.
+              payments, delivery to major cities, and easy cancel before shipping.
             </p>
             <a href="mailto:freegram730@gmail.com" className="mt-3 inline-block text-sm font-semibold text-emerald-400 hover:underline">
               freegram730@gmail.com

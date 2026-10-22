@@ -9,9 +9,6 @@ import {
   FiZap,
   FiTag,
   FiSearch,
-  FiShield,
-  FiTruck,
-  FiXCircle,
   FiSliders,
 } from "react-icons/fi";
 import { FaTimes, FaBars } from "react-icons/fa";
@@ -227,7 +224,7 @@ export default function Home() {
     <div className="flex flex-col gap-1.5">
       <button
         onClick={() => handleCategoryChange("")}
-        className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${!category ? "bg-emerald-700 text-white" : "bg-gray-100 text-[#101828] hover:bg-emerald-50"}`}
+        className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${!category ? "bg-emerald-700 text-white" : "bg-gray-100 text-ink hover:bg-emerald-50"}`}
       >
         <FaBars className="w-4 h-4" /> All
       </button>
@@ -237,7 +234,7 @@ export default function Home() {
           <button
             key={cat}
             onClick={() => handleCategoryChange(cat)}
-            className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${isActive ? "bg-emerald-700 text-white" : "bg-gray-100 text-[#101828] hover:bg-emerald-50"}`}
+            className={`w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium capitalize transition-colors ${isActive ? "bg-emerald-700 text-white" : "bg-gray-100 text-ink hover:bg-emerald-50"}`}
           >
             {iconFor(cat)} {cat}
           </button>
@@ -248,7 +245,7 @@ export default function Home() {
 
   const renderFilters = (idPrefix) => (
     <div>
-      <label htmlFor={`${idPrefix}-brand`} className="block text-xs font-semibold mb-1 text-[#667085]">Brand</label>
+      <label htmlFor={`${idPrefix}-brand`} className="block text-xs font-semibold mb-1 text-muted">Brand</label>
       <select
         id={`${idPrefix}-brand`}
         value={brand}
@@ -258,7 +255,7 @@ export default function Home() {
         <option value="">All brands</option>
         {brands.map((b) => <option key={b} value={b}>{b}</option>)}
       </select>
-      <label className="block text-xs font-semibold mb-1 text-[#667085]">Price range (₦)</label>
+      <label className="block text-xs font-semibold mb-1 text-muted">Price range (₦)</label>
       <div className="flex items-center gap-2">
         <input type="number" min="0" value={minPrice} onChange={(e) => { setMinPrice(e.target.value); setPage(1); }} placeholder="Min" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" aria-label="Minimum price" />
         <span className="text-gray-400">–</span>
@@ -275,7 +272,7 @@ export default function Home() {
       id={id}
       value={sort}
       onChange={(e) => { setSort(e.target.value); setPage(1); }}
-      className="bg-white border border-gray-300 rounded-lg px-2 py-2 text-sm text-[#101828]"
+      className="bg-white border border-gray-300 rounded-lg px-2 py-2 text-sm text-ink"
       aria-label="Sort products"
     >
       <option value="recommended">Recommended</option>
@@ -291,7 +288,7 @@ export default function Home() {
   const rail = (title, items, seeAll) => items.length > 0 && (
     <section className="mb-6">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <h2 className="text-xl font-bold tracking-tight text-[#101828]">{title}</h2>
+        <h2 className="text-xl font-bold tracking-tight text-ink">{title}</h2>
         {seeAll}
       </div>
       <div className="grid grid-cols-4 gap-1 sm:grid-cols-6 lg:grid-cols-8">
@@ -335,13 +332,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Trust strip ── */}
-      <div className="mb-6 grid grid-cols-1 gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900 sm:grid-cols-3">
-        <span className="flex items-center gap-2"><FiShield className="h-4 w-4 shrink-0" /> Secure Paystack payments</span>
-        <span className="flex items-center gap-2"><FiTruck className="h-4 w-4 shrink-0" /> Delivery across all 36 states</span>
-        <span className="flex items-center gap-2"><FiXCircle className="h-4 w-4 shrink-0" /> Easy cancel before shipping</span>
-      </div>
-
       {/* ── Category tiles ── */}
       {categories.length > 0 && (
         <section className="mb-6" aria-label="Shop by category">
@@ -350,7 +340,7 @@ export default function Home() {
               <button
                 key={cat}
                 onClick={() => { handleCategoryChange(cat); scrollToShop(); }}
-                className={`flex shrink-0 items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold capitalize transition ${category === cat ? "border-emerald-600 bg-emerald-600 text-white" : "border-gray-200 bg-white text-[#101828] hover:border-emerald-300"}`}
+                className={`flex shrink-0 items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold capitalize transition ${category === cat ? "border-emerald-600 bg-emerald-600 text-white" : "border-gray-200 bg-white text-ink hover:border-emerald-300"}`}
               >
                 {iconFor(cat)} {cat}
               </button>
@@ -381,7 +371,7 @@ export default function Home() {
       {recentlyViewed.length > 0 && !debouncedSearch && !category && (
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-xl font-bold tracking-tight text-[#101828]">Recently viewed</h2>
+            <h2 className="text-xl font-bold tracking-tight text-ink">Recently viewed</h2>
             <div className="flex shrink-0 items-center gap-4">
               {recentlyViewed.length > 8 && (
                 <button onClick={() => setShowAllRecent((v) => !v)} className="text-sm font-semibold text-emerald-700 hover:underline">
@@ -411,23 +401,23 @@ export default function Home() {
 
       {/* ── Shop ── */}
       <div id="shop" className="scroll-mt-20">
-        <div className="sticky top-14 z-30 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border-b bg-[#F6F7F4]/90 py-2 backdrop-blur-md sm:border-none">
+        <div className="sticky top-14 z-30 mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border-b bg-bg/90 py-2 backdrop-blur-md sm:border-none">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm sm:hidden ${category ? "border-emerald-700 bg-emerald-700 text-white" : "border-gray-200 bg-white text-[#101828]"}`}
+              className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm sm:hidden ${category ? "border-emerald-700 bg-emerald-700 text-white" : "border-gray-200 bg-white text-ink"}`}
               aria-label="Open categories and filters"
             >
               <FaBars className="h-4 w-4" />
               <span>{category || "Categories"}</span>
             </button>
-            <h2 className="text-2xl font-bold tracking-tight text-[#101828]">{shopTitle}</h2>
+            <h2 className="text-2xl font-bold tracking-tight text-ink">{shopTitle}</h2>
           </div>
           <div className="flex items-center gap-2">
-            {!loading && <span className="hidden text-sm font-medium text-[#667085] sm:inline">{total} product{total === 1 ? "" : "s"}</span>}
+            {!loading && <span className="hidden text-sm font-medium text-muted sm:inline">{total} product{total === 1 ? "" : "s"}</span>}
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-[#101828] sm:hidden"
+              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-ink sm:hidden"
               aria-label="Open filters"
             >
               <FiSliders className="h-4 w-4" /> Filters
@@ -445,11 +435,11 @@ export default function Home() {
         <div className="flex flex-col gap-5 sm:flex-row">
           <aside className="sticky top-28 z-20 hidden w-48 shrink-0 self-start sm:block">
             <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Categories</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Categories</p>
               {renderCategoryList()}
             </div>
             <div className="mt-4 rounded-xl border border-gray-200 bg-white p-4">
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Filters</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Filters</p>
               {renderFilters("side")}
             </div>
           </aside>
@@ -468,7 +458,7 @@ export default function Home() {
             {!loading && !error && (
               products.length === 0 ? (
                 <div className="rounded-xl border border-gray-200 bg-white p-12 text-center">
-                  <p className="text-base text-[#667085]">No products match your filters right now.</p>
+                  <p className="text-base text-muted">No products match your filters right now.</p>
                   {(brand || minPrice || maxPrice || category || debouncedSearch) && (
                     <button onClick={() => { clearFilters(); handleCategoryChange(""); }} className="mt-3 text-sm font-bold text-emerald-700 hover:underline">Clear all filters</button>
                   )}
@@ -490,7 +480,7 @@ export default function Home() {
                 <button
                   onClick={() => setPage((p) => p + 1)}
                   disabled={loadingMore}
-                  className="rounded-xl border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-[#101828] transition hover:border-emerald-400 disabled:opacity-50"
+                  className="rounded-xl border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-ink transition hover:border-emerald-400 disabled:opacity-50"
                 >
                   {loadingMore ? "Loading…" : `Load more (${products.length} of ${total})`}
                 </button>
@@ -506,18 +496,18 @@ export default function Home() {
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsSidebarOpen(false)} />
           <div className="absolute left-0 top-0 flex h-full w-72 flex-col gap-5 overflow-y-auto bg-white p-5 shadow-2xl">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-bold uppercase tracking-widest text-[#667085]">Categories & filters</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-muted">Categories & filters</p>
               <button onClick={() => setIsSidebarOpen(false)} className="text-gray-400 transition-colors hover:text-red-500" aria-label="Close categories and filters">
                 <FaTimes size={16} />
               </button>
             </div>
             {renderCategoryList()}
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Sort</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Sort</p>
               {sortSelect("sort-mobile")}
             </div>
             <div>
-              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-[#667085]">Filters</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted">Filters</p>
               {renderFilters("drawer")}
             </div>
             <button onClick={() => setIsSidebarOpen(false)} className="primary-btn mt-auto w-full">Show results</button>
