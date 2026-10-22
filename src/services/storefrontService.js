@@ -65,3 +65,13 @@ export async function downloadAdminCsv(kind) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
+
+// Order messages: one thread per (order, seller). Buyers pass the seller they
+// are talking to; sellers and admins are resolved on the server.
+export const getOrderThread = (orderId, sellerId) =>
+  api.get(`/messages/${orderId}`, { params: sellerId ? { sellerId } : {} });
+export const sendOrderMessage = (orderId, data) => api.post(`/messages/${orderId}`, data);
+
+// A seller cancels their own package when they cannot fulfil it (out of stock).
+export const cancelMyPackage = (orderId, reason) =>
+  api.post(`/orders/${orderId}/packages/cancel`, { reason });

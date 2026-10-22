@@ -21,6 +21,7 @@ import ConfirmModal from "../components/ConfirmModal";
 import { createReturnRequest, getOrderReturn, getMyReturns, getMyDisputes, openDispute } from "../services/storefrontService";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import ItemImage from "../components/ItemImage"; // FIX #12
+import OrderThread from "../components/OrderThread";
 import { toast } from "react-toastify"; // FIX #2: import toast
 
 const statusColors = {
@@ -79,6 +80,13 @@ function reportablePackages(order, disputes = []) {
       };
     });
 }
+
+const REFUND_LABEL = {
+  pending: "Refund pending",
+  partial: "Partly refunded",
+  processed: "Refunded",
+  failed: "Refund failed",
+};
 
 const DISPUTE_LABEL = {
   open: "Not-received report open",
@@ -147,6 +155,7 @@ export default function MyOrders() {
   const [disputeSellerIds, setDisputeSellerIds] = useState([]);
   const [disputeReason, setDisputeReason] = useState("");
   const [disputeBusy, setDisputeBusy] = useState(false);
+  const [threadFor, setThreadFor] = useState(null); // { orderId, sellerId, name }
 
   useEffect(() => {
     getMyReturns()
@@ -622,7 +631,7 @@ export default function MyOrders() {
                           {order.refundStatus &&
                             order.refundStatus !== "none" && (
                               <span className="inline-flex items-center px-2.5 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 font-semibold capitalize">
-                                Refund: {order.refundStatus}
+                                {REFUND_LABEL[order.refundStatus] || `Refund: ${order.refundStatus}`}
                               </span>
                             )}
                           {isCancellable && (
@@ -665,6 +674,21 @@ export default function MyOrders() {
                               Buy again
                             </button>
                           )}
+                          {order.isPaid && (order.sellerFulfillments || []).map((f) => {
+                            const sellerId = String(f.seller?._id || f.seller || "");
+                            if (!sellerId) return null;
+                            const name = f.seller?.name || "seller";
+                            const open = threadFor?.orderId === order._id && threadFor?.sellerId === sellerId;
+                            return (
+                              <button
+                                key={`msg-${sellerId}`}
+                                onClick={() => setThreadFor(open ? null : { orderId: order._id, sellerId, name })}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 transition-colors text-xs font-semibold shadow-sm"
+                              >
+                                {open ? "Hide messages" : (order.sellerFulfillments.length > 1 ? `Message ${name}` : "Message seller")}
+                              </button>
+                            );
+                          })}
                           <Link
                             to={`/orders/${order._id}/invoice`}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-200 bg-white text-emerald-700 hover:bg-emerald-50 transition-colors font-semibold shadow-sm"
@@ -704,6 +728,16 @@ export default function MyOrders() {
                           )}
                         </div>
                       </div>
+                      {threadFor?.orderId === order._id && (
+                        <div className="px-4 pb-4">
+                          <OrderThread
+                            key={`${order._id}:${threadFor.sellerId}`}
+                            orderId={order._id}
+                            sellerId={threadFor.sellerId}
+                            title={`Messages with ${threadFor.name}`}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

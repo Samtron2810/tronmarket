@@ -9,6 +9,8 @@ import ConfirmModal from "../../components/ConfirmModal";
 import { Link } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
+import OrderThread from "../../components/OrderThread";
+import { cancelMyPackage } from "../../services/storefrontService";
 
 const statusColors = {
   pending: "bg-amber-100 text-amber-800",
@@ -33,6 +35,10 @@ export default function SellerOrders() {
   const [orderToShip, setOrderToShip] = useState(null);
   const [deliverModalOpen, setDeliverModalOpen] = useState(false);
   const [orderToDeliver, setOrderToDeliver] = useState(null);
+  const [threadOrderId, setThreadOrderId] = useState(null);
+  const [cancelOrderId, setCancelOrderId] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelBusy, setCancelBusy] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -330,7 +336,80 @@ export default function SellerOrders() {
                       Mark as Delivered (Claim)
                     </button>
                   )}
+                  {order.isPaid && (
+                    <button
+                      onClick={() => setThreadOrderId(threadOrderId === order._id ? null : order._id)}
+                      className="border border-gray-200 bg-white text-gray-700 text-xs px-3 py-1.5 rounded-lg cursor-pointer font-semibold hover:bg-gray-50 transition-colors shadow-sm"
+                    >
+                      {threadOrderId === order._id ? "Hide messages" : "Messages with buyer"}
+                    </button>
+                  )}
+                  {order.isPaid &&
+                    ["paid", "processing"].includes(order.sellerStatus || order.status) && (
+                      <button
+                        onClick={() => {
+                          setCancelOrderId(cancelOrderId === order._id ? null : order._id);
+                          setCancelReason("");
+                        }}
+                        className="border border-rose-200 bg-white text-rose-700 text-xs px-3 py-1.5 rounded-lg cursor-pointer font-semibold hover:bg-rose-50 transition-colors shadow-sm"
+                      >
+                        {order.sellerIsMultiSeller ? "Cancel my items" : "Cancel (out of stock)"}
+                      </button>
+                    )}
                 </div>
+                {cancelOrderId === order._id && (
+                  <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50/60 p-3 text-left">
+                    <p className="text-xs text-rose-800 mb-2">
+                      {order.sellerIsMultiSeller
+                        ? "Your items in this order will be cancelled and refunded to the buyer, and the rest of the order stays live. Only your share is refunded."
+                        : "This cancels the whole order and refunds the buyer in full, including delivery."}
+                    </p>
+                    <input
+                      value={cancelReason}
+                      onChange={(e) => setCancelReason(e.target.value)}
+                      maxLength={300}
+                      placeholder="Reason (shown to the buyer), e.g. out of stock"
+                      className="w-full rounded-lg border border-rose-200 bg-white px-3 py-2 text-sm"
+                    />
+                    <div className="mt-2 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCancelOrderId(null)}
+                        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold"
+                      >
+                        Keep order
+                      </button>
+                      <button
+                        type="button"
+                        disabled={cancelBusy || cancelReason.trim().length < 3}
+                        onClick={async () => {
+                          setCancelBusy(true);
+                          try {
+                            const res = await cancelMyPackage(order._id, cancelReason.trim());
+                            const updated = res.data?.order;
+                            if (updated) {
+                              setOrders((prev) => prev.map((o) => (o._id === order._id ? { ...o, ...updated } : o)));
+                            }
+                            toast.success("Cancelled. The buyer is being refunded.");
+                            setCancelOrderId(null);
+                          } catch (err) {
+                            toast.error(err.response?.data?.message || "Could not cancel these items");
+                          } finally {
+                            setCancelBusy(false);
+                          }
+                        }}
+                        className="rounded-lg bg-rose-600 px-3 py-1.5 text-xs font-semibold text-white disabled:opacity-50"
+                      >
+                        {cancelBusy ? "Cancelling…" : "Confirm cancellation"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {threadOrderId === order._id && (
+                  <div className="mt-3 text-left">
+                    <OrderThread orderId={order._id} title="Messages with buyer" />
+                  </div>
+                )}
               </div>
             ))}
           </div>

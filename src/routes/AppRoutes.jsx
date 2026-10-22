@@ -11,6 +11,7 @@ import ProductDetails from "../pages/ProductDetails";
 import NotFound from "../pages/NotFound";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
+import Policy from "../pages/Policy";
 import GuestRoute from "../components/GuestRoute";
 import Checkout from "../pages/Checkout";
 import OrderSuccess from "../pages/OrderSuccess";
@@ -275,6 +276,7 @@ export default function AppRoutes() {
       />
       <Route path="/about" element={<About />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/policies/:section" element={<Policy />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
