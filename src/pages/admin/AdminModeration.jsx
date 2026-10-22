@@ -56,6 +56,8 @@ export default function AdminModeration() {
           ["activate", "Activate"],
           ["feature", "Feature"],
           ["unfeature", "Unfeature"],
+          ["sponsor", "Sponsor (30d)"],
+          ["unsponsor", "Unsponsor"],
           ["draft", "Move to draft"],
           ["deactivate", "Deactivate"],
           ["delete", "Delete"],

@@ -70,12 +70,14 @@ export default function Home() {
   const [brands, setBrands] = useState([]);
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
-  const [sort, setSort] = useState("newest");
+  const [sort, setSort] = useState("recommended");
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [sellerId, setSellerId] = useState("");
   const [sellerName, setSellerName] = useState("");
 
   const [featured, setFeatured] = useState([]);
+  const [sponsored, setSponsored] = useState([]);
+  const [bestSellers, setBestSellers] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [bestRated, setBestRated] = useState([]);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -100,6 +102,12 @@ export default function Home() {
       .catch(() => {});
     fetchProductsApi({ featured: 1, limit: 8 })
       .then((res) => setFeatured(res.data.products || []))
+      .catch(() => {});
+    fetchProductsApi({ sponsored: 1, limit: 8 })
+      .then((res) => setSponsored(res.data.products || []))
+      .catch(() => {});
+    fetchProductsApi({ sort: "popular", limit: 8 })
+      .then((res) => setBestSellers(res.data.products || []))
       .catch(() => {});
     fetchProductsApi({ sort: "newest", limit: 8 })
       .then((res) => setNewArrivals(res.data.products || []))
@@ -204,7 +212,7 @@ export default function Home() {
   }, [products]);
 
   const clearFilters = () => {
-    setBrand(""); setMinPrice(""); setMaxPrice(""); setSort("newest"); setPage(1);
+    setBrand(""); setMinPrice(""); setMaxPrice(""); setSort("recommended"); setPage(1);
   };
 
   const shopTitle = sellerId
@@ -256,7 +264,7 @@ export default function Home() {
         <span className="text-gray-400">–</span>
         <input type="number" min="0" value={maxPrice} onChange={(e) => { setMaxPrice(e.target.value); setPage(1); }} placeholder="Max" className="w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" aria-label="Maximum price" />
       </div>
-      {(brand || minPrice || maxPrice || sort !== "newest") && (
+      {(brand || minPrice || maxPrice || sort !== "recommended") && (
         <button onClick={clearFilters} className="mt-3 text-xs font-bold text-emerald-700 hover:underline">Clear filters</button>
       )}
     </div>
@@ -270,6 +278,8 @@ export default function Home() {
       className="bg-white border border-gray-300 rounded-lg px-2 py-2 text-sm text-[#101828]"
       aria-label="Sort products"
     >
+      <option value="recommended">Recommended</option>
+      <option value="popular">Most popular</option>
       <option value="newest">Newest first</option>
       <option value="price-asc">Price: low to high</option>
       <option value="price-desc">Price: high to low</option>
@@ -351,7 +361,9 @@ export default function Home() {
 
       {!debouncedSearch && !category && !sellerId && (
         <>
+          {rail("Sponsored", sponsored, null)}
           {rail("Featured products", featured, seeAllBtn(() => { navigate("/?featured=1"); scrollToShop(); }))}
+          {rail("Best sellers", bestSellers, seeAllBtn(() => { setSort("popular"); setPage(1); scrollToShop(); }))}
 
           {/* Promo banner */}
           <section className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-emerald-700 px-5 py-4 text-white">

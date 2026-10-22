@@ -81,6 +81,12 @@ export default function ProductCard({ product, compact = false, mini = false }) 
             </div>
           )}
 
+          {product.isSponsored && (!product.sponsoredUntil || new Date(product.sponsoredUntil) > new Date()) && (
+            <div className="absolute bottom-2 left-2 rounded-md bg-amber-400 text-emerald-950 text-[10px] font-extrabold uppercase tracking-wide px-2 py-0.5 shadow">
+              Sponsored
+            </div>
+          )}
+
           {images.length > 1 && (
             <>
               <button
