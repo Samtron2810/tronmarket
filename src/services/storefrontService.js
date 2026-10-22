@@ -38,7 +38,7 @@ export const deleteAdminCoupon = (id) => api.delete(`/admin/coupons/${id}`);
 export const getAdminReturns = (status) => api.get("/admin/returns", { params: status ? { status } : {} });
 export const reviewAdminReturn = (id, data) => api.patch(`/admin/returns/${id}`, data);
 export const getAdminRefunds = () => api.get("/admin/refunds");
-export const getAdminPayouts = () => api.get("/admin/payouts");
+export const getAdminPayouts = () => api.get("/payouts");
 export const markSellerPaid = (sellerId, data) => api.post(`/payouts/${sellerId}/mark-paid`, data);
 export const bulkProducts = (data) => api.post("/admin/products/bulk", data);
 export const setSellerVerified = (userId, sellerVerified) => api.patch(`/admin/users/${userId}/seller-verified`, { sellerVerified });
