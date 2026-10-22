@@ -33,6 +33,7 @@ import AdminModeration from "../pages/admin/AdminModeration";
 import AdminCoupons from "../pages/admin/AdminCoupons";
 import AdminReturns from "../pages/admin/AdminReturns";
 import AdminPayouts from "../pages/admin/AdminPayouts";
+import AdminDisputes from "../pages/admin/AdminDisputes";
 import AdminCategories from "../pages/admin/AdminCategories";
 import AdminOrderLookup from "../pages/admin/AdminOrderLookup";
 import AdminDeliveryStates from "../pages/admin/AdminDeliveryStates";
@@ -213,6 +214,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminPayouts />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/disputes"
+        element={
+          <AdminRoute>
+            <AdminDisputes />
           </AdminRoute>
         }
       />

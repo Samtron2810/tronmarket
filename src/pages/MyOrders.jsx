@@ -18,7 +18,7 @@ import {
   confirmDelivery as confirmDeliveryService,
 } from "../services/orderService";
 import ConfirmModal from "../components/ConfirmModal";
-import { createReturnRequest, getOrderReturn, getMyReturns } from "../services/storefrontService";
+import { createReturnRequest, getOrderReturn, getMyReturns, getMyDisputes, openDispute } from "../services/storefrontService";
 import { thumbUrl } from "../utils/cloudinaryUrl";
 import ItemImage from "../components/ItemImage"; // FIX #12
 import { toast } from "react-toastify"; // FIX #2: import toast
@@ -42,6 +42,49 @@ const TABS = [
   { id: "returns", label: "Returns" },
   { id: "cancelled", label: "Cancelled" },
 ];
+
+// A "not received" report is allowed for shipped or seller-claimed packages,
+// and for delivered packages within the report window (the server decides).
+const REPORT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const idOf = (value) => String(value?._id || value || "");
+
+function groupDisputes(list = []) {
+  const map = {};
+  list.forEach((d) => {
+    const oid = idOf(d.order);
+    if (oid) (map[oid] ||= []).push(d);
+  });
+  return map;
+}
+
+function reportablePackages(order, disputes = []) {
+  if (!["shipped", "delivery-claimed", "delivered"].includes(order.status)) return [];
+  const reported = new Set(disputes.map((d) => idOf(d.seller)));
+  return (order.sellerFulfillments || [])
+    .filter((f) => {
+      if (reported.has(idOf(f.seller)) || f.payoutId) return false;
+      if (["shipped", "delivery-claimed"].includes(f.status)) return true;
+      if (f.status === "delivered") {
+        const at = f.deliveredAt || order.deliveredAt;
+        return Boolean(at) && Date.now() - new Date(at).getTime() <= REPORT_WINDOW_MS;
+      }
+      return false;
+    })
+    .map((f) => {
+      const sid = idOf(f.seller);
+      return {
+        sellerId: sid,
+        name: f.seller?.name || "Seller",
+        items: (order.orderItems || []).filter((i) => idOf(i.seller) === sid).map((i) => i.name).filter(Boolean),
+      };
+    });
+}
+
+const DISPUTE_LABEL = {
+  open: "Not-received report open",
+  released: "Report closed: delivery confirmed",
+  upheld: "Report upheld: refund in review",
+};
 
 function orderTab(order, returnsByOrderId) {
   if (returnsByOrderId[order._id]) return "returns";
@@ -99,6 +142,11 @@ export default function MyOrders() {
   const [returnForm, setReturnForm] = useState({ reason: "", details: "" });
   const [returnBusy, setReturnBusy] = useState(false);
   const [returnByOrder, setReturnByOrder] = useState({});
+  const [disputesByOrderId, setDisputesByOrderId] = useState({});
+  const [disputeFor, setDisputeFor] = useState(null); // order being reported
+  const [disputeSellerIds, setDisputeSellerIds] = useState([]);
+  const [disputeReason, setDisputeReason] = useState("");
+  const [disputeBusy, setDisputeBusy] = useState(false);
 
   useEffect(() => {
     getMyReturns()
@@ -113,6 +161,35 @@ export default function MyOrders() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    getMyDisputes()
+      .then((res) => setDisputesByOrderId(groupDisputes(res.data)))
+      .catch(() => {});
+  }, []);
+
+  const openReportModal = (order) => {
+    const packages = reportablePackages(order, disputesByOrderId[order._id]);
+    setDisputeFor(order);
+    setDisputeSellerIds(packages.length === 1 ? [packages[0].sellerId] : []);
+    setDisputeReason("");
+  };
+
+  const submitDispute = async () => {
+    if (!disputeFor || disputeSellerIds.length === 0) return;
+    setDisputeBusy(true);
+    try {
+      await openDispute({ orderId: disputeFor._id, sellerIds: disputeSellerIds, reason: disputeReason.trim() });
+      toast.success("Thanks. We have paused payment for that package while we look into it.");
+      setDisputeFor(null);
+      const res = await getMyDisputes();
+      setDisputesByOrderId(groupDisputes(res.data));
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not send your report");
+    } finally {
+      setDisputeBusy(false);
+    }
+  };
 
   const openReturn = async (order) => {
     setReturnFor(order);
@@ -566,7 +643,7 @@ export default function MyOrders() {
                             </button>
                           )}
 
-                          {["paid", "processing", "shipped", "delivered"].includes(order.status) && (
+                          {(returnByOrder[order._id] || order.status === "delivered") && (
                             returnByOrder[order._id] ? (
                               <span className="inline-flex items-center px-3 py-1.5 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 text-xs font-semibold capitalize">
                                 Return: {returnByOrder[order._id].status}
@@ -603,6 +680,19 @@ export default function MyOrders() {
                               <FiCreditCard size={12} />
                               Complete Payment
                             </Link>
+                          )}
+                          {(disputesByOrderId[order._id] || []).map((d) => (
+                            <span key={d._id} className="inline-flex items-center px-3 py-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 text-xs font-semibold">
+                              {DISPUTE_LABEL[d.status] || "Report"}
+                            </span>
+                          ))}
+                          {reportablePackages(order, disputesByOrderId[order._id]).length > 0 && (
+                            <button
+                              onClick={() => openReportModal(order)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-200 bg-white text-rose-700 hover:bg-rose-50 transition-colors text-xs font-semibold shadow-sm"
+                            >
+                              Not received?
+                            </button>
                           )}
                           {order.status === "shipped" && (
                             <button
@@ -674,6 +764,56 @@ export default function MyOrders() {
                   {returnBusy ? "Sending…" : "Send request"}
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {disputeFor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/45" onClick={() => !disputeBusy && setDisputeFor(null)} />
+          <div className="relative w-full max-w-md mx-4 rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold mb-1">Report a package not received</h3>
+            <p className="text-sm text-muted mb-4">
+              Choose the package(s) that have not reached you. While we look into it, the seller is not paid for them.
+            </p>
+            <div className="space-y-2 mb-3">
+              {reportablePackages(disputeFor, disputesByOrderId[disputeFor._id]).map((pkg) => (
+                <label key={pkg.sellerId} className="flex items-start gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={disputeSellerIds.includes(pkg.sellerId)}
+                    onChange={(e) =>
+                      setDisputeSellerIds(
+                        e.target.checked
+                          ? [...disputeSellerIds, pkg.sellerId]
+                          : disputeSellerIds.filter((id) => id !== pkg.sellerId),
+                      )
+                    }
+                  />
+                  <span>
+                    <strong>{pkg.name}</strong>
+                    <span className="block text-xs text-muted">{pkg.items.join(", ") || "Items in this package"}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            <input
+              className="input-field w-full"
+              placeholder="What happened? (e.g. tracking says delivered but I have nothing)"
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button className="secondary-btn" disabled={disputeBusy} onClick={() => setDisputeFor(null)}>Close</button>
+              <button
+                className="primary-btn disabled:opacity-50"
+                disabled={disputeBusy || disputeSellerIds.length === 0 || disputeReason.trim().length < 3}
+                onClick={submitDispute}
+              >
+                {disputeBusy ? "Sending…" : "Send report"}
+              </button>
             </div>
           </div>
         </div>

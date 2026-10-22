@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { to: "/admin/coupons", label: "Coupons" },
   { to: "/admin/returns", label: "Returns & refunds" },
   { to: "/admin/payouts", label: "Payouts" },
+  { to: "/admin/disputes", label: "Not-received reports" },
   { to: "/admin/order-lookup", label: "Order lookup" },
   { to: "/admin/categories", label: "Categories" },
   { to: "/admin/delivery-states", label: "Delivery locations" },

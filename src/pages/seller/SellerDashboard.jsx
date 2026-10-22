@@ -10,6 +10,7 @@ import {
 import ConfirmModal from "../../components/ConfirmModal";
 import { toast } from "react-toastify";
 import { getSellerLowStock, getMyPayouts } from "../../services/storefrontService";
+import SellerBankDetails from "../../components/SellerBankDetails";
 import { thumbUrl } from "../../utils/cloudinaryUrl";
 import { firstProductImage } from "../../utils/productImages";
 
@@ -197,9 +198,17 @@ export default function SellerDashboard() {
             <h2 className="font-bold text-emerald-800 mb-2">Payouts</h2>
             {payouts ? (
               <div className="text-sm text-emerald-900 space-y-1">
-                <p>Earned from delivered orders: <strong>₦{Number(payouts.balance?.earned || 0).toLocaleString()}</strong></p>
+                <p>Earned: <strong>₦{Number(payouts.balance?.earned || 0).toLocaleString()}</strong></p>
                 <p>Paid out: <strong>₦{Number(payouts.balance?.paidOut || 0).toLocaleString()}</strong></p>
-                <p>Outstanding: <strong>₦{Number(payouts.balance?.outstanding || 0).toLocaleString()}</strong></p>
+                <p>
+                  Pending release: <strong>₦{Number(payouts.balance?.pendingRelease || 0).toLocaleString()}</strong>{" "}
+                  <span className="text-xs">(released once the buyer's report window closes)</span>
+                </p>
+                <p>
+                  Held: <strong>₦{Number(payouts.balance?.held || 0).toLocaleString()}</strong>{" "}
+                  <span className="text-xs">(open returns or reports)</span>
+                </p>
+                <p>Ready to pay: <strong>₦{Number(payouts.balance?.payable || 0).toLocaleString()}</strong></p>
                 {(payouts.history || []).slice(0, 3).map((h) => (
                   <p key={h._id} className="text-xs">₦{Number(h.amount).toLocaleString()} · {new Date(h.paidAt || h.createdAt).toLocaleDateString()} · {h.method}</p>
                 ))}
@@ -207,6 +216,9 @@ export default function SellerDashboard() {
             ) : (
               <p className="text-sm text-emerald-700">Payout history will appear here once orders are delivered.</p>
             )}
+            <div className="mt-4 border-t border-emerald-200 pt-4">
+              <SellerBankDetails />
+            </div>
           </section>
         </div>
       )}

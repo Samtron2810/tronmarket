@@ -26,6 +26,15 @@ export const getMyReturns = () => api.get("/orders/returns/mine");
 // Seller insights
 export const getSellerLowStock = (threshold = 5) => api.get("/products/seller/low-stock", { params: { threshold } });
 export const getMyPayouts = () => api.get("/payouts/mine");
+export const getMySellerBankDetails = () => api.get("/payouts/bank-details");
+export const saveSellerBankDetails = (data) => api.put("/payouts/bank-details", data);
+
+// "Not received" reports
+export const openDispute = (data) => api.post("/disputes", data);
+export const getMyDisputes = () => api.get("/disputes/mine");
+export const getAdminDisputes = (status) => api.get("/disputes/admin", { params: status ? { status } : {} });
+export const resolveDispute = (id, data) => api.patch(`/disputes/admin/${id}`, data);
+export const setSellerBankVerified = (sellerId, verified) => api.patch(`/payouts/${sellerId}/bank-verified`, { verified });
 
 // Admin ops
 export const getAdminAnalytics = (days = 30) => api.get("/admin/analytics", { params: { days } });
