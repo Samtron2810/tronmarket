@@ -35,6 +35,7 @@ import AdminReturns from "../pages/admin/AdminReturns";
 import AdminPayouts from "../pages/admin/AdminPayouts";
 import AdminCategories from "../pages/admin/AdminCategories";
 import AdminOrderLookup from "../pages/admin/AdminOrderLookup";
+import AdminDeliveryStates from "../pages/admin/AdminDeliveryStates";
 import Wishlist from "../pages/Wishlist";
 import Invoice from "../pages/Invoice";
 import AdminRoute from "../components/AdminRoute";
@@ -228,6 +229,14 @@ export default function AppRoutes() {
         element={
           <AdminRoute>
             <AdminOrderLookup />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/delivery-states"
+        element={
+          <AdminRoute>
+            <AdminDeliveryStates />
           </AdminRoute>
         }
       />

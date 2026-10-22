@@ -13,6 +13,7 @@ import {
   changePassword,
 } from "../services/authService";
 import ConfirmModal from "../components/ConfirmModal";
+import { getActiveDeliveryStates } from "../services/deliveryStateService";
 
 // ── Shared bits ──────────────────────────────────────────────────────────────
 function Status({ message, error }) {
@@ -39,7 +40,7 @@ function useStatus() {
   };
 }
 
-const emptyAddress = { label: "Home", fullName: "", phone: "", address: "", city: "", state: "", isDefault: false };
+const emptyAddress = { label: "Home", fullName: "", phone: "", address: "", city: "", state: "", landmark: "", isDefault: false };
 
 // ── Overview: edit display name ─────────────────────────────────────────────
 export function ProfileNameEditor({ user, onUserUpdated }) {
@@ -90,6 +91,8 @@ export function ProfileAddresses() {
   const [editingId, setEditingId] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  const [activeStates, setActiveStates] = useState(null);
+
   const load = async () => {
     try {
       const res = await getProfile();
@@ -97,7 +100,14 @@ export function ProfileAddresses() {
     } catch {
       status.fail(null, "Could not load your addresses.");
     }
+    getActiveDeliveryStates()
+      .then((res) => setActiveStates(res.data.states || []))
+      .catch(() => setActiveStates(null));
   };
+
+  const stateIsActive = (state) =>
+    !Array.isArray(activeStates) ||
+    activeStates.some((s) => s.toLowerCase() === String(state || "").toLowerCase());
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -144,7 +154,9 @@ export function ProfileAddresses() {
   return (
     <section className="card p-5 sm:p-6">
       <h3 className="text-base font-bold">Saved addresses</h3>
-      <p className="mb-4 text-sm text-secondary">Kept private to your account and offered at checkout.</p>
+      <p className="mb-4 text-sm text-secondary">
+        Kept private to your account and offered at checkout. You can save up to 3 addresses.
+      </p>
       <Status message={status.message} error={status.error} />
 
       <div className="mb-5 space-y-3">
@@ -157,6 +169,12 @@ export function ProfileAddresses() {
               </p>
               <p>{a.fullName} · {a.phone}</p>
               <p className="text-secondary">{a.address}, {a.city}, {a.state}</p>
+              {a.landmark && <p className="text-secondary">Landmark: {a.landmark}</p>}
+              {!stateIsActive(a.state) && (
+                <p className="mt-1 inline-block rounded-md bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-700">
+                  Delivery is currently not available to this state
+                </p>
+              )}
             </div>
             <div className="flex shrink-0 flex-wrap justify-end gap-x-3 gap-y-1 text-xs font-semibold">
               {!a.isDefault && (
@@ -165,7 +183,7 @@ export function ProfileAddresses() {
               <button
                 type="button"
                 className="text-emerald-700"
-                onClick={() => { setEditingId(a._id); setForm({ label: a.label, fullName: a.fullName, phone: a.phone, address: a.address, city: a.city, state: a.state, isDefault: a.isDefault }); }}
+                onClick={() => { setEditingId(a._id); setForm({ label: a.label, fullName: a.fullName, phone: a.phone, address: a.address, city: a.city, state: a.state, landmark: a.landmark || "", isDefault: a.isDefault }); }}
               >
                 Edit
               </button>
@@ -186,17 +204,24 @@ export function ProfileAddresses() {
           <input className="input-field" placeholder="Phone" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           <input className="input-field" placeholder="City" required value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
           <input className="input-field sm:col-span-2" placeholder="Street address" required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+          <input className="input-field sm:col-span-2" placeholder="Landmark (optional)" value={form.landmark} onChange={(e) => setForm({ ...form, landmark: e.target.value })} />
           <select className="input-field" required value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} aria-label="State">
             <option value="" disabled>Select state</option>
-            {form.state && !NIGERIAN_STATES.includes(form.state) && <option value={form.state}>{form.state}</option>}
-            {NIGERIAN_STATES.map((st) => <option key={st} value={st}>{st}</option>)}
+            {form.state && !(Array.isArray(activeStates) ? activeStates : NIGERIAN_STATES).includes(form.state) && (
+              <option value={form.state}>{form.state}{Array.isArray(activeStates) ? " (unavailable)" : ""}</option>
+            )}
+            {(Array.isArray(activeStates) ? activeStates : NIGERIAN_STATES).map((st) => (
+              <option key={st} value={st}>{st}</option>
+            ))}
           </select>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.isDefault} onChange={(e) => setForm({ ...form, isDefault: e.target.checked })} />
             Use as my default address
           </label>
           <div className="flex gap-2 sm:col-span-2">
-            <button type="submit" className="primary-btn" disabled={busy}>{editingId ? "Update address" : "Save address"}</button>
+            <button type="submit" className="primary-btn" disabled={busy || (!editingId && addresses.length >= 3)}>
+              {editingId ? "Update address" : addresses.length >= 3 ? "Address limit reached (3)" : "Save address"}
+            </button>
             {editingId && (
               <button type="button" className="secondary-btn" onClick={() => { setEditingId(null); setForm(emptyAddress); }}>Cancel</button>
             )}

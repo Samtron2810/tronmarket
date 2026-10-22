@@ -12,6 +12,7 @@ import { AuthContext } from "../context/AuthContext";
 import { CartContext } from "../context/CartContext";
 import { toast } from "react-toastify";
 import { NIGERIAN_STATES } from "../utils/nigerianStates";
+import { getActiveDeliveryStates } from "../services/deliveryStateService";
 import PayButton from "../components/PayButton";
 import ItemImage from "../components/ItemImage";
 import { FaArrowLeft } from "react-icons/fa";
@@ -156,7 +157,27 @@ export default function Checkout() {
     address: "",
     city: "",
     state: "",
+    landmark: "",
   });
+
+  // States an admin has made deliverable. null = still loading or the
+  // lookup failed (fall back to the full list so checkout never hard-locks).
+  const [activeStates, setActiveStates] = useState(null);
+  const [pickedAddressId, setPickedAddressId] = useState("");
+
+  useEffect(() => {
+    getActiveDeliveryStates()
+      .then((res) => setActiveStates(res.data.states || []))
+      .catch(() => setActiveStates(null));
+  }, []);
+
+  const stateOptions = Array.isArray(activeStates) ? activeStates : NIGERIAN_STATES;
+  const stateNotDeliverable =
+    Array.isArray(activeStates) &&
+    form.state.trim() !== "" &&
+    !activeStates.some(
+      (s) => s.toLowerCase() === form.state.trim().toLowerCase(),
+    );
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -182,16 +203,30 @@ export default function Checkout() {
             address: preferred.address || prev.address,
             city: preferred.city || prev.city,
             state: preferred.state || prev.state,
+            landmark: preferred.landmark || prev.landmark,
           }));
+          setPickedAddressId(preferred._id);
         }
       })
       .catch(() => {});
   }, []);
 
   const pickSavedAddress = (id) => {
+    setPickedAddressId(id);
+    if (id === "__new") {
+      setForm({ fullName: "", phone: "", address: "", city: "", state: "", landmark: "" });
+      return;
+    }
     const picked = savedAddresses.find((a) => a._id === id);
     if (!picked) return;
-    setForm({ fullName: picked.fullName, phone: picked.phone, address: picked.address, city: picked.city, state: picked.state });
+    setForm({
+      fullName: picked.fullName || "",
+      phone: picked.phone || "",
+      address: picked.address || "",
+      city: picked.city || "",
+      state: picked.state || "",
+      landmark: picked.landmark || "",
+    });
   };
 
   const applyCoupon = async () => {
@@ -273,6 +308,10 @@ export default function Checkout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (stateNotDeliverable) {
+      toast.error(`Delivery is currently not available to ${form.state}. Please choose a different delivery state.`);
+      return;
+    }
     setStockErrors([]);
 
     // ── Step 1: Validate stock before placing order ──────────────────────
@@ -437,7 +476,7 @@ export default function Checkout() {
             <form onSubmit={handleSubmit} className="p-5 space-y-3">
               {savedAddresses.length > 0 && (
                 <select
-                  defaultValue=""
+                  value={pickedAddressId}
                   onChange={(e) => pickSavedAddress(e.target.value)}
                   className={inputCls}
                   aria-label="Use a saved address"
@@ -445,9 +484,10 @@ export default function Checkout() {
                   <option value="" disabled>Use a saved address…</option>
                   {savedAddresses.map((a) => (
                     <option key={a._id} value={a._id}>
-                      {a.label} — {a.address}, {a.city}, {a.state}
+                      {a.label}{a.isDefault ? " (Default)" : ""} — {a.address}, {a.city}, {a.state}
                     </option>
                   ))}
+                  <option value="__new">＋ Add new address</option>
                 </select>
               )}
               <input
@@ -474,6 +514,13 @@ export default function Checkout() {
                 className={inputCls}
                 required
               />
+              <input
+                name="landmark"
+                placeholder="Landmark (optional)"
+                value={form.landmark}
+                onChange={handleChange}
+                className={inputCls}
+              />
               <div className="grid grid-cols-2 gap-3">
                 <input
                   name="city"
@@ -492,14 +539,25 @@ export default function Checkout() {
                   aria-label="Delivery state"
                 >
                   <option value="" disabled>Select state</option>
-                  {form.state && !NIGERIAN_STATES.includes(form.state) && (
-                    <option value={form.state}>{form.state}</option>
+                  {form.state && !stateOptions.includes(form.state) && (
+                    <option value={form.state}>{form.state}{stateNotDeliverable ? " (unavailable)" : ""}</option>
                   )}
-                  {NIGERIAN_STATES.map((st) => (
+                  {stateOptions.map((st) => (
                     <option key={st} value={st}>{st}</option>
                   ))}
                 </select>
               </div>
+
+              {Array.isArray(activeStates) && activeStates.length === 0 && (
+                <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">
+                  Delivery is not available yet — no delivery states have been activated. Please check back soon.
+                </p>
+              )}
+              {stateNotDeliverable && (
+                <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                  Delivery is currently not available to {form.state}. Please change the delivery state to continue.
+                </p>
+              )}
 
               <div className="rounded-lg border border-gray-200 px-4 py-3">
                 <div className="flex gap-2">
@@ -556,7 +614,7 @@ export default function Checkout() {
               <div className="flex justify-end pt-2">
                 <button
                   type="submit"
-                  disabled={loading || validating}
+                  disabled={loading || validating || stateNotDeliverable}
                   className="px-5 py-2.5 rounded-lg bg-[#047857] text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
                   {validating

@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: "/admin/payouts", label: "Payouts" },
   { to: "/admin/order-lookup", label: "Order lookup" },
   { to: "/admin/categories", label: "Categories" },
+  { to: "/admin/delivery-states", label: "Delivery locations" },
 ];
 
 export function AdminShell({ title, subtitle, children }) {
