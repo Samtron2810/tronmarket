@@ -36,7 +36,11 @@ const SECTIONS = {
         text: "TronMarket is not the seller of the goods, but we will help resolve problems through the report and return process. To the extent permitted by law, our liability is limited to the amount you paid for the affected order.",
       },
       {
-        heading: "7. Governing law and contact",
+        heading: "7. Product reviews",
+        text: "Only buyers can review a product. You can post a review once a package containing that product has been delivered to you (or completed). You can post one review per product, edit it, and delete it. Reviews must be honest and about the product itself. Reviews from a verified purchase are labelled \u201cVerified purchase\u201d. To report a review that breaks these rules, email the support address below.",
+      },
+      {
+        heading: "8. Governing law and contact",
         text: `These terms are governed by the laws of the Federal Republic of Nigeria. Questions about these terms: ${SUPPORT_EMAIL}.`,
       },
     ],

@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { AuthContext } from "../context/AuthContext";
@@ -10,6 +10,7 @@ import {
   saveProductReview,
   deleteProductReview,
   getRelatedProducts,
+  getReviewEligibility,
 } from "../services/storefrontService";
 
 function Stars({ value, onChange }) {
@@ -38,7 +39,10 @@ export default function ProductExtras({ productId }) {
   const [related, setRelated] = useState([]);
   const [form, setForm] = useState({ rating: 5, title: "", body: "" });
   const [myReviewId, setMyReviewId] = useState(null);
+  // null = not checked yet; true/false once the server has answered.
+  const [canReview, setCanReview] = useState(null);
   const [busy, setBusy] = useState(false);
+  const location = useLocation();
 
   const loadReviews = async () => {
     try {
@@ -54,7 +58,12 @@ export default function ProductExtras({ productId }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadReviews();
     getRelatedProducts(productId).then((res) => setRelated(res.data || [])).catch(() => {});
-    if (user) {
+    if (!user) {
+      setCanReview(false);
+    } else {
+      getReviewEligibility(productId)
+        .then((res) => setCanReview(Boolean(res.data?.canReview)))
+        .catch(() => setCanReview(false));
       getMyProductReview(productId)
         .then((res) => {
           if (res.data) {
@@ -66,6 +75,13 @@ export default function ProductExtras({ productId }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, user]);
+
+  // "Rate this product" links here with #reviews: bring the review section into view.
+  useEffect(() => {
+    if (location.hash === "#reviews") {
+      document.getElementById("reviews")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [location.hash]);
 
   const submit = async (event) => {
     event.preventDefault();
@@ -97,7 +113,7 @@ export default function ProductExtras({ productId }) {
 
   return (
     <div className="mt-8 space-y-8">
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
+      <section id="reviews" className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-extrabold text-gray-900">Reviews & ratings</h2>
           <div className="flex items-center gap-2 text-sm">
@@ -126,7 +142,7 @@ export default function ProductExtras({ productId }) {
           ))}
         </div>
 
-        {user ? (
+        {canReview === null && user ? null : canReview ? (
           <form onSubmit={submit} className="mt-5 rounded-xl bg-gray-50 p-4">
             <p className="text-sm font-bold mb-2">{myReviewId ? "Your review" : "Write a review"}</p>
             <Stars value={form.rating} onChange={(rating) => setForm({ ...form, rating })} />
@@ -155,9 +171,17 @@ export default function ProductExtras({ productId }) {
             </div>
           </form>
         ) : (
-          <p className="mt-4 text-sm text-gray-500">
-            <Link to="/login" className="font-semibold text-emerald-700 underline">Sign in</Link> to write a review.
-          </p>
+          <div className="mt-5 rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
+            <p className="font-semibold text-gray-800">Buy this product to review it</p>
+            {!user && (
+              <p className="mt-1">
+                <Link to="/login" className="font-semibold text-emerald-700 underline">Sign in</Link> to see your orders.
+              </p>
+            )}
+            {user && myReviewId && (
+              <button type="button" onClick={remove} className="secondary-btn mt-3">Delete my review</button>
+            )}
+          </div>
         )}
       </section>
 

@@ -3,6 +3,7 @@ import api from "./api";
 // Reviews
 export const getProductReviews = (productId) => api.get(`/products/${productId}/reviews`);
 export const getMyProductReview = (productId) => api.get(`/products/${productId}/reviews/mine`);
+export const getReviewEligibility = (productId) => api.get(`/products/${productId}/reviews/eligibility`);
 export const saveProductReview = (productId, data) => api.post(`/products/${productId}/reviews`, data);
 export const deleteProductReview = (productId, reviewId) => api.delete(`/products/${productId}/reviews/${reviewId}`);
 export const getRelatedProducts = (productId) => api.get(`/products/${productId}/related`);

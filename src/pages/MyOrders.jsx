@@ -81,6 +81,11 @@ function reportablePackages(order, disputes = []) {
     });
 }
 
+// Items can be rated once their package has been delivered (or completed).
+const REVIEWABLE_PACKAGE = ["delivered", "completed"];
+const packageStatusFor = (order, sellerId) =>
+  (order.sellerFulfillments || []).find((f) => idOf(f.seller) === sellerId)?.status;
+
 const REFUND_LABEL = {
   pending: "Refund pending",
   partial: "Partly refunded",
@@ -525,9 +530,19 @@ export default function MyOrders() {
                                 </p>
                               </div>
                             </div>
-                            <p className="font-bold text-gray-700 font-mono text-right">
-                              ₦{(item.price * item.quantity).toLocaleString()}
-                            </p>
+                            <div className="text-right shrink-0">
+                              <p className="font-bold text-gray-700 font-mono">
+                                ₦{(item.price * item.quantity).toLocaleString()}
+                              </p>
+                              {REVIEWABLE_PACKAGE.includes(packageStatusFor(order, idOf(item.seller))) && (
+                                <Link
+                                  to={`/product/${idOf(item.product)}#reviews`}
+                                  className="mt-1 inline-block text-xs font-semibold text-emerald-700 hover:underline"
+                                >
+                                  Rate this product
+                                </Link>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
