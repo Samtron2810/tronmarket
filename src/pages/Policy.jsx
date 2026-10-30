@@ -37,7 +37,7 @@ const SECTIONS = {
       },
       {
         heading: "7. Product reviews",
-        text: "Only buyers can review a product. You can post a review once a package containing that product has been delivered to you (or completed). You can post one review per product, edit it, and delete it. Reviews must be honest and about the product itself. Reviews from a verified purchase are labelled \u201cVerified purchase\u201d. To report a review that breaks these rules, email the support address below.",
+        text: "Only buyers can review a product. You can post a review once a package containing that product has been delivered to you (or completed). You can post one review per product, edit it, and delete it. Reviews must be honest and about the product itself. Reviews from a verified purchase are labelled \u201cVerified purchase\u201d. Reviews that break these rules can be reported to the support address below. We may hide a review or delete it. A hidden review is removed from the product rating, and its author cannot change it.",
       },
       {
         heading: "8. Governing law and contact",

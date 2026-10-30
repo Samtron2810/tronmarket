@@ -39,6 +39,7 @@ export default function ProductExtras({ productId }) {
   const [related, setRelated] = useState([]);
   const [form, setForm] = useState({ rating: 5, title: "", body: "" });
   const [myReviewId, setMyReviewId] = useState(null);
+  const [myReviewHidden, setMyReviewHidden] = useState(false);
   // null = not checked yet; true/false once the server has answered.
   const [canReview, setCanReview] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -69,6 +70,7 @@ export default function ProductExtras({ productId }) {
           if (res.data) {
             setForm({ rating: res.data.rating, title: res.data.title || "", body: res.data.body || "" });
             setMyReviewId(res.data._id);
+            setMyReviewHidden(Boolean(res.data.isHidden));
           }
         })
         .catch(() => {});
@@ -103,6 +105,7 @@ export default function ProductExtras({ productId }) {
     try {
       await deleteProductReview(productId, myReviewId);
       setMyReviewId(null);
+      setMyReviewHidden(false);
       setForm({ rating: 5, title: "", body: "" });
       toast.success("Review removed.");
       loadReviews();
@@ -142,7 +145,7 @@ export default function ProductExtras({ productId }) {
           ))}
         </div>
 
-        {canReview === null && user ? null : canReview ? (
+        {canReview === null && user ? null : canReview && !myReviewHidden ? (
           <form onSubmit={submit} className="mt-5 rounded-xl bg-gray-50 p-4">
             <p className="text-sm font-bold mb-2">{myReviewId ? "Your review" : "Write a review"}</p>
             <Stars value={form.rating} onChange={(rating) => setForm({ ...form, rating })} />
@@ -172,13 +175,17 @@ export default function ProductExtras({ productId }) {
           </form>
         ) : (
           <div className="mt-5 rounded-xl bg-gray-50 p-4 text-sm text-gray-600">
-            <p className="font-semibold text-gray-800">Buy this product to review it</p>
+            {myReviewHidden ? (
+              <p className="font-semibold text-rose-700">Your review was removed by moderation, so it cannot be changed.</p>
+            ) : (
+              <p className="font-semibold text-gray-800">Buy this product to review it</p>
+            )}
             {!user && (
               <p className="mt-1">
                 <Link to="/login" className="font-semibold text-emerald-700 underline">Sign in</Link> to see your orders.
               </p>
             )}
-            {user && myReviewId && (
+            {user && myReviewId && (myReviewHidden || !canReview) && (
               <button type="button" onClick={remove} className="secondary-btn mt-3">Delete my review</button>
             )}
           </div>

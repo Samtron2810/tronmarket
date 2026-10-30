@@ -41,6 +41,9 @@ export const setSellerBankVerified = (sellerId, verified) => api.patch(`/payouts
 export const getAdminAnalytics = (days = 30) => api.get("/admin/analytics", { params: { days } });
 export const getModerationQueue = (status) => api.get("/admin/moderation", { params: status ? { status } : {} });
 export const moderateProduct = (id, data) => api.patch(`/admin/moderation/${id}`, data);
+export const getAdminReviews = (status) => api.get("/admin/reviews", { params: status && status !== "all" ? { status } : {} });
+export const setAdminReviewHidden = (id, data) => api.patch(`/admin/reviews/${id}`, data);
+export const deleteAdminReview = (id) => api.delete(`/admin/reviews/${id}`);
 export const getAdminCoupons = () => api.get("/admin/coupons");
 export const createAdminCoupon = (data) => api.post("/admin/coupons", data);
 export const updateAdminCoupon = (id, data) => api.put(`/admin/coupons/${id}`, data);

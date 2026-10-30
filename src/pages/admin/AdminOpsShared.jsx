@@ -5,6 +5,7 @@ const NAV_ITEMS = [
   { to: "/admin/users", label: "Users", end: true },
   { to: "/admin/analytics", label: "Analytics" },
   { to: "/admin/moderation", label: "Moderation" },
+  { to: "/admin/reviews", label: "Reviews" },
   { to: "/admin/coupons", label: "Coupons" },
   { to: "/admin/returns", label: "Returns & refunds" },
   { to: "/admin/payouts", label: "Payouts" },
